@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}" />
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}" />
+
+    <title>{%block title%}{%endblock%}</title>
+
+    {# CSS files #}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/modern-business.css' %}" >
+    <link rel="stylesheet" type="text/css" href="{% static 'css/is-flex.css' %}" >
+
+    {# Custom Fonts #}
+    <link href="{% static 'font-awesome/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+
+    {# JavaScript files #}
+    {% csrf_token %}
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    {%block headextras%}{%endblock%}
+
+  </head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Globus Portal Framework</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav navbar-right">
+            <!-- Display these links only is user is authenticated -->
+            <!-- Change the condition below to an actual test -->
+            {%if session.is_authenticated %}
+            <li>
+            <a href="/logout">Logout</a>
+            </li>
+            <li>
+                <a href="/">{{session.primary_username }}</a>
+              </li>
+            <!-- Display these links if user is not authenticated -->
+            {%else%}
+               <li>
+                <a href="/login">Login</a>
+              </li>
+              <li>
+                <a href="/signup">Sign Up</a>
+              </li>
+            {%endif%}
+
+          </ul>
+        </div> <!-- /.navbar-collapse -->
+      </div> <!-- /.container-fluid -->
+    </nav>
+
+    <!-- Page body -->
+    {%block body%}
+    {%endblock%}
+
+    <!-- Page footer -->
+    {% include 'footer.html' %}
+
+  </body>
+</html>

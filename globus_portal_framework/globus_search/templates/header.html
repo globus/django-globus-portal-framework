@@ -1,0 +1,7 @@
+{%if messages%}
+    <ul class="alert alert-success container">
+      {%for message in messages%}
+        <li>{{message}}</li>
+      {%endfor%}
+    </ul>
+{%endif%}
