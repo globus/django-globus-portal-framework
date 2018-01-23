@@ -330,7 +330,8 @@ function htmlForEntry(subject, content, full)
   }
   html = '<div class="result-item">';
   html = html + '<h3 class="search-title"><a href="'+
-    subject+'" title="' + title + '">'+
+    '/result-detail/mdf/' + encodeURIComponent(subject) +
+    '" title="' + title + '">'+
     truncateString(title, 120) +
     '</a></h3>\n';
   if (full) {
@@ -338,22 +339,22 @@ function htmlForEntry(subject, content, full)
     for (var i = 0; i < labelList.length; i++) {
       html = html + canonicalLabel(labelList[i], content);
     }
-    buttonHTML = bag.hasOwnProperty(subject) ? "In Bag": "Add to Bag";
-    html +=
-    '<div class="result-field">' +
-        '<button ' +
-        'type="button" ' +
-        'onclick="toggleBag(' + resultItemID + ')" ' +
-        'id="result-button-' + resultItemID + '" ' +
-        'class="btn btn-primary btn-sm">' + buttonHTML +
-        '</button>' +
-    '</div>';
-    resultItems[resultItemID] = {
-        'subject': subject,
-        'title': title,
-        'content': content
-    }
-    resultItemID++;
+//    buttonHTML = bag.hasOwnProperty(subject) ? "In Bag": "Add to Bag";
+//    html +=
+//    '<div class="result-field">' +
+//        '<button ' +
+//        'type="button" ' +
+//        'onclick="toggleBag(' + resultItemID + ')" ' +
+//        'id="result-button-' + resultItemID + '" ' +
+//        'class="btn btn-primary btn-sm">' + buttonHTML +
+//        '</button>' +
+//    '</div>';
+//    resultItems[resultItemID] = {
+//        'subject': subject,
+//        'title': title,
+//        'content': content
+//    }
+//    resultItemID++;
   }
   return html;
 }
