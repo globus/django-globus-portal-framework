@@ -19,12 +19,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'change me!'
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# Create 'local_settings.py' and put your below values there to avoid
+# accidentally committing them.
+# Secret key can be generated with 'openssl rand -hex 32'
+SECRET_KEY = ''
 DEBUG = False
-
+# Get your keys at 'developers.globus.org'
+SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
+SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
 ALLOWED_HOSTS = []
 
 
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
     'globus_portal_framework.globus_search'
 ]
 
@@ -48,7 +51,24 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = [
+   'globus_portal_framework.auth.GlobusOAuth2',
+   'django.contrib.auth.backends.ModelBackend',
+]
+
+SOCIAL_AUTH_SANITIZE_REDIRECTS = False
+# Access type needed to get a refresh token
+SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'offline',
+}
+
+# Additional extras
+# SOCIAL_AUTH_GLOBUS_SCOPE = [
+#     'urn:globus:auth:scope:transfer.api.globus.org:all'
+# ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_USE_SESSIONS = True
@@ -66,6 +86,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },

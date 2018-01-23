@@ -46,20 +46,17 @@
           <ul class="nav navbar-nav navbar-right">
             <!-- Display these links only is user is authenticated -->
             <!-- Change the condition below to an actual test -->
-            {%if session.is_authenticated %}
+            {%if request.user.is_authenticated %}
             <li>
-            <a href="/logout">Logout</a>
+              <a href="{% url 'logout' %}?next=/">Logout</a>
             </li>
             <li>
-                <a href="/">{{session.primary_username }}</a>
-              </li>
+              <a href="/">{{request.user.username }}</a>
+            </li>
             <!-- Display these links if user is not authenticated -->
             {%else%}
                <li>
-                <a href="/login">Login</a>
-              </li>
-              <li>
-                <a href="/signup">Sign Up</a>
+                <a href="{% url 'login' %}globus?next=/">Login</a>
               </li>
             {%endif%}
 

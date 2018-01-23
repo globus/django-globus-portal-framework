@@ -5,7 +5,7 @@ from globus_portal_framework.globus_search.utils import load_search_client
 
 
 def search(request, index='mdf', q=''):
-    client = load_search_client()
+    client = load_search_client(request.user)
     data = {}
 
     if request.method == 'GET':

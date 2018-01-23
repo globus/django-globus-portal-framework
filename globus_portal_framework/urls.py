@@ -13,11 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# from django.contrib import admin
+from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
     # We will likely use this at some point
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
+    # Social auth provides /login /logout. Provides no default urls
+    path('', include('social_django.urls')),
+    path('', include('django.contrib.auth.urls')),
+    # Globus search portal. Provides default url '/'.
     path('', include('globus_portal_framework.globus_search.urls'))
 ]
