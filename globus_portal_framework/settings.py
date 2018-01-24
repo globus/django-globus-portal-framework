@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'social_django',
-    'globus_portal_framework.globus_search'
+    'globus_portal_framework.search'
 ]
 
 MIDDLEWARE = [

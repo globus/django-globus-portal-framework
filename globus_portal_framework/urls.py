@@ -23,5 +23,5 @@ urlpatterns = [
     path('', include('social_django.urls')),
     path('', include('django.contrib.auth.urls')),
     # Globus search portal. Provides default url '/'.
-    path('', include('globus_portal_framework.globus_search.urls'))
+    path('', include('globus_portal_framework.search.urls'))
 ]

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from globus_portal_framework.globus_search.utils import load_search_client
+from globus_portal_framework.search.utils import load_search_client
 
 
 def index(request):

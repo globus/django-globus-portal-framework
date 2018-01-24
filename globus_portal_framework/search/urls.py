@@ -1,6 +1,6 @@
 from django.urls import path
-from globus_portal_framework.globus_search.views import index, result_detail
-from globus_portal_framework.globus_search import api
+from globus_portal_framework.search.views import index, result_detail
+from globus_portal_framework.search import api
 
 urlpatterns = [
     # We will likely use this at some point
