@@ -29,8 +29,7 @@ SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
 SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
 ALLOWED_HOSTS = []
 
-
-# Application definition
+SEARCH_INDEX = 'mdf'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
