@@ -330,7 +330,7 @@ function htmlForEntry(subject, content, full)
   }
   html = '<div class="result-item">';
   html = html + '<h3 class="search-title"><a href="'+
-    '/result-detail/mdf/' + encodeURIComponent(subject) +
+    '/detail/mdf/' + encodeURIComponent(subject) +
     '" title="' + title + '">'+
     truncateString(title, 120) +
     '</a></h3>\n';
