@@ -1,0 +1,70 @@
+{%extends "detail-base.html"%}
+{% load static %}
+
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search/detail-base.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search/detail-overview.css' %}" />
+{%endblock%}
+
+{% block sub_body %}
+
+<div class="row">
+    <div class="col-sm-4 column">
+        <h3 class="column-content">General Info</h3>
+        <ul>
+            <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+    Pubic</li>
+            <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+    CSV</li>
+            <li>
+                <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+                Tags
+                    <span class="alert alert-info" role="alert"><a href="#">one</a></span>
+                    <span class="alert alert-info" role="alert"><a href="#">two</a></span>
+                    <span class="alert alert-info" role="alert"><a href="#">three</a></span>
+            </li>
+            <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+    9 years (2007/05/29 – 2016/08/19)</li>
+            <li><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+    Updated Monthly</li>
+
+        </ul>
+    </div>
+    <div class="col-sm-4 column">
+        <h3 class="text-center column-title">Descriptive Metadata</h3>
+        <div class="column-content">
+            <h5>Data Provider</h5>
+            <p>Chicago Department of Public Health</p>
+
+            <h5>Data Steward</h5>
+            <p>Captain Reynolds</p>
+
+            <h5>Data Citation</h5>
+            <p>Wagner, Rick; Hallman, Eric J.; O’Shea, Brian W.;
+                Burns, Jack O.; Norman, Michael L.; Harkness, Robert;
+                So, Geoffrey (2013):</p>
+
+            <h5>License</h5>
+            <p><a href="#">View terms of use</a></p>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <h3 class="text-center column-title">Data Provider</h3>
+        <div class="column-content">
+            <h5>DOI</h5>
+            <p>ABC789-DS002</p>
+
+            <h5>DATA ID</h5>
+            <p>1234567890</p>
+
+            <h5>CREATED ON</h5>
+            <p>2007/06/13 09:35</p>
+
+            <h5>LAST UPDATED</h5>
+            <p>2016/09/01 18:09</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

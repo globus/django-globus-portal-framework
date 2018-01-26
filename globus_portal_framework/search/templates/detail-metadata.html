@@ -1,0 +1,28 @@
+{%extends "detail-base.html"%}
+
+{% block sub_body %}
+
+<h2>Columns Profile</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+        {%for col in table_head %}
+        <th scope="col">{{col}}</th>
+        {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table_body %}
+    <tr>
+      {% for item in row %}
+      <td>{{item}}</td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+

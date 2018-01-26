@@ -1,0 +1,47 @@
+
+li {
+    display: block;
+    font-size: 20px;
+    padding-left: 20px;
+}
+
+#panel-heading-logo {
+    float: left;
+    font-size: 50px;
+    padding-right:7px;
+}
+
+#panel-heading-logo .glyphicon {
+    float: left;
+    font-size: 50px;
+    padding-right:7px;
+}
+
+#panel-heading-titles h2 {
+    padding-top:0px;
+    margin-top:0px;
+}
+
+#panel-heading-titles h3 {
+    padding-bottom:0px;
+    margin-bottom:0px;
+}
+
+.panel-body .nav {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.nav-item {
+    font-size: 25px;
+    margin-left: 40px;
+}
+
+.nav-item .glyphicon {
+    padding-right: 5px;
+}
+
+.panel .container {
+    margin-top:30px;
+}
+
