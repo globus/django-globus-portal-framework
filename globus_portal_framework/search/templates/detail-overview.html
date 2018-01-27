@@ -13,56 +13,95 @@
     <div class="col-sm-4 column">
         <h3 class="column-content">General Info</h3>
         <ul>
+            {% if detail_data.rights_list %}
             <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
-    Pubic</li>
+            {{detail_data.rights_list.value}}
+            </li>
+            {% endif %}
+
+            {% if detail_data.resource_type %}
             <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-    CSV</li>
+            {{detail_data.resource_type.value}}
+            </li>
+            {% endif %}
+
+            {% if detail_data.subjects %}
             <li>
                 <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
                 Tags
-                    <span class="alert alert-info" role="alert"><a href="#">one</a></span>
-                    <span class="alert alert-info" role="alert"><a href="#">two</a></span>
-                    <span class="alert alert-info" role="alert"><a href="#">three</a></span>
+                {% for subject in detail_data.subjects.value %}
+                    <span class="alert alert-info" role="alert"><a href="#">{{subject}}</a></span>
+                {% endfor %}
             </li>
+            {% endif %}
+
+            {% if detail_data.language %}
+            <li><span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+            {{detail_data.language.value}}
+            </li>
+            {% endif %}
+
+            {% if detail_data.formats %}
+            <li>
+                <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
+                Formats
+                {% for format in detail_data.formats.value %}
+                    <span class="alert alert-info" role="alert"><a href="#">{{format}}</a></span>
+                {% endfor %}
+            </li>
+            {% endif %}
+
+            {% if detail_data.publication_year %}
             <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-    9 years (2007/05/29 – 2016/08/19)</li>
-            <li><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-    Updated Monthly</li>
+            {{ detail_data.publication_year.value }}
+            </li>
+            {% endif %}
 
         </ul>
     </div>
     <div class="col-sm-4 column">
         <h3 class="text-center column-title">Descriptive Metadata</h3>
         <div class="column-content">
-            <h5>Data Provider</h5>
-            <p>Chicago Department of Public Health</p>
 
-            <h5>Data Steward</h5>
-            <p>Captain Reynolds</p>
+            <h5>{{detail_data.creators.name}}</h5>
+            <p>{{detail_data.creators.value}}</p>
 
-            <h5>Data Citation</h5>
-            <p>Wagner, Rick; Hallman, Eric J.; O’Shea, Brian W.;
-                Burns, Jack O.; Norman, Michael L.; Harkness, Robert;
-                So, Geoffrey (2013):</p>
+            <h5>{{detail_data.publisher.name}}</h5>
+            <p>{{detail_data.publisher.value}}</p>
 
-            <h5>License</h5>
-            <p><a href="#">View terms of use</a></p>
+            <h5>{{detail_data.contributors.name}}</h5>
+            <p>{{detail_data.contributors.value}}</p>
+
         </div>
     </div>
     <div class="col-sm-4">
         <h3 class="text-center column-title">Data Provider</h3>
         <div class="column-content">
-            <h5>DOI</h5>
-            <p>ABC789-DS002</p>
 
-            <h5>DATA ID</h5>
-            <p>1234567890</p>
+            <h5>{{detail_data.identifier.name}}</h5>
+            <p>{{detail_data.identifier.value}}</p>
 
-            <h5>CREATED ON</h5>
-            <p>2007/06/13 09:35</p>
+            <h5>{{detail_data.dates.name}}</h5>
+            <p>{{detail_data.dates.value}}</p>
 
-            <h5>LAST UPDATED</h5>
-            <p>2016/09/01 18:09</p>
+            <h5>{{detail_data.alternative_identifiers.name}}</h5>
+            <p>{{detail_data.alternative_identifiers.value}}</p>
+
+            <h5>{{detail_data.related_identifiers.name}}</h5>
+            <p>{{detail_data.related_identifiers.value}}</p>
+
+            <h5>{{detail_data.sizes.name}}</h5>
+            <p>{{detail_data.sizes.value}}</p>
+
+            <h5>{{detail_data.version.name}}</h5>
+            <p>{{detail_data.version.value}}</p>
+
+            <h5>{{detail_data.geo_locations.name}}</h5>
+            <p>{{detail_data.geo_locations.value}}</p>
+
+            <h5>{{detail_data.funding_refrences.name}}</h5>
+            <p>{{detail_data.funding_refrences.value}}</p>
+
         </div>
     </div>
 </div>

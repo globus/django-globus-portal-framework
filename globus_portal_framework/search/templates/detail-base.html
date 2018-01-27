@@ -31,7 +31,7 @@
                 </div>
                 <div id="panel-heading-titles">
                     <h3>Materials Data Facility</h3>
-                    <h2>West Nile Virus (WNV) Mosquito Test Results</h2>
+                    <h2>{{detail_data.titles.value}}</h2>
                 </div>
             </div>
         </div>
@@ -40,10 +40,10 @@
 
             <ul class="nav nav-tabs">
               <li class="nav-item">
-                <a class="nav-link active" href="#"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>Overview</a>
+                <a class="nav-link active" href="{% url 'detail' index subject %}"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>Overview</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#"><span class="glyphicon glyphicon-th" aria-hidden="true"></span>Metadata</a>
+                <a class="nav-link" href="{% url 'detail-metadata' index subject %}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span>Metadata</a>
               </li>
             </ul>
 
@@ -52,45 +52,7 @@
                 {%endblock%}
             </div>
         </div>
-
     </div>
-
-
-    <!--<div class="container" id="content">-->
-        <!--<div class="row">-->
-        <!--{% for category in search_data %}-->
-        <!--{% if forloop.first %}-->
-            <!--<div class="col-sm-4" style="padding-right:20px; border-right: 1px solid #ccc;">-->
-                <!--<h3 class="text-center">{{ category.name }}</h3>-->
-                <!--<ul>-->
-                    <!--{% for field, value in category.search_data.items %}-->
-                    <!--<li>{{value}}</li>-->
-                    <!--{% endfor %}-->
-                <!--</ul>-->
-            <!--</div>-->
-        <!--{% else %}-->
-            <!--<div class="col-sm-4" style="padding-right:20px; border-right: 1px solid #ccc;">-->
-                <!--{% include "detail-field.html" %}-->
-            <!--</div>-->
-        <!--{% endif %}-->
-        <!--{% endfor %}-->
-        <!--</div>-->
-    <!--</div>-->
-
-
-
-
-    <!--<h3>Required</h3>-->
-    <!--<ul>-->
-        <!--{% for key, value in required.items %}-->
-
-        <!--<li><strong>{{ key }}</strong>: {{ value }}</li>-->
-        <!--{% empty %}-->
-        <!--<h3>No data for search result</h3>-->
-        <!--{% endfor %}-->
-    <!--</ul>-->
-
-
 
 </div>
 {% endblock %}
