@@ -1,0 +1,13 @@
+{% for facet in facets %}
+<fieldset class="facet-fieldset">
+    <legend>{{facet.name}}</legend>
+    <div class="fieldset-container">
+        {% for field in facet.buckets %}
+        <div class="facet-field">
+            <input type="checkbox" name="Resource Type" value="record" onchange="doSearch(false)" class="facet-checkbox">
+            {{field.value}}<span style="float: right">({{field.count}})</span>
+        </div>
+        {% endfor %}
+    </div>
+</fieldset>
+{% endfor %}

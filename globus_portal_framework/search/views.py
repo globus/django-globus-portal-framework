@@ -4,8 +4,13 @@ from globus_portal_framework.search import utils
 from django.conf import settings
 
 
-def index(request):
-    return render(request, 'search.html')
+def index(request, index=settings.SEARCH_INDEX):
+    context = {}
+    if request.method == 'POST' and request.body:
+        results = utils.search(index, request.POST.get('q'),
+                               request.POST.get('filters'), request.user)
+        context.update(results)
+    return render(request, 'search.html', context)
 
 
 def mock_overview(request, index='foo', subject='bar'):

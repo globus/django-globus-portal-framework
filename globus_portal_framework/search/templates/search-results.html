@@ -1,0 +1,25 @@
+<h2>Search Results</h2>
+<div id="search-result" class="search-result">
+  {% for result in search_results %}
+  <div class="result-item">
+
+    <h3 class="search-title">
+      <a href="/" title="{{result.titles}}">{{result.titles}}</a>
+    </h3>
+
+    <div class="result-fields">
+      {{result.subjects}}<br>Get Data:
+      {% for format in result.formats %}
+      <a href="#" class="btn btn-primary btn-xs" style="margin-left: 5px;">
+        {{format}}
+      </a>
+      {% endfor %}
+      <br>
+    </div>
+
+  </div>
+  {% endfor %}
+  </div>
+
+
+
