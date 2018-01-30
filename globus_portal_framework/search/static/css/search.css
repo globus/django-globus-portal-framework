@@ -226,14 +226,3 @@ fieldset.facet-fieldset input {
     padding: 0;
   }
 }
-
-a.btn-xs {
-    font-family: 'Glyphicons Halflings';
-    padding: 1px 5px;
-}
-
-
-button#search-btn, button#index-select-dropdown {
-    font-family: 'Glyphicons Halflings';
-    padding: 1px 5px;
-}
