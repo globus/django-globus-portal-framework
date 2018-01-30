@@ -6,10 +6,13 @@ from django.conf import settings
 
 def index(request, index=settings.SEARCH_INDEX):
     context = {}
-    if request.method == 'POST' and request.body:
-        results = utils.search(index, request.POST.get('q'),
-                               request.POST.get('filters'), request.user)
+    query = request.GET.get('q') or request.session.get('query')
+    if query:
+        filters = request.GET.get('filters') or request.session.get('filters')
+        results = utils.search(index, query, filters, request.user)
         context.update(results)
+        request.session.update({'query': query, 'filters': filters})
+        print(request.session['query'])
     return render(request, 'search.html', context)
 
 
