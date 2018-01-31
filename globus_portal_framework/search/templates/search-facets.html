@@ -4,7 +4,13 @@
     <div class="fieldset-container">
         {% for field in facet.buckets %}
         <div class="facet-field">
-            <input type="checkbox" name="Resource Type" value="record" class="facet-checkbox">
+            <input type="checkbox" name="filter.{{field.field_name}}"
+                    value="{{field.value}}" class="facet-checkbox"
+                    onchange="facetSearch();"
+                    {% if field.checked %}
+                    checked
+                    {% endif %}
+            >
             {{field.value}}<span style="float: right">({{field.count}})</span>
         </div>
         {% endfor %}

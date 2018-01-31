@@ -10,14 +10,27 @@ def load_json_file(filename):
         return json.loads(raw_data)
 
 
-def search(index, query, facet_filter, user=None):
+def search(index, query, filters, user=None):
     """Perform a search and return the relevant data for display to the user.
-    Returns a dict with search info stripped, containing only two relavent
+    Returns a dict with search info stripped, containing only two relevant
     fields:
 
     {
         'search_results': [{'title': 'My title'...} ...],
-        'facets': [{'name': 'myfacet', 'buckets': { ... }, ... ]
+        'facets': [{
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'buckets': [{'@datatype': 'GBucket',
+               '@version': '2017-09-01',
+               'count': 1310,
+               'field_name': 'mdf.resource_type',
+               'value': 'record'},
+              {'@datatype': 'GBucket',
+               '@version': '2017-09-01',
+               'count': 4,
+               'field_name': 'mdf.resource_type',
+               'value': 'dataset'}],
+            }, ...]
     }
 
     See Search docs here:
@@ -27,13 +40,31 @@ def search(index, query, facet_filter, user=None):
         return {'search_results': [], 'facets': []}
     client = load_search_client(user)
     facet_map = load_json_file(settings.SEARCH_SCHEMA)
+    gfilters = [{
+        'type': 'match_all',
+        'field_name': name,
+        'values': values
+    } for name, values in filters.items()]
+
     result = client.post_search(index, {'q': query,
-                                        'facets': facet_map['facets']})
+                                        'facets': facet_map['facets'],
+                                        'filters': gfilters
+                                        })
     search_data = [mdf_to_datacite(r['content'][0])
                    for r in result.data['gmeta']]
+
+    facets = result.data.get('facet_results', [])
+    # Create a table we can use to lookup facets by name
+    fac_lookup = {f['name']: f['field_name'] for f in facet_map['facets']}
+    # Set the field_name identifier on each facet
+    for facet in facets:
+        for bucket in facet['buckets']:
+            bucket['field_name'] = fac_lookup[facet['name']]
+            filtered_facets = filters.get(bucket['field_name'])
+            if filtered_facets and bucket['value'] in filtered_facets:
+                bucket['checked'] = True
     return {'search_results': search_data,
-            'facets': result.data.get('facet_results', [])
-            }
+            'facets': facets}
 
 
 def load_search_client(user):
@@ -80,7 +111,7 @@ def mdf_to_datacite(data):
             "creators": "Materials Data Facility",
             "dates": data['mdf']['ingest_date'],
             "descriptions": "",
-            "formats": data['mdf']['tags'],
+            "formats": data['mdf'].get('tags'),
             "funding_references": "",
             "geo_locations": "",
             "identifier": data['mdf']['mdf_id'],

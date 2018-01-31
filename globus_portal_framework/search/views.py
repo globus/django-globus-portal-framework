@@ -8,11 +8,11 @@ def index(request, index=settings.SEARCH_INDEX):
     context = {}
     query = request.GET.get('q') or request.session.get('query')
     if query:
-        filters = request.GET.get('filters') or request.session.get('filters')
+        filters = {k.replace('filter.', ''): request.GET.getlist(k)
+                   for k in request.GET.keys() if k.startswith('filter.')}
         results = utils.search(index, query, filters, request.user)
         context.update(results)
         request.session.update({'query': query, 'filters': filters})
-        print(request.session['query'])
     return render(request, 'search.html', context)
 
 

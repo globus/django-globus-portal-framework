@@ -8,6 +8,18 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
 
+<script>
+  /*
+  This helper function ensures queries are inserted as the first query-param
+  so that the search url is copy-pastable by the user
+  */
+  function facetSearch() {
+    //copy as a hidden field so we don't change the look of the page
+    var input = $('#search-input').clone().attr('type','hidden');
+    $('#facet-form').prepend(input).submit();
+  }
+</script>
+
 {%endblock%}
 
 {%block body%}
@@ -42,7 +54,9 @@
         </div>
         <div class="panel-body" id="filters">
           <div id="facet-container">
-            {% include "search-facets.html" %}
+            <form id="facet-form" action="/">
+              {% include "search-facets.html" %}
+            </form>
           </div>
         </div>
       </div>
