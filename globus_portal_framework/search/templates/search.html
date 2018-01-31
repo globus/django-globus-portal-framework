@@ -57,7 +57,7 @@
         <div class="panel-body" id="filters">
           <div id="facet-container">
             <form id="facet-form" action="/">
-              {% include "search-facets.html" %}
+              {% include "components/search-facets.html" %}
             </form>
           </div>
         </div>
@@ -71,7 +71,7 @@
         <div class="well">NOTE: Your search results are limited. Logging in can improve search results by displaying private results if you have permissions associated with your account.
         </div>
         {% endif %}
-        {% include "search-results.html" %}
+        {% include "components/search-results.html" %}
 
         <nav aria-label="Search results pages" class="text-center">
           <ul id="pagination" class="pagination">
