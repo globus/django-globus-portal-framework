@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 SEARCH_INDEX = 'mdf'
 SERACH_FORMAT_FILE = 'globus_portal_framework/search/data/datacite.json'
 SEARCH_SCHEMA = 'globus_portal_framework/search/data/mdf_schema.json'
+SEARCH_RESULTS_PER_PAGE = 10
+SEARCH_MAX_PAGES = 10
 
 INSTALLED_APPS = [
     'django.contrib.admin',

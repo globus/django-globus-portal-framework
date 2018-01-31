@@ -13,10 +13,12 @@
   This helper function ensures queries are inserted as the first query-param
   so that the search url is copy-pastable by the user
   */
-  function facetSearch() {
+  function customSearch(page={{ search.pagination.current_page }}) {
     //copy as a hidden field so we don't change the look of the page
+    var page = $('<input>').attr({type: 'hidden', id: 'foo',
+                                 name: 'page', value: page});
     var input = $('#search-input').clone().attr('type','hidden');
-    $('#facet-form').prepend(input).submit();
+    $('#facet-form').prepend(page).prepend(input).submit();
   }
 </script>
 
@@ -30,7 +32,7 @@
   <form id="search-form" name="search_form" action="/">
     <input type="text" id="search-input" autocomplete="off"
            data-provide="typeahead" name="q"
-           value="{{request.session.query}}" placeholder="Start your search here">
+           value="{{request.session.search.query}}" placeholder="Start your search here">
     <button id="search-btn" type="submit"
             class="btn btn-default glyphicon glyphicon-search">
     </button>
@@ -70,10 +72,20 @@
         </div>
         {% endif %}
         {% include "search-results.html" %}
+
         <nav aria-label="Search results pages" class="text-center">
-              <ul id="pagination" class="pagination"></ul>
+          <ul id="pagination" class="pagination">
+            {% for page in search.pagination.pages %}
+            {% if page.number == search.pagination.current_page %}
+            <li class="active">
+            {% else %}
+            <li>
+            {% endif %}
+              <a href="#" onclick="customSearch({{page.number}});">{{page.number}}</a>
+            </li>
+            {% endfor %}
+          </ul>
         </nav>
-        </div>
 
       </div>
   </div>

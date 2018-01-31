@@ -1,4 +1,4 @@
-{% for facet in facets %}
+{% for facet in search.facets %}
 <fieldset class="facet-fieldset">
     <legend>{{facet.name}}</legend>
     <div class="fieldset-container">
@@ -6,7 +6,8 @@
         <div class="facet-field">
             <input type="checkbox" name="filter.{{field.field_name}}"
                     value="{{field.value}}" class="facet-checkbox"
-                    onchange="facetSearch();"
+                    {# Reset page to 1 if user facets on a paginated search #}
+                    onchange="customSearch(1);"
                     {% if field.checked %}
                     checked
                     {% endif %}

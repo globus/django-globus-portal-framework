@@ -1,3 +1,5 @@
+from __future__ import division
+
 import json
 import globus_sdk
 
@@ -10,7 +12,21 @@ def load_json_file(filename):
         return json.loads(raw_data)
 
 
-def search(index, query, filters, user=None):
+def _get_pagination(search_result, per_page=settings.SEARCH_RESULTS_PER_PAGE):
+
+    if search_result.data['total'] > per_page * settings.SEARCH_MAX_PAGES:
+        page_count = settings.SEARCH_MAX_PAGES
+    else:
+        page_count = search_result.data['total'] // per_page or 1
+    pagination = [{'number': p + 1} for p in range(page_count)]
+
+    return {
+        'current_page': search_result.data['offset'] // per_page,
+        'pages': pagination
+    }
+
+
+def search(index, query, filters, user=None, page=0):
     """Perform a search and return the relevant data for display to the user.
     Returns a dict with search info stripped, containing only two relevant
     fields:
@@ -45,11 +61,15 @@ def search(index, query, filters, user=None):
         'field_name': name,
         'values': values
     } for name, values in filters.items()]
-
-    result = client.post_search(index, {'q': query,
-                                        'facets': facet_map['facets'],
-                                        'filters': gfilters
-                                        })
+    result = client.post_search(
+        index,
+        {
+            'q': query,
+            'facets': facet_map['facets'],
+            'filters': gfilters,
+            'offset': int(page) * settings.SEARCH_RESULTS_PER_PAGE,
+            'limit': settings.SEARCH_RESULTS_PER_PAGE
+     })
     search_data = [mdf_to_datacite(r['content'][0])
                    for r in result.data['gmeta']]
 
@@ -64,7 +84,9 @@ def search(index, query, filters, user=None):
             if filtered_facets and bucket['value'] in filtered_facets:
                 bucket['checked'] = True
     return {'search_results': search_data,
-            'facets': facets}
+            'facets': facets,
+            'result': result,
+            'pagination': _get_pagination(result)}
 
 
 def load_search_client(user):
