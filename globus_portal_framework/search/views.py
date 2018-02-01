@@ -11,7 +11,7 @@ def index(request, index=settings.SEARCH_INDEX):
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}
         context['search'] = utils.search(index, query, filters, request.user,
-                                         request.GET.get('page', 0))
+                                         request.GET.get('page', 1))
         request.session['search'] = {
             'query': query,
             'filters': filters,

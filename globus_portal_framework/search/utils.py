@@ -21,12 +21,12 @@ def _get_pagination(search_result, per_page=settings.SEARCH_RESULTS_PER_PAGE):
     pagination = [{'number': p + 1} for p in range(page_count)]
 
     return {
-        'current_page': search_result.data['offset'] // per_page,
+        'current_page': search_result.data['offset'] // per_page + 1,
         'pages': pagination
     }
 
 
-def search(index, query, filters, user=None, page=0):
+def search(index, query, filters, user=None, page=1):
     """Perform a search and return the relevant data for display to the user.
     Returns a dict with search info stripped, containing only two relevant
     fields:
@@ -67,7 +67,7 @@ def search(index, query, filters, user=None, page=0):
             'q': query,
             'facets': facet_map['facets'],
             'filters': gfilters,
-            'offset': int(page) * settings.SEARCH_RESULTS_PER_PAGE,
+            'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
             'limit': settings.SEARCH_RESULTS_PER_PAGE
         })
     search_data = [mdf_to_datacite(r['content'][0], index, r['subject'])
