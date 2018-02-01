@@ -69,8 +69,8 @@ def search(index, query, filters, user=None, page=0):
             'filters': gfilters,
             'offset': int(page) * settings.SEARCH_RESULTS_PER_PAGE,
             'limit': settings.SEARCH_RESULTS_PER_PAGE
-     })
-    search_data = [mdf_to_datacite(r['content'][0])
+        })
+    search_data = [mdf_to_datacite(r['content'][0], index, r['subject'])
                    for r in result.data['gmeta']]
 
     facets = result.data.get('facet_results', [])
@@ -123,11 +123,12 @@ def map_to_datacite(search_data):
     return detail_data
 
 
-def mdf_to_datacite(data):
+def mdf_to_datacite(data, index, subject):
     """TEST DATA!!! This is used as a stand-in for a Globus Search index
     which has not been setup yet. Once we switch over to the new index,
     this function should be deleted."""
-    return {
+    # General datacite 4.1
+    datacite = {
             "alternate_identifiers": data['mdf'].get('scroll_id', ''),
             "contributors": "",
             "creators": "Materials Data Facility",
@@ -148,3 +149,10 @@ def mdf_to_datacite(data):
             "titles": data['mdf']['title'],
             "version": data['mdf']['metadata_version']
     }
+    # Custom portal specific data
+    portal = {
+        'index': index,
+        'subject': subject
+    }
+    datacite.update(portal)
+    return datacite
