@@ -30,8 +30,11 @@ SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
 ALLOWED_HOSTS = []
 
 SEARCH_INDEX = 'mdf'
-SERACH_FORMAT_FILE = 'globus_portal_framework/search/data/datacite.json'
-SEARCH_SCHEMA = 'globus_portal_framework/search/data/mdf_schema.json'
+SERACH_FORMAT_FILE = os.path.join(BASE_DIR,
+                                  'globus_portal_framework'
+                                  '/search/data/datacite.json')
+SEARCH_SCHEMA = os.path.join(BASE_DIR, 'globus_portal_framework'
+                             '/search/data/mdf_schema.json')
 SEARCH_RESULTS_PER_PAGE = 10
 SEARCH_MAX_PAGES = 10
 

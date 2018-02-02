@@ -1,5 +1,7 @@
 django==2.0.1
-#globus_sdk>=1.4.1,<=2.0.0
-# Currently need the latest development for search detail results
--e git+https://github.com/globus/globus-sdk-python#egg=globus_sdk_python
-social-auth-app-django
+# Globus SDK must be >1.4.1 otherwise search will throw errors
+globus_sdk
+# Currently need the latest development for search detail results, which
+# is specified in the setup.py dependency_links
+#-e git+https://github.com/globus/globus-sdk-python#egg=globus_sdk_python
+social-auth-app-django==2.1.0

@@ -25,8 +25,9 @@ setup(name='django-globus-portal-framework',
       author_email='support@globus.org',
       url='https://github.com/globusonline/django-globus-portal-framework',
       packages=find_packages(),
-      install_requires=[
-          'six>=1.10.0,<2.0.0',
+      install_requires=install_requires,
+      dependency_links=[
+          'git+https://github.com/globus/globus-sdk-python.git#egg=globus_sdk_python'
       ],
       include_package_data=True,
       keywords=['globus', 'file transfer', 'django'],
