@@ -12,11 +12,12 @@
       Contributors: {{result.contributors.value}}<br>
       Date: {{result.dates.value}}<br>
       Version: {{result.version.value}}<br>
-      {{result.subjects.value}}<br>Get Data:
+      {{result.subjects.value}}<br>
+      Data Formats:
       {% for format in result.formats.value %}
-      <a href="#" class="btn btn-primary btn-xs" style="margin-left: 5px;">
+      <button class="btn btn-primary btn-xs" style="margin-left: 5px;">
         {{format}}
-      </a>
+      </button>
       {% endfor %}
       <br>
     </div>
