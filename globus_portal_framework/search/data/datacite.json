@@ -1,8 +1,7 @@
 {
   "identifier":
   {
-    "name": "Identifier",
-    "aliases": ["mdf_id"]
+    "name": "Identifier"
   },
   "alternate_identifiers":
   {
@@ -18,8 +17,7 @@
   },
   "dates":
   {
-    "name": "Dates",
-    "aliases": ["ingest_date"]
+    "name": "Dates"
   },
   "descriptions":
   {
@@ -51,8 +49,7 @@
   },
   "related_identifiers":
   {
-    "name": "Related identifiers",
-    "aliases": ["parent_id"]
+    "name": "Related identifiers"
   },
   "resource_type":
   {
@@ -72,13 +69,11 @@
   },
   "titles":
   {
-    "name": "Titles",
-    "aliases": ["title"]
+    "name": "Titles"
   },
   "version":
   {
-    "name": "Version",
-    "aliases": ["metadata_version"]
+    "name": "Version"
   }
 
  }
