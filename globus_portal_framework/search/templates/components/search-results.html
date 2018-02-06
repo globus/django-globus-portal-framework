@@ -4,12 +4,16 @@
   <div class="result-item">
 
     <h3 class="search-title">
-      <a href="{% url 'detail' result.index result.subject %}" title="{{result.titles}}">{{result.titles}}</a>
+      <a href="{% url 'detail' result.index result.subject %}" title="{{result.titles.value}}">{{result.titles.value}}</a>
     </h3>
 
     <div class="result-fields">
-      {{result.subjects}}<br>Get Data:
-      {% for format in result.formats %}
+      Creators: {{result.creators.value}}<br>
+      Contributors: {{result.contributors.value}}<br>
+      Date: {{result.dates.value}}<br>
+      Version: {{result.version.value}}<br>
+      {{result.subjects.value}}<br>Get Data:
+      {% for format in result.formats.value %}
       <a href="#" class="btn btn-primary btn-xs" style="margin-left: 5px;">
         {{format}}
       </a>

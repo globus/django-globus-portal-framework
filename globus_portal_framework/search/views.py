@@ -46,5 +46,8 @@ def detail(request, index, subject):
     client = utils.load_search_client(request.user)
     result = client.get_subject(index, unquote(subject))
     detail_data = utils.default_search_mapper(result.data['content'])
-    context = {'detail_data': detail_data, 'index': index, 'subject': subject}
+    formatted_results = {k: {'name': k, 'value': v}
+                         for k, v in detail_data.items()}
+    context = {'detail_data': formatted_results,
+               'index': index, 'subject': subject}
     return render(request, 'detail-overview.html', context)

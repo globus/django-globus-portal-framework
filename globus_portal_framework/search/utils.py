@@ -1,8 +1,11 @@
 from __future__ import division
 
 import json
+from datetime import datetime
+
 from six.moves.urllib.parse import quote_plus
 import globus_sdk
+
 
 from django.conf import settings
 
@@ -31,13 +34,25 @@ def process_search_data(search_result, index):
     :param index:
     :return:
     """
+    datacite = load_json_file(settings.SERACH_FORMAT_FILE)
     results = []
     for entry in search_result.data['gmeta']:
         result = {
             'index': index,
             'subject': quote_plus(entry['subject'])
         }
-        result.update(default_search_mapper(entry['content'])),
+        fields = default_search_mapper(entry['content'])
+        cleaned_fields = {}
+        for field_name, val in fields.items():
+            if datacite.get(field_name):
+                name = datacite[field_name]['name']
+            else:
+                name = field_name
+            cleaned_fields[field_name] = {
+                'name': name,
+                'value': val
+            }
+        result.update(cleaned_fields)
         results.append(result)
     return results
 
@@ -150,25 +165,33 @@ def mdf_to_datacite(data):
     which has not been setup yet. Once we switch over to the new index,
     this function should be deleted."""
     # General datacite 4.1
+    mdf = data[0]['mdf']
     datacite = {
-            "alternate_identifiers": data[0]['mdf'].get('scroll_id', ''),
-            "contributors": "",
-            "creators": "Materials Data Facility",
-            "dates": data[0]['mdf']['ingest_date'],
-            "descriptions": "",
-            "formats": data[0]['mdf'].get('tags'),
-            "funding_references": "",
-            "geo_locations": "",
-            "identifier": data[0]['mdf']['mdf_id'],
-            "language": "",
-            "publication_year": "",
-            "publisher": "",
-            "related_identifiers": "",
+            "alternate_identifiers": mdf.get('scroll_id', ''),
+            "dates": datetime.strptime(mdf['ingest_date'],
+                                       '%Y-%m-%dT%H:%M:%S.%fZ'),
+            # "descriptions": "",
+            "formats": mdf.get('tags'),
+            # "funding_references": "",
+            # "geo_locations": "",
+            "identifier": mdf['mdf_id'],
+            # "language": "",
+            # "publication_year": "",
+            # "publisher": "",
+            # "related_identifiers": "",
             "resource_type": "application/json",
-            "rights_list": "",
-            "sizes": "",
-            "subjects": list(data[0].get('dss_tox', {}).values()),
-            "titles": data[0]['mdf']['title'],
-            "version": data[0]['mdf']['metadata_version']
+            # "rights_list": "",
+            # "sizes": "",
+            # "subjects": "",
+            "titles": mdf['title'],
+            "version": mdf['metadata_version']
     }
+    if data[0].get('dss_tox'):
+        datacite['subjects'] = list(data[0].get('dss_tox', {}).values())
+    if mdf.get('data_contributor'):
+        contribs = [a.get('full_name') for a in mdf.get('data_contributor')]
+        datacite['contributors'] = ', '.join(contribs)
+    if mdf.get('author'):
+        auths = [a.get('full_name') for a in mdf.get('author')]
+        datacite['creators'] = ', '.join(auths)
     return datacite
