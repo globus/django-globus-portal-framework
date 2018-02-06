@@ -5,3 +5,4 @@ globus_sdk
 # is specified in the setup.py dependency_links
 #-e git+https://github.com/globus/globus-sdk-python#egg=globus_sdk_python
 social-auth-app-django==2.1.0
+six

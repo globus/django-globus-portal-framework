@@ -1,6 +1,7 @@
 from __future__ import division
 
 import json
+from six.moves.urllib.parse import quote_plus
 import globus_sdk
 
 from django.conf import settings
@@ -152,7 +153,7 @@ def mdf_to_datacite(data, index, subject):
     # Custom portal specific data
     portal = {
         'index': index,
-        'subject': subject
+        'subject': quote_plus(subject)
     }
     datacite.update(portal)
     return datacite

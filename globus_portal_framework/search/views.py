@@ -1,4 +1,5 @@
 import json
+from six.moves.urllib.parse import unquote
 from django.shortcuts import render
 from globus_portal_framework.search import utils
 from django.conf import settings
@@ -43,7 +44,7 @@ def mock_metadata(request, index='foo', subject='bar'):
 
 def detail(request, index, subject):
     client = utils.load_search_client(request.user)
-    result = client.get_subject(index, subject)
+    result = client.get_subject(index, unquote(subject))
     result_data = result.data['content'][0][settings.SEARCH_INDEX]
     detail_data = utils.map_to_datacite(result_data)
     context = {'detail_data': detail_data, 'index': index, 'subject': subject}
