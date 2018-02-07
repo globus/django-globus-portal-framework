@@ -18,7 +18,6 @@ def index(request):
             'query': query,
             'filters': filters,
         }
-
     return render(request, 'search.html', context)
 
 
@@ -44,10 +43,19 @@ def mock_metadata(request, subject='bar'):
 
 
 def detail(request, subject):
+    """
+    Load a page for showing details for a single search result.
+    Context for the fields must be provided, an example is as follows:
+    {
+        'fields':
+            {'datacite_field':
+                {'name': 'datacite_field', 'value': 'myid'},
+            },
+            <more fields>
+        'subject': 'unique_identifier'
+    }
+    """
     client = utils.load_search_client(request.user)
     result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
-    detail_data = utils.default_search_mapper(result.data['content'])
-    formatted_results = {k: {'name': k, 'value': v}
-                         for k, v in detail_data.items()}
-    context = {'detail_data': formatted_results, 'subject': subject}
+    context = utils.process_search_data([result.data])[0]
     return render(request, 'detail-overview.html', context)

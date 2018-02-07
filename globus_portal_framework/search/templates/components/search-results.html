@@ -4,17 +4,17 @@
   <div class="result-item">
 
     <h3 class="search-title">
-      <a href="{% url 'detail' result.subject %}" title="{{result.titles.value}}">{{result.titles.value}}</a>
+      <a href="{% url 'detail' result.subject %}" title="{{result.fields.titles.value}}">{{result.fields.titles.value}}</a>
     </h3>
 
     <div class="result-fields">
-      Creators: {{result.creators.value}}<br>
-      Contributors: {{result.contributors.value}}<br>
-      Date: {{result.dates.value}}<br>
-      Version: {{result.version.value}}<br>
-      {{result.subjects.value}}<br>
+      Creators: {{result.fields.creators.value}}<br>
+      Contributors: {{result.fields.fields.contributors.value}}<br>
+      Date: {{result.fields.dates.value}}<br>
+      Version: {{result.fields.version.value}}<br>
+      {{result.fields.subjects.value}}<br>
       Data Formats:
-      {% for format in result.formats.value %}
+      {% for format in result.fields.formats.value %}
       <button class="btn btn-primary btn-xs" style="margin-left: 5px;">
         {{format}}
       </button>
@@ -24,7 +24,7 @@
 
   </div>
   {% endfor %}
-  </div>
+</div>
 
 
 

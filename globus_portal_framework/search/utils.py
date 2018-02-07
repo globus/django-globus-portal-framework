@@ -1,13 +1,18 @@
 from __future__ import division
 
 import json
+import logging
 from datetime import datetime
+from importlib import import_module
+
 
 from six.moves.urllib.parse import quote_plus
 import globus_sdk
 
 
 from django.conf import settings
+
+log = logging.getLogger(__name__)
 
 
 def load_json_file(filename):
@@ -16,45 +21,51 @@ def load_json_file(filename):
         return json.loads(raw_data)
 
 
-def default_search_mapper(entry):
-    """This will become a simple function, to map data in a search result
-    to fields in datacite, assuming everything maps cleanly. Other search
-    indices will be expected to override this behavior for their custom
-    schemas.
+def default_search_mapper(entry, schema):
+    """This mapper takes the given schema and maps all fields within the
+    search entry against it. Any non-matching results simply won't
+    show up in the result.
+    Example:
+        entry = {
+            'foo': 'bar'
+            'car': 'zar'
+        }
+        schema = {
+            'foo': {'name': 'Foo'}
+        }
+    Will return:
+        {
+        'foo': {'name': 'Foo'}
+        }
+
+
     """
-    return mdf_to_datacite(entry)
+    search_hits = {k: {'name': k, 'value': v}
+                   for k, v in entry[0].items() if schema.get(k)}
+    return search_hits
 
 
-def process_search_data(search_result, index):
+def process_search_data(results):
     """
     Process results in a general search result, running the mapping function
     for each result and preparing other general data for being shown in
     templates (such as quoting the subject and including the index).
-    :param search_result:
-    :param index:
-    :return:
+    :param results: List of GMeta results, which would be the r.data['gmeta']
+    in from a simple query to Globus Search. See here:
+    https://docs.globus.org/api/search/schemas/GMetaResult/
+    :return: A list of search results:
     """
-    datacite = load_json_file(settings.SERACH_FORMAT_FILE)
-    results = []
-    for entry in search_result.data['gmeta']:
-        result = {
-            'index': index,
-            'subject': quote_plus(entry['subject'])
-        }
-        fields = default_search_mapper(entry['content'])
-        cleaned_fields = {}
-        for field_name, val in fields.items():
-            if datacite.get(field_name):
-                name = datacite[field_name]['name']
-            else:
-                name = field_name
-            cleaned_fields[field_name] = {
-                'name': name,
-                'value': val
-            }
-        result.update(cleaned_fields)
-        results.append(result)
-    return results
+    mod_name, func_name = settings.SEARCH_MAPPER
+    mod = import_module(mod_name)
+    mapper = getattr(mod, func_name, default_search_mapper)
+    schema = load_json_file(settings.SEARCH_SCHEMA)
+    structured_results = []
+    for entry in results:
+        structured_results.append({
+            'subject': quote_plus(entry['subject']),
+            'fields': mapper(entry['content'], schema)
+        })
+    return structured_results
 
 
 def _get_pagination(search_result, per_page=settings.SEARCH_RESULTS_PER_PAGE):
@@ -145,9 +156,8 @@ def search(index, query, filters, user=None, page=1):
             'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
             'limit': settings.SEARCH_RESULTS_PER_PAGE
         })
-    return {'search_results': process_search_data(result, index),
+    return {'search_results': process_search_data(result.data['gmeta']),
             'facets': _get_facets(result, facet_map, filters),
-            'result': result,
             'pagination': _get_pagination(result)}
 
 
@@ -160,7 +170,7 @@ def load_search_client(user):
     return globus_sdk.SearchClient()
 
 
-def mdf_to_datacite(data):
+def mdf_to_datacite(data, schema):
     """TEST DATA!!! This is used as a stand-in for a Globus Search index
     which has not been setup yet. Once we switch over to the new index,
     this function should be deleted."""
@@ -194,4 +204,6 @@ def mdf_to_datacite(data):
     if mdf.get('author'):
         auths = [a.get('full_name') for a in mdf.get('author')]
         datacite['creators'] = ', '.join(auths)
-    return datacite
+    fields = {k: {'name': k, 'value': v}
+              for k, v in datacite.items()}
+    return fields
