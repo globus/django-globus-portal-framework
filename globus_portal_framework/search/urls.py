@@ -9,8 +9,8 @@ urlpatterns = [
     path('api/v1/search/<index>', api.search),
     path('test/overview', mock_overview),
     path('test/metadata', mock_metadata),
-    path('detail-metadata/<index>/<path:subject>', mock_metadata,
+    path('detail-metadata/<path:subject>', mock_metadata,
          name='detail-metadata'),
-    path('detail/<index>/<path:subject>', detail, name='detail'),
+    path('detail/<path:subject>', detail, name='detail'),
     path('', index)
 ]
