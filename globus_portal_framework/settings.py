@@ -29,6 +29,7 @@ SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
 SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
 ALLOWED_HOSTS = []
 
+PROJECT_TITLE = 'Globus Portal Framework'
 SEARCH_INDEX = 'mdf'
 SEARCH_MAPPER = ('globus_portal_framework.search.utils', 'mdf_to_datacite')
 SEARCH_SCHEMA = os.path.join(BASE_DIR, 'globus_portal_framework'
@@ -92,6 +93,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
+                'globus_portal_framework.search.context_processors.globals',
             ],
         },
     },
