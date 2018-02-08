@@ -30,8 +30,8 @@
                     <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
                 </div>
                 <div id="panel-heading-titles">
-                    <h3>Materials Data Facility</h3>
-                    <h2>{{detail_data.titles.value}}</h2>
+                    {% block subheading %}
+                    {% endblock %}
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
             </ul>
 
             <div class="container">
-                {%block sub_body %}
+                {%block subbody %}
                 {%endblock%}
             </div>
         </div>
