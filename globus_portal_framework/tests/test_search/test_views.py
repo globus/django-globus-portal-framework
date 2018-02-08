@@ -1,10 +1,11 @@
 from django.test import TestCase, Client
 from unittest import mock
 from django.test.utils import override_settings
+from globus_portal_framework.tests import test_search
 
 
 class MockSearchGetSubject:
-    data = {'content': [{'myindex': 'search_data'}]}
+    data = test_search.get_mock_data(test_search.MOCK_RESULT)
 
 
 class SearchViewsTest(TestCase):
@@ -16,9 +17,11 @@ class SearchViewsTest(TestCase):
         r = self.c.get('/')
         assert r.status_code == 200
 
-    @override_settings(SERACH_INDEX='myindex')
+    @override_settings(SEARCH_MAPPER=test_search.DEFAULT_MAPPER)
+    @override_settings(SEARCH_SCHEMA=test_search.SEARCH_SCHEMA)
+    @override_settings(SEARCH_INDEX='myindex')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     def test_detail(self, get_subject):
-        get_subject.returns = MockSearchGetSubject()
-        r = self.c.get('/detail/myindex/mysubject')
+        get_subject.return_value = MockSearchGetSubject()
+        r = self.c.get('/detail/mysubject')
         assert r.status_code == 200
