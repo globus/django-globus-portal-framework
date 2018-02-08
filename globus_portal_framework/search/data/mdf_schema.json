@@ -1,4 +1,7 @@
 {
+  "fields": [
+
+  ],
   "facets": [{
       "name": "Tags",
       "type": "terms",

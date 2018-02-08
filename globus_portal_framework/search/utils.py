@@ -63,7 +63,7 @@ def process_search_data(results):
     for entry in results:
         structured_results.append({
             'subject': quote_plus(entry['subject']),
-            'fields': mapper(entry['content'], schema)
+            'fields': mapper(entry['content'], schema['fields'])
         })
     return structured_results
 

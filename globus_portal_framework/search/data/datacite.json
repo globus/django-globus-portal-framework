@@ -1,79 +1,62 @@
 {
-  "identifier":
-  {
-    "name": "Identifier"
+  "fields": {
+    "identifier": {
+      "name": "Identifier"
+    },
+    "alternate_identifiers": {
+      "name": "Alternate identifiers"
+    },
+    "contributors": {
+      "name": "Contributors"
+    },
+    "creators": {
+      "name": "Creators"
+    },
+    "dates": {
+      "name": "Dates"
+    },
+    "descriptions": {
+      "name": "Descriptions"
+    },
+    "formats": {
+      "name": "Formats"
+    },
+    "funding_references": {
+      "name": "Funding references"
+    },
+    "geo_locations": {
+      "name": "Geo locations"
+    },
+    "language": {
+      "name": "Language"
+    },
+    "publication_year": {
+      "name": "Publication year"
+    },
+    "publisher": {
+      "name": "Publisher"
+    },
+    "related_identifiers": {
+      "name": "Related identifiers"
+    },
+    "resource_type": {
+      "name": "Resource type"
+    },
+    "rights_list": {
+      "name": "Rights list"
+    },
+    "sizes": {
+      "name": "Sizes"
+    },
+    "subjects": {
+      "name": "Subjects"
+    },
+    "titles": {
+      "name": "Titles"
+    },
+    "version": {
+      "name": "Version"
+    }
   },
-  "alternate_identifiers":
-  {
-    "name": "Alternate identifiers"
-  },
-  "contributors":
-  {
-    "name": "Contributors"
-  },
-  "creators":
-  {
-    "name": "Creators"
-  },
-  "dates":
-  {
-    "name": "Dates"
-  },
-  "descriptions":
-  {
-    "name": "Descriptions"
-  },
-  "formats":
-  {
-    "name": "Formats"
-  },
-  "funding_references":
-  {
-    "name": "Funding references"
-  },
-  "geo_locations":
-  {
-    "name": "Geo locations"
-  },
-  "language":
-  {
-    "name": "Language"
-  },
-  "publication_year":
-  {
-    "name": "Publication year"
-  },
-  "publisher":
-  {
-    "name": "Publisher"
-  },
-  "related_identifiers":
-  {
-    "name": "Related identifiers"
-  },
-  "resource_type":
-  {
-    "name": "Resource type"
-  },
-  "rights_list":
-  {
-    "name": "Rights list"
-  },
-  "sizes":
-  {
-    "name": "Sizes"
-  },
-  "subjects":
-  {
-    "name": "Subjects"
-  },
-  "titles":
-  {
-    "name": "Titles"
-  },
-  "version":
-  {
-    "name": "Version"
-  }
-
- }
+  "facets": []
+}
