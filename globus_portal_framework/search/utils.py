@@ -24,23 +24,27 @@ def load_json_file(filename):
 def default_search_mapper(entry, schema):
     """This mapper takes the given schema and maps all fields within the
     search entry against it. Any non-matching results simply won't
-    show up in the result.
-    Example:
+    show up in the result. This approach avoids a bunch of empty fields being
+    displayed when rendered in the templates.
+    :param entry:
         entry = {
             'foo': 'bar'
             'car': 'zar'
         }
+    :param schema:
         schema = {
-            'foo': {'name': 'Foo'}
+            'foo': {'field_title': 'Foo'}
         }
+    :returns template_results:
     Will return:
         {
-        'foo': {'name': 'Foo'}
+        'foo': {'field_title': 'Foo', 'value': 'bar'}
         }
-
-
     """
-    search_hits = {k: {'name': k, 'value': v}
+    search_hits = {k: {
+                       'field_title': schema[k].get('field_title', k),
+                       'value': v
+                       }
                    for k, v in entry[0].items() if schema.get(k)}
     return search_hits
 

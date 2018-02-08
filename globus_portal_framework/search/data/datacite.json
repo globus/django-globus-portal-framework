@@ -1,61 +1,61 @@
 {
   "fields": {
     "identifier": {
-      "name": "Identifier"
+      "field_title": "Identifier"
     },
     "alternate_identifiers": {
-      "name": "Alternate identifiers"
+      "field_title": "Alternate identifiers"
     },
     "contributors": {
-      "name": "Contributors"
+      "field_title": "Contributors"
     },
     "creators": {
-      "name": "Creators"
+      "field_title": "Creators"
     },
     "dates": {
-      "name": "Dates"
+      "field_title": "Dates"
     },
     "descriptions": {
-      "name": "Descriptions"
+      "field_title": "Descriptions"
     },
     "formats": {
-      "name": "Formats"
+      "field_title": "Formats"
     },
     "funding_references": {
-      "name": "Funding references"
+      "field_title": "Funding references"
     },
     "geo_locations": {
-      "name": "Geo locations"
+      "field_title": "Geo locations"
     },
     "language": {
-      "name": "Language"
+      "field_title": "Language"
     },
     "publication_year": {
-      "name": "Publication year"
+      "field_title": "Publication year"
     },
     "publisher": {
-      "name": "Publisher"
+      "field_title": "Publisher"
     },
     "related_identifiers": {
-      "name": "Related identifiers"
+      "field_title": "Related identifiers"
     },
     "resource_type": {
-      "name": "Resource type"
+      "field_title": "Resource type"
     },
     "rights_list": {
-      "name": "Rights list"
+      "field_title": "Rights list"
     },
     "sizes": {
-      "name": "Sizes"
+      "field_title": "Sizes"
     },
     "subjects": {
-      "name": "Subjects"
+      "field_title": "Subjects"
     },
     "titles": {
-      "name": "Titles"
+      "field_title": "Titles"
     },
     "version": {
-      "name": "Version"
+      "field_title": "Version"
     }
   },
   "facets": []
