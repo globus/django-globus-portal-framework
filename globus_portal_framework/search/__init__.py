@@ -8,7 +8,7 @@ log.debug('Debugging is active.')
 
 
 @register()
-def search_schema_check(app_configs, **kwargs):
+def search_mapper_check(app_configs, **kwargs):
     if not hasattr(settings, 'SEARCH_MAPPER'):
         return [Error(
                 'SEARCH_MAPPER is not defined.',
@@ -24,6 +24,29 @@ def search_schema_check(app_configs, **kwargs):
         return [Error(
                 'Could not find custom mapper %s at %s' % (func, mod_name),
                 hint='Ensure the path is set correctly',
+                obj=settings,
+                id='api.E002',
+                )]
+
+    return []
+
+
+@register()
+def search_schema_check(app_configs, **kwargs):
+    if not hasattr(settings, 'SEARCH_SCHEMA'):
+        return [Error(
+                'SEARCH_MAPPER is not defined.',
+                hint='Set SEARCH_MAPPER in your settings.py',
+                obj=settings,
+                id='api.E001',
+                )]
+    try:
+        with open(settings.SEARCH_SCHEMA):
+            pass
+    except FileNotFoundError:
+        return [Error(
+                'Could not find SEARCH_SCHEMA at %s' % settings.SEARCH_SCHEMA,
+                hint='Ensure the path is set correctly in your settings.py',
                 obj=settings,
                 id='api.E002',
                 )]
