@@ -8,6 +8,7 @@ li .glyphicon {
 .column {
     padding-right:20px;
     border-right: 1px solid #ccc;
+    min-height: 250px;
 }
 
 .column-title {
