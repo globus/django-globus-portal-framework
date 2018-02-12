@@ -208,6 +208,6 @@ def mdf_to_datacite(data, schema):
     if mdf.get('author'):
         auths = [a.get('full_name') for a in mdf.get('author')]
         datacite['creators'] = ', '.join(auths)
-    fields = {k: {'name': k, 'value': v}
+    fields = {k: {'field_title': k, 'value': v}
               for k, v in datacite.items()}
     return fields

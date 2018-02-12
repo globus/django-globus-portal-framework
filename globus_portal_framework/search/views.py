@@ -49,11 +49,12 @@ def index(request):
             {
                 'subject': '<Globus Search Subject>',
                 'fields': {
-                    'titles': {'name': 'titles', 'value': '<Result Title>'},
-                    'version': {'name': 'version', 'value': '0.3.2'},
-                    '<field_name>': {'name': '<display_name>',
+                    'titles': {'field_name': 'titles',
+                                                    'value': '<Result Title>'},
+                    'version': {'field_name': 'version', 'value': '0.3.2'},
+                    '<field_name>': {'field_name': '<display_name>',
                                      'value': '<field_value>'},
-                    'foo_field': {'name': 'foo', 'value': 'bar'}
+                    'foo_field': {'field_name': 'foo', 'value': 'bar'}
                 }
             }, <More Search Results>...]
         }
@@ -105,9 +106,9 @@ def detail(request, subject):
     Example context:
     {'subject': '<Globus Search Subject>',
      'fields': {
-                'titles': {'name': 'titles', 'value': '<Result Title>'},
-                'version': {'name': 'version', 'value': '0.3.2'},
-                '<field_name>': {'name': '<display_name>', 'value':
+                'titles': {'field_name': 'titles', 'value': '<Result Title>'},
+                'version': {'field_name': 'version', 'value': '0.3.2'},
+                '<field_name>': {'field_name': '<display_name>', 'value':
                                                             '<field_value>'}
                 }
     }
