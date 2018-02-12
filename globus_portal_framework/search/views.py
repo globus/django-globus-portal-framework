@@ -36,22 +36,27 @@ def index(request):
     'search-results.html' and 'search-facets.html' template components. The
     context required for searches is shown here:
 
-    {'search': {
-        'facets': [
-            {'buckets': [{'field_name': 'mdf.resource_type',
-                          'value': 'record'}],
-                          'name': 'Resource Type'},
-                         <More Facets>...],
-        'pagination': {'current_page': 1, 'pages': [{'number': 1}]},
-        'search_results': [
-            {'subject': '<Globus Search Subject>'}
-            'fields': {
-                'titles': {'name': 'titles', 'value': '<Result Title>'},
-                           'version': {'name': 'version', 'value': '0.3.2'}},
-                           '<field_name>': {'name': '<display_name>', 'value':
-                                                        '<field_value>'}
-            }
-        ]
+    {
+        'search': {
+            'facets': [
+                {'buckets': [{'field_name': 'mdf.resource_type',
+                            'value': 'record'}],
+                'name': 'Resource Type'},
+                <More Facets>...
+            ],
+            'pagination': {'current_page': 1, 'pages': [{'number': 1}]},
+            'search_results': [
+            {
+                'subject': '<Globus Search Subject>',
+                'fields': {
+                    'titles': {'name': 'titles', 'value': '<Result Title>'},
+                    'version': {'name': 'version', 'value': '0.3.2'},
+                    '<field_name>': {'name': '<display_name>',
+                                     'value': '<field_value>'},
+                    'foo_field': {'name': 'foo', 'value': 'bar'}
+                }
+            }, <More Search Results>...]
+        }
     }
 
     Example request:
@@ -91,20 +96,20 @@ def detail(request, subject):
     exactly the same as the entries loaded by the index page in the
     'search_results'. The template is ultimately responsible for which fields
     are displayed. The only real functional difference between the index page
-    and the detail page is that it displays only a single result The
+    and the detail page is that it displays only a single result. The
     detail-overview.html template is used to render the page.
 
     Example request:
     http://myhost/detail/<subject>
 
     Example context:
-    {'subject': '<Globus Search Subject>'},
+    {'subject': '<Globus Search Subject>',
      'fields': {
                 'titles': {'name': 'titles', 'value': '<Result Title>'},
-                           'version': {'name': 'version', 'value': '0.3.2'}},
+                           'version': {'name': 'version', 'value': '0.3.2'},
                            '<field_name>': {'name': '<display_name>', 'value':
                                                         '<field_value>'}
-            }
+                }
     }
     """
     client = utils.load_search_client(request.user)
