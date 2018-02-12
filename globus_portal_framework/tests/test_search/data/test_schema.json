@@ -1,0 +1,15 @@
+{
+  "fields": {
+    "identifier": {
+      "field_title": "Identifier"
+    }
+  },
+  "facets": [
+    {
+      "name": "Tags",
+      "type": "terms",
+      "field_name": "mdf.tags",
+      "size": 10
+    }
+  ]
+}

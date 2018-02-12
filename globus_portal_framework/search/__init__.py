@@ -14,18 +14,23 @@ def search_mapper_check(app_configs, **kwargs):
                 'SEARCH_MAPPER is not defined.',
                 hint='Set SEARCH_MAPPER in your settings.py',
                 obj=settings,
-                id='api.E001',
+                id='globus_portal_framework.search.E001',
                 )]
 
     mod_name, func = settings.SEARCH_MAPPER
-    mod = import_module(mod_name)
-    mapper = getattr(mod, func, None)
-    if not mapper:
+    mapper = None
+    try:
+        mod = import_module(mod_name)
+        mapper = getattr(mod, func, None)
+    except ModuleNotFoundError:
+        pass
+
+    if mapper is None:
         return [Error(
                 'Could not find custom mapper %s at %s' % (func, mod_name),
                 hint='Ensure the path is set correctly',
                 obj=settings,
-                id='api.E002',
+                id='globus_portal_framework.search.E002',
                 )]
 
     return []
@@ -38,7 +43,7 @@ def search_schema_check(app_configs, **kwargs):
                 'SEARCH_MAPPER is not defined.',
                 hint='Set SEARCH_MAPPER in your settings.py',
                 obj=settings,
-                id='api.E001',
+                id='globus_portal_framework.search.E003',
                 )]
     try:
         with open(settings.SEARCH_SCHEMA):
@@ -48,7 +53,7 @@ def search_schema_check(app_configs, **kwargs):
                 'Could not find SEARCH_SCHEMA at %s' % settings.SEARCH_SCHEMA,
                 hint='Ensure the path is set correctly in your settings.py',
                 obj=settings,
-                id='api.E002',
+                id='globus_portal_framework.search.E004',
                 )]
 
     return []
