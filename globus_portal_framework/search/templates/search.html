@@ -13,7 +13,7 @@
   This helper function ensures queries are inserted as the first query-param
   so that the search url is copy-pastable by the user
   */
-  function customSearch(page={{ search.pagination.current_page }}) {
+  function customSearch(page={{ search.pagination.current_page|default:"1"}}) {
     //copy as a hidden field so we don't change the look of the page
     var page = $('<input>').attr({type: 'hidden', id: 'foo',
                                  name: 'page', value: page});
