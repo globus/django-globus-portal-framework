@@ -106,9 +106,9 @@ def detail(request, subject):
     {'subject': '<Globus Search Subject>',
      'fields': {
                 'titles': {'name': 'titles', 'value': '<Result Title>'},
-                           'version': {'name': 'version', 'value': '0.3.2'},
-                           '<field_name>': {'name': '<display_name>', 'value':
-                                                        '<field_value>'}
+                'version': {'name': 'version', 'value': '0.3.2'},
+                '<field_name>': {'name': '<display_name>', 'value':
+                                                            '<field_value>'}
                 }
     }
     """
