@@ -5,6 +5,8 @@ MOCK_DETAIL_OVERVIEW = 'globus_portal_framework/search/data/' \
 SEARCH_SCHEMA = 'globus_portal_framework/search/data/datacite.json'
 MOCK_RESULT = 'globus_portal_framework/tests/test_search/'\
                                    'data/datacite_search_result.json'
+TEST_SCHEMA = 'globus_portal_framework/tests/test_search/'\
+                                   'data/test_schema.json'
 DEFAULT_MAPPER = ('globus_portal_framework.search.utils',
                   'default_search_mapper')
 

@@ -72,21 +72,38 @@ def process_search_data(results):
     return structured_results
 
 
-def _get_pagination(search_result, per_page=settings.SEARCH_RESULTS_PER_PAGE):
+def _get_pagination(total_results, offset,
+                    per_page=settings.SEARCH_RESULTS_PER_PAGE):
     """
     Prepare pagination according to Globus Search. Since Globus Search handles
     returning paginated results, we calculate the offsets and send along which
     results and how many.
+
+    Returns: dict containing 'current_page' and a list of pages
+    Example:
+        {
+        'current_page': 3,
+        'pages': [{'number': 1},
+           {'number': 2},
+           {'number': 3},
+           {'number': 4},
+           {'number': 5},
+           {'number': 6},
+           {'number': 7},
+           {'number': 8},
+           {'number': 9},
+           {'number': 10}]}
+    pages: contains info which is easy for the template engine to render.
     """
 
-    if search_result.data['total'] > per_page * settings.SEARCH_MAX_PAGES:
+    if total_results > per_page * settings.SEARCH_MAX_PAGES:
         page_count = settings.SEARCH_MAX_PAGES
     else:
-        page_count = search_result.data['total'] // per_page or 1
+        page_count = total_results // per_page or 1
     pagination = [{'number': p + 1} for p in range(page_count)]
 
     return {
-        'current_page': search_result.data['offset'] // per_page + 1,
+        'current_page': offset // per_page + 1,
         'pages': pagination
     }
 
@@ -95,8 +112,17 @@ def _get_filters(filters):
     """
     Get Globus Search filters for each facet. Currently only supports
     "match_all".
-    :param filters:
-    :return:
+
+    :param filters: A dict where the keys are filters and the values are a
+    list of elements to filter on.
+    :return: a list of formatted filters ready to send off to Globus Search
+
+    Example:
+        {'elements': ['O', 'H'], 'publication_year': ['2017', '2018']}
+    Returns:
+        List of GFilters, suitable for Globus Search:
+        https://docs.globus.org/api/search/schemas/GFilter/
+
     """
     return [{
         'type': 'match_all',
@@ -106,6 +132,8 @@ def _get_filters(filters):
 
 
 def _get_facets(search_result, facet_map, filters):
+    """Go through a search result, and add an attribute 'checked' to all facets
+    which were originally provided as filters in the result. """
     facets = search_result.data.get('facet_results', [])
     # Create a table we can use to lookup facets by name
     fac_lookup = {f['name']: f['field_name'] for f in facet_map['facets']}
@@ -162,10 +190,14 @@ def search(index, query, filters, user=None, page=1):
         })
     return {'search_results': process_search_data(result.data['gmeta']),
             'facets': _get_facets(result, facet_map, filters),
-            'pagination': _get_pagination(result)}
+            'pagination': _get_pagination(result.data['total'],
+                                          result.data['offset'])
+            }
 
 
 def load_search_client(user):
+    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
+    logged in or a generic one otherwise."""
     if user.is_authenticated:
         token = user.social_auth.get(provider='globus')\
             .extra_data['access_token']
