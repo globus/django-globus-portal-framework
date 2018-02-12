@@ -17,52 +17,53 @@
 <div class="row">
     <div class="col-sm-4 column">
         <h3 class="column-content">General Info</h3>
-        <ul>
-            {% if fields.rights_list %}
-            <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
-            {{fields.rights_list.value}}
-            </li>
-            {% endif %}
+        <div class="column-general-info">
+            <ul>
+                {% if fields.rights_list %}
+                <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+                {{fields.rights_list.value}}
+                </li>
+                {% endif %}
 
-            {% if fields.resource_type %}
-            <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-            {{fields.resource_type.value}}
-            </li>
-            {% endif %}
+                {% if fields.resource_type %}
+                <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                {{fields.resource_type.value}}
+                </li>
+                {% endif %}
 
-            {% if fields.subjects %}
-            <li>
-                <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
-                Tags
-                {% for subject in fields.subjects.value %}
-                    <span class="alert alert-info" role="alert"><a href="#">{{subject}}</a></span>
-                {% endfor %}
-            </li>
-            {% endif %}
+                {% if fields.subjects %}
+                <li>
+                    <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+                    Tags
+                    {% for subject in fields.subjects.value %}
+                        <span class="alert alert-info" role="alert"><a href="#">{{subject}}</a></span>
+                    {% endfor %}
+                </li>
+                {% endif %}
 
-            {% if fields.language %}
-            <li><span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
-            {{fields.language.value}}
-            </li>
-            {% endif %}
+                {% if fields.language %}
+                <li><span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
+                {{fields.language.value}}
+                </li>
+                {% endif %}
 
-            {% if fields.formats %}
-            <li>
-                <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
-                Formats
-                {% for format in fields.formats.value %}
-                    <span class="alert alert-info" role="alert"><a href="#">{{format}}</a></span>
-                {% endfor %}
-            </li>
-            {% endif %}
+                {% if fields.formats %}
+                <li>
+                    <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
+                    Formats
+                    {% for format in fields.formats.value %}
+                        <span class="alert alert-info" role="alert"><a href="#">{{format}}</a></span>
+                    {% endfor %}
+                </li>
+                {% endif %}
 
-            {% if fields.publication_year %}
-            <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-            {{ fields.publication_year.value }}
-            </li>
-            {% endif %}
-
-        </ul>
+                {% if fields.publication_year %}
+                <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+                {{ fields.publication_year.value }}
+                </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
     <div class="col-sm-4 column">
         <h3 class="text-center column-title">Descriptive Metadata</h3>

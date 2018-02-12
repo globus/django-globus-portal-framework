@@ -23,8 +23,10 @@ li .glyphicon {
     margin-top: 0px;
 }
 
-li {
+.column-general-info li {
     font-size: 20px;
+    display: block;
+    padding-left: 20px;
 }
 
 li .alert {
