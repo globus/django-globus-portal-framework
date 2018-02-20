@@ -143,6 +143,8 @@ body {
     height: 42px;
     border-radius: 4px;
     text-indent: 10px;
+    margin-top: 30px;
+    margin-bottom: 30px;
 }
 #search-form #search-btn,
 #search-form #index-select-dropdown {
