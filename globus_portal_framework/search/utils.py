@@ -6,7 +6,7 @@ from datetime import datetime
 from importlib import import_module
 
 
-from six.moves.urllib.parse import quote_plus
+from urllib.parse import quote_plus, unquote
 import globus_sdk
 
 
@@ -204,6 +204,15 @@ def load_search_client(user):
         authorizer = globus_sdk.AccessTokenAuthorizer(token)
         return globus_sdk.SearchClient(authorizer=authorizer)
     return globus_sdk.SearchClient()
+
+
+def get_subject(subject, user):
+    client = load_search_client(user)
+    try:
+        result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
+        return process_search_data([result.data])[0]
+    except globus_sdk.exc.SearchAPIError:
+        return {'subject': subject, 'error': 'No data was found for subject'}
 
 
 def mdf_to_datacite(data, schema):

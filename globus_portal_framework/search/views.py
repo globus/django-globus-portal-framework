@@ -1,8 +1,6 @@
-import json
-from six.moves.urllib.parse import unquote
 from django.shortcuts import render
-from globus_portal_framework.search import utils
 from django.conf import settings
+from globus_portal_framework.search import utils
 
 
 def index(request):
@@ -78,19 +76,6 @@ def index(request):
     return render(request, 'search.html', context)
 
 
-def mock_metadata(request, subject='bar'):
-    """Ignore this for now. It isn't being used and will be removed or heavily
-    modified."""
-    filename = 'globus_portal_framework/search/data/mock-detail-metadata.json'
-    with open(filename) as f:
-        data = json.loads(f.read())
-        context = {'table_head': data['headers'],
-                   'table_body': data['body'],
-                   'subject': subject}
-
-        return render(request, 'detail-metadata.html', context)
-
-
 def detail(request, subject):
     """
     Load a page for showing details for a single search result. The data is
@@ -113,7 +98,10 @@ def detail(request, subject):
                 }
     }
     """
-    client = utils.load_search_client(request.user)
-    result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
-    context = utils.process_search_data([result.data])[0]
-    return render(request, 'detail-overview.html', context)
+    return render(request, 'detail-overview.html',
+                  utils.get_subject(subject, request.user))
+
+
+def detail_metadata(request, subject):
+    return render(request, 'detail-metadata.html',
+                  utils.get_subject(subject, request.user))
