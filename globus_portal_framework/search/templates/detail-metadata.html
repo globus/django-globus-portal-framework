@@ -1,28 +1,36 @@
 {%extends "components/detail-base.html"%}
 
-{% block sub_body %}
+{% block subheading %}
+<h3>{{project_title}}</h3>
+<h2>{{fields.title.value}}</h2>
+{% endblock %}
+
+{% block subbody %}
 
 <h2>Columns Profile</h2>
 
-<table class="table">
-  <thead>
-    <tr>
-        {%for col in table_head %}
-        <th scope="col">{{col}}</th>
+
+<div class="row">
+  <div class="col-md-11 table-responsive">
+    <table class="table table-responsive">
+      <thead>
+        <tr>
+            {%for col in fields.metadata.table_head %}
+            <th scope="col">{{col}}</th>
+            {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in fields.metadata.table_body %}
+        <tr>
+          {% for item in row %}
+          <td>{{item}}</td>
+          {% endfor %}
+        </tr>
         {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in table_body %}
-    <tr>
-      {% for item in row %}
-      <td>{{item}}</td>
-      {% endfor %}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 {% endblock %}
-
-

@@ -19,6 +19,9 @@ def load_json_file(filename):
         return json.loads(raw_data)
 
 
+SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
+
+
 def default_search_mapper(entry, schema):
     """This mapper takes the given schema and maps all fields within the
     search entry against it. Any non-matching results simply won't
@@ -41,7 +44,7 @@ def default_search_mapper(entry, schema):
     """
     search_hits = {k: {
                        'field_title': schema[k].get('field_title', k),
-                       'value': v
+                       'data': v
                        }
                    for k, v in entry[0].items() if schema.get(k)}
     return search_hits
@@ -60,12 +63,11 @@ def process_search_data(results):
     mod_name, func_name = settings.SEARCH_MAPPER
     mod = import_module(mod_name)
     mapper = getattr(mod, func_name, default_search_mapper)
-    schema = load_json_file(settings.SEARCH_SCHEMA)
     structured_results = []
     for entry in results:
         structured_results.append({
             'subject': quote_plus(entry['subject']),
-            'fields': mapper(entry['content'], schema['fields'])
+            'fields': mapper(entry['content'], SEARCH_SCHEMA['fields'])
         })
     return structured_results
 
@@ -175,19 +177,18 @@ def search(index, query, filters, user=None, page=1):
         return {'search_results': [], 'facets': []}
 
     client = load_search_client(user)
-    facet_map = load_json_file(settings.SEARCH_SCHEMA)
     gfilters = _get_filters(filters)
     result = client.post_search(
         index,
         {
             'q': query,
-            'facets': facet_map['facets'],
+            'facets': SEARCH_SCHEMA['facets'],
             'filters': gfilters,
             'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
             'limit': settings.SEARCH_RESULTS_PER_PAGE
         })
     return {'search_results': process_search_data(result.data['gmeta']),
-            'facets': _get_facets(result, facet_map, filters),
+            'facets': _get_facets(result, SEARCH_SCHEMA, filters),
             'pagination': _get_pagination(result.data['total'],
                                           result.data['offset'])
             }
@@ -216,40 +217,18 @@ def get_subject(subject, user):
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
-def mdf_to_datacite(data, schema):
-    """TEST DATA!!! This is used as a stand-in for a Globus Search index
-    which has not been setup yet. Once we switch over to the new index,
-    this function should be deleted."""
-    # General datacite 4.1
-    mdf = data[0]['mdf']
-    datacite = {
-            "alternate_identifiers": mdf.get('scroll_id', ''),
-            "dates": datetime.strptime(mdf['ingest_date'],
-                                       '%Y-%m-%dT%H:%M:%S.%fZ'),
-            # "descriptions": "",
-            "formats": mdf.get('tags'),
-            # "funding_references": "",
-            # "geo_locations": "",
-            "identifier": mdf['mdf_id'],
-            # "language": "",
-            # "publication_year": "",
-            # "publisher": "",
-            # "related_identifiers": "",
-            "resource_type": "application/json",
-            # "rights_list": "",
-            # "sizes": "",
-            # "subjects": "",
-            "titles": mdf['title'],
-            "version": mdf['metadata_version']
-    }
-    if data[0].get('dss_tox'):
-        datacite['subjects'] = list(data[0].get('dss_tox', {}).values())
-    if mdf.get('data_contributor'):
-        contribs = [a.get('full_name') for a in mdf.get('data_contributor')]
-        datacite['contributors'] = ', '.join(contribs)
-    if mdf.get('author'):
-        auths = [a.get('full_name') for a in mdf.get('author')]
-        datacite['creators'] = ', '.join(auths)
-    fields = {k: {'field_title': k, 'value': v}
-              for k, v in datacite.items()}
+def map_datacite(gmeta_result, schema):
+    fields = default_search_mapper([gmeta_result[0]['perfdata']], schema)
+    fields['title'] = \
+        gmeta_result[0]['perfdata'].get('titles', [''])[0] \
+        or gmeta_result['subject']
+    if gmeta_result[0].get('metadata'):
+        # Use titles defined in schema, fall back to ugly headers if those
+        # don't exist.
+        titles = SEARCH_SCHEMA.get('metadata', {}).get('field_titles') or \
+            gmeta_result[0]['metadata'][0]
+        fields['metadata'] = {
+            'table_head': titles,
+            'table_body': gmeta_result[0]['metadata'][1:]
+        }
     return fields

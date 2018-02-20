@@ -58,5 +58,30 @@
       "field_title": "Version"
     }
   },
-  "facets": []
+  "facets": [{
+      "name": "Contributor",
+      "type": "terms",
+      "field_name": "perfdata.contributors.contributor_name",
+      "size": 10
+    },
+    {
+      "name": "Contributor Type",
+      "type": "terms",
+      "field_name": "perfdata.contributors.contributor_type",
+      "size": 10
+    },
+    {
+      "name": "Subjects",
+      "type": "terms",
+      "field_name": "perfdata.subjects.value",
+      "size": 10
+    }
+  ],
+  "metadata": {
+    "field_titles": ["App Name", "Block Size", "Buffer Size", "Start Time",
+                     "End Time", "FTP Return Code", "GFTP Version",
+                     "Server Id", "Bytes", "Streams", "Num Stripes",
+                     "Trans Type"
+    ]
+  }
 }

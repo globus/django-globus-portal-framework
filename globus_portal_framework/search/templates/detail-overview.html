@@ -9,7 +9,7 @@
 
 {% block subheading %}
 <h3>{{project_title}}</h3>
-<h2>{{fields.titles.value}}</h2>
+<h2>{{fields.title.value}}</h2>
 {% endblock %}
 
 {% block subbody %}
@@ -21,13 +21,13 @@
             <ul>
                 {% if fields.rights_list %}
                 <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
-                {{fields.rights_list.value}}
+                {{fields.rights_list.data.value}}
                 </li>
                 {% endif %}
 
                 {% if fields.resource_type %}
                 <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                {{fields.resource_type.value}}
+                {{fields.resource_type.data.value}}
                 </li>
                 {% endif %}
 
@@ -35,15 +35,15 @@
                 <li>
                     <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
                     Tags
-                    {% for subject in fields.subjects.value %}
-                        <span class="alert alert-info" role="alert"><a href="#">{{subject}}</a></span>
+                    {% for subject in fields.subjects.data %}
+                        <span class="alert alert-info" role="alert"><a href="#">{{subject.value}}</a></span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.language %}
                 <li><span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
-                {{fields.language.value}}
+                {{fields.language.data.value}}
                 </li>
                 {% endif %}
 
@@ -51,15 +51,15 @@
                 <li>
                     <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
                     Formats
-                    {% for format in fields.formats.value %}
-                        <span class="alert alert-info" role="alert"><a href="#">{{format}}</a></span>
+                    {% for format in fields.formats.data %}
+                        <span class="alert alert-info" role="alert"><a href="#">{{format.value}}</a></span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.publication_year %}
                 <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-                {{ fields.publication_year.value }}
+                {{ fields.publication_year.data.value }}
                 </li>
                 {% endif %}
             </ul>
@@ -70,13 +70,19 @@
         <div class="column-content">
 
             <h5>{{fields.creators.field_title}}</h5>
-            <p>{{fields.creators.value}}</p>
+            <p>{%for creator in fields.creators.data%}
+                {{creator.creator_name.value}}{% if not forloop.last %},{%endif%}
+                {%endfor%}
+            </p>
 
             <h5>{{fields.publisher.field_title}}</h5>
-            <p>{{fields.publisher.value}}</p>
+            <p>{{fields.publisher.data.value}}</p>
 
             <h5>{{fields.contributors.field_title}}</h5>
-            <p>{{fields.contributors.value}}</p>
+            <p>{%for contributor in fields.contributors.data%}
+                {{contributor.contributor_name}}{% if not forloop.last %},{%endif%}
+                {%endfor%}<br>
+            </p>
 
         </div>
     </div>
@@ -85,28 +91,37 @@
         <div class="column-content">
 
             <h5>{{fields.identifier.field_title}}</h5>
-            <p>{{fields.identifier.value}}</p>
+            <p>{{fields.identifier.data.value}}</p>
 
             <h5>{{fields.dates.field_title}}</h5>
-            <p>{{fields.dates.value|date}}</p>
+            <p>
+                {% for date in fields.dates.data %}
+                {{date.date_type}} - {{date.value}} <br>
+                {% endfor %}
+            </p>
 
             <h5>{{fields.alternative_identifiers.field_title}}</h5>
-            <p>{{fields.alternative_identifiers.value}}</p>
+            <p>{{fields.alternative_identifiers.data}}</p>
 
             <h5>{{fields.related_identifiers.field_title}}</h5>
-            <p>{{fields.related_identifiers.value}}</p>
+            <p>
+                {% for ri in fields.related_identifiers.data %}
+                {{ri.value}} --  {{ri.relation_type}}  <br>
+                {% endfor %}
+            </p>
 
-            <h5>{{fields.sizes.field_title}}</h5>
-            <p>{{fields.sizes.value}}</p>
+
+            <h5>Size</h5>
+            <p>{% for s in fields.sizes.data %}{{s.value}}<br>{% endfor %}</p>
 
             <h5>{{fields.version.field_title}}</h5>
-            <p>{{fields.version.value}}</p>
+            <p>{{fields.version.data.value}}</p>
 
             <h5>{{fields.geo_locations.field_title}}</h5>
-            <p>{{fields.geo_locations.value}}</p>
+            <p>{{fields.geo_locations.data.value}}</p>
 
-            <h5>{{fields.funding_refrences.field_title}}</h5>
-            <p>{{fields.funding_refrences.value}}</p>
+            <h5>{{fields.funding_references.field_title}}</h5>
+            <p>{{fields.funding_references.data.value}}</p>
 
         </div>
     </div>

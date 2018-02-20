@@ -70,7 +70,7 @@ class SearchUtilsTest(TestCase):
         self.assertEqual(len(data), 1)
         self.assertTrue(data.get('titles'))
         self.assertEqual(sorted(data['titles'].keys()),
-                         ['field_title', 'value'])
+                         ['data', 'field_title'])
 
     @override_settings(RESULTS_PER_PAGE=10, MAX_PAGES=10)
     def test_pagination(self):

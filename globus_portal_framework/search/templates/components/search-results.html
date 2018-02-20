@@ -4,19 +4,22 @@
   <div class="result-item">
 
     <h3 class="search-title">
-      <a href="{% url 'detail' result.subject %}" title="{{result.fields.titles.value}}">{{result.fields.titles.value}}</a>
+      <a href="{% url 'detail' result.subject %}" title="{{result.fields.title}}">{{result.fields.title.value}}</a>
     </h3>
 
     <div class="result-fields">
-      Creators: {{result.fields.creators.value}}<br>
-      Contributors: {{result.fields.fields.contributors.value}}<br>
-      Date: {{result.fields.dates.value}}<br>
-      Version: {{result.fields.version.value}}<br>
-      {{result.fields.subjects.value}}<br>
+      Creators: {%for creator in result.fields.creators.data%}
+                {{creator.creator_name.value}}{% if not forloop.last %},{%endif%}
+                {%endfor%}<br>
+      Contributors: {%for contributor in result.fields.contributors.data%}
+                {{contributor.contributor_name}}{% if not forloop.last %},{%endif%}
+                {%endfor%}<br>
+      Date: {{result.fields.publication_year.data.value}}<br>
+      Version: {{result.fields.version.data.value}}<br>
       Data Formats:
-      {% for format in result.fields.formats.value %}
+      {% for format in result.fields.formats.data %}
       <button class="btn btn-primary btn-xs" style="margin-left: 5px;">
-        {{format}}
+        {{format.value}}
       </button>
       {% endfor %}
       <br>
@@ -25,6 +28,3 @@
   </div>
   {% endfor %}
 </div>
-
-
-
