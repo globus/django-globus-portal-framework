@@ -103,5 +103,10 @@ def detail(request, subject):
 
 
 def detail_metadata(request, subject):
+    """
+    Render a metadata page for a result. This is functionally the same as the
+    'detail' page except it renders a detail-metadata.html instead for
+    displaying tabular data about an object.
+    """
     return render(request, 'detail-metadata.html',
                   utils.get_subject(subject, request.user))

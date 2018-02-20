@@ -207,6 +207,9 @@ def load_search_client(user):
 
 
 def get_subject(subject, user):
+    """Get a subject and run the result through the SEARCH_MAPPER defined
+    in settings.py. If no subject exists, return context with the 'subject'
+    and an 'error' message."""
     client = load_search_client(user)
     try:
         result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
