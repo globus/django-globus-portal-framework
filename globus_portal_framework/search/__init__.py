@@ -1,7 +1,8 @@
 from django.core.checks import Error, Warning, register
-from django.conf import settings
 from importlib import import_module
 import logging
+
+from globus_portal_framework.search import settings
 
 log = logging.getLogger(__name__)
 log.debug('Debugging is active.')

@@ -17,18 +17,16 @@ class SearchViewsTest(TestCase):
         r = self.c.get('/')
         assert r.status_code == 200
 
-    @override_settings(SEARCH_MAPPER=test_search.DEFAULT_MAPPER)
-    @override_settings(SEARCH_SCHEMA=test_search.SEARCH_SCHEMA)
-    @override_settings(SEARCH_INDEX='myindex')
+    @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
+                test_search.DEFAULT_MAPPER)
     @mock.patch('globus_sdk.SearchClient.get_subject')
     def test_detail(self, get_subject):
         get_subject.return_value = MockSearchGetSubject()
         r = self.c.get('/detail/mysubject/')
         self.assertEqual(r.status_code, 200)
 
-    @override_settings(SEARCH_MAPPER=test_search.DEFAULT_MAPPER)
-    @override_settings(SEARCH_SCHEMA=test_search.SEARCH_SCHEMA)
-    @override_settings(SEARCH_INDEX='myindex')
+    @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
+                test_search.DEFAULT_MAPPER)
     @mock.patch('globus_sdk.SearchClient.get_subject')
     def test_detail_metadata(self, get_subject):
         get_subject.return_value = MockSearchGetSubject()

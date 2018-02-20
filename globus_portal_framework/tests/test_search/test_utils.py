@@ -50,8 +50,10 @@ class SearchUtilsTest(TestCase):
         c = load_search_client(self.real_user)
         assert c.kwargs['authorizer']
 
-    @override_settings(SEARCH_MAPPER=DEFAULT_MAPPER,
-                       SEARCH_SCHEMA=SEARCH_SCHEMA)
+    @mock.patch('globus_portal_framework.search.settings.SEARCH_SCHEMA',
+                SEARCH_SCHEMA)
+    @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
+                DEFAULT_MAPPER)
     def test_process_search_data(self):
         mock_data = get_mock_data(MOCK_RESULT)
         data = process_search_data([mock_data])

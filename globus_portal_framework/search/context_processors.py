@@ -1,4 +1,4 @@
-from django.conf import settings
+from globus_portal_framework.search import settings
 
 
 def globals(request):

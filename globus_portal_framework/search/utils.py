@@ -4,13 +4,11 @@ import json
 import logging
 from datetime import datetime
 from importlib import import_module
-
-
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 
 
-from django.conf import settings
+from globus_portal_framework.search import settings
 
 log = logging.getLogger(__name__)
 

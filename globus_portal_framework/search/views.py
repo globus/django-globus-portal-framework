@@ -1,6 +1,5 @@
 from django.shortcuts import render
-from django.conf import settings
-from globus_portal_framework.search import utils
+from globus_portal_framework.search import utils, settings
 
 
 def index(request):
