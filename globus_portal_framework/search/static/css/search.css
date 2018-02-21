@@ -1,25 +1,9 @@
 
+
+.bg-company-red {
+    background-color: darkred;
+}
 /* General */
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_4_0.woff') format('woff');
-    font-weight: 100 ;
-}
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_3_0.woff') format('woff');
-    font-weight: 500 ;
-}
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_1_0.woff') format('woff');
-    font-weight: 300 ;
-}
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_0_0.woff') format('woff');
-    font-weight: 700 ;
-}
 html, body {
   font-family: museosans,"Helvetica Neue",Helvetica,Arial,sans-serif;
   font-weight: 300;
@@ -128,7 +112,7 @@ header .navbar .nav > li > a {
 /* search bar */
 
 body {
-  margin-top: 55px;
+  //margin-top: 55px;
 }
 
 #search-form {
