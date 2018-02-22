@@ -16,57 +16,46 @@
 
 <div class="row">
     <div class="col-sm-4 column">
-        <h3 class="column-content">General Info</h3>
-        <div class="column-general-info">
-            <ul>
+        <h3 class="text-center ml-3 mb-5 mt-3">General Info</h3>
+        <div id="column-general-info">
+            <ul class="m-0 p-0">
                 {% if fields.rights_list %}
-                <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
-                {{fields.rights_list.data.value}}
-                </li>
+                <li><i class="far fa-copyright"></i>{{fields.rights_list.data.value}}</li>
                 {% endif %}
 
                 {% if fields.resource_type %}
-                <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                {{fields.resource_type.data.value}}
-                </li>
+                <li><i class="far fa-file fa-2x pr-2"></i>{{fields.resource_type.data.value}}</li>
                 {% endif %}
 
                 {% if fields.subjects %}
-                <li>
-                    <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
-                    Tags
+                <li><i class="fas fa-tag fa-2x pr-2"></i>Tags
                     {% for subject in fields.subjects.data %}
-                        <span class="alert alert-info" role="alert"><a href="#">{{subject.value}}</a></span>
+                        <span class="alert alert-info px-1 py-0" role="alert"><a href="#">{{subject.value}}</a></span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.language %}
-                <li><span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
-                {{fields.language.data.value}}
-                </li>
+                <li><i class="far fa-flag fa-2x pr-2"></i>{{fields.language.data.value}}</li>
                 {% endif %}
 
                 {% if fields.formats %}
-                <li>
-                    <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
-                    Formats
+                <li><i class="fas fa-paperclip fa-2x pr-2"></i>Formats
                     {% for format in fields.formats.data %}
-                        <span class="alert alert-info" role="alert"><a href="#">{{format.value}}</a></span>
+                        <span class="alert alert-info px-1 py-0" role="alert"><a href="#">{{format.value}}</a></span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.publication_year %}
-                <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-                {{ fields.publication_year.data.value }}
+                <li><i class="far fa-calendar fa-2x pr-2"></i>{{ fields.publication_year.data.value }}
                 </li>
                 {% endif %}
             </ul>
         </div>
     </div>
     <div class="col-sm-4 column">
-        <h3 class="text-center column-title">Descriptive Metadata</h3>
+        <h3 class="text-center mb-5 mt-3">Descriptive Metadata</h3>
         <div class="column-content">
 
             <h5>{{fields.creators.field_title}}</h5>
@@ -87,7 +76,7 @@
         </div>
     </div>
     <div class="col-sm-4">
-        <h3 class="text-center column-title">Data Provider</h3>
+        <h3 class="text-center mb-5 mt-3">Data Provider</h3>
         <div class="column-content">
 
             <h5>{{fields.identifier.field_title}}</h5>

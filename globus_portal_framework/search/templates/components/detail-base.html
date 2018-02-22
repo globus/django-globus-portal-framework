@@ -12,7 +12,7 @@
 
 {% include "components/error.html"%}
 
-<div class="container">
+<div class="container mt-3">
     <div class="row">
         <div class="col-md-12">
             <div class="alert alert-info" role="alert">
@@ -24,11 +24,11 @@
 
 <div class="container">
 
-    <div class="panel panel-default">
-        <div class="panel-heading">
+    <div class="card">
+        <div class="card-header">
             <div>
-                <div id="panel-heading-logo">
-                    <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
+                <div id="panel-heading-logo" class="pr-2">
+                    <i class="fas fa-globe"></i>
                 </div>
                 <div id="panel-heading-titles">
                     {% block subheading %}
@@ -37,13 +37,13 @@
             </div>
         </div>
 
-        <div class="panel panel-body">
+        <div class="card-body">
 
             <ul class="nav nav-tabs">
-              <li class="nav-item">
-                <a class="nav-link active" href="{% url 'detail' subject %}"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>Overview</a>
+              <li class="nav-item ml-2">
+                <a class="nav-link" href="{% url 'detail' subject %}"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>Overview</a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item ml-2">
                 <a class="nav-link" href="{% url 'detail-metadata' subject %}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span>Metadata</a>
               </li>
             </ul>

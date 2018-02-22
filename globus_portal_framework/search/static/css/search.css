@@ -21,9 +21,9 @@ h1 { font-size: 30px; }
 h2 { font-size: 26px; }
 h3 { font-size: 18px; }
 h5 { font-size: 16px; }
-h1, h2, h3, h4, h5 {
+h1, h2, h3, h4, h5, a {
     color: #708FCA;
-    font-weight: 100;
+    font-weight: 300;
 }
 main .container {
   padding-top: 10px;
@@ -61,7 +61,7 @@ header .navbar .nav > li {
     font-size: 17px;
     margin-left: 8px;
     margin-right: 8px;
-    font-weight: 100;
+    font-weight: 100px;
 }
 header .navbar .nav > li > a {
     color: #fff;
@@ -111,10 +111,6 @@ header .navbar .nav > li > a {
 *************************/
 /* search bar */
 
-body {
-  //margin-top: 55px;
-}
-
 #search-form {
     display: flex;
     flex-direction: row;
@@ -149,7 +145,7 @@ body {
 }
 
 #results #search-result .result-item em {
-  font-style: normal;
+  //font-style: normal;
   font-weight: bold;
 }
 /* Media Queries */

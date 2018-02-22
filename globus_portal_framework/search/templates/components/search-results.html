@@ -3,7 +3,7 @@
   {% for result in search.search_results %}
   <div class="result-item">
 
-    <h3 class="search-title">
+    <h3 class="search-title mt-3">
       <a href="{% url 'detail' result.subject %}" title="{{result.fields.title}}">{{result.fields.title.value}}</a>
     </h3>
 
@@ -18,7 +18,7 @@
       Version: {{result.fields.version.data.value}}<br>
       Data Formats:
       {% for format in result.fields.formats.data %}
-      <button class="btn btn-primary btn-xs" style="margin-left: 5px;">
+      <button class="btn btn-primary btn-sm ml-1 py-0" style="background-color: #337ab7">
         {{format.value}}
       </button>
       {% endfor %}
