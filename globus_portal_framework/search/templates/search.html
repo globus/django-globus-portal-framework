@@ -29,7 +29,7 @@
 
 <div class="container">
 
-  <form id="search-form" name="search_form" action="/">
+  <form id="search-form" class="my-4" name="search_form" action="/">
     <input type="text" id="search-input" autocomplete="off"
            data-provide="typeahead" name="q"
            value="{{request.session.search.query}}" placeholder="Start your search here">
@@ -40,16 +40,11 @@
 
   <div class="row">
     <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
-      <div class="panel panel-default">
-        <div class="panel-heading" data-toggle="collapse" data-target="#filters">
-          <h3 class="panel-title dropdown">Filters <span class="caret"></span></h3>
-        </div>
-        <div class="panel-body" id="filters">
-          <div id="facet-container">
-            <form id="facet-form" action="/">
-              {% include "components/search-facets.html" %}
-            </form>
-          </div>
+      <div id="filters">
+        <div id="facet-container">
+          <form id="facet-form" action="/">
+            {% include "components/search-facets.html" %}
+          </form>
         </div>
       </div>
     </div>
