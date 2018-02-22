@@ -1,10 +1,10 @@
 
-#panel-heading-logo {
+#card-heading-logo {
     float: left;
     font-size: 50px;
 }
 
-#panel-heading-titles * {
+#card-heading-titles * {
     padding-top: 0px;
     margin-top: 0px;
     padding-bottom: 0px;

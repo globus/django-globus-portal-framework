@@ -14,7 +14,7 @@
     margin-top: 20px;
 }
 
-#column-general-info ul, li {
+#column-general-info ul, #column-general-info li {
     font-size: 18px;
     list-style-type: none;
     list-style-position: inside;
