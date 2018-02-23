@@ -76,12 +76,5 @@
       "field_name": "perfdata.subjects.value",
       "size": 10
     }
-  ],
-  "metadata": {
-    "field_titles": ["App Name", "Block Size", "Buffer Size", "Start Time",
-                     "End Time", "FTP Return Code", "GFTP Version",
-                     "Server Id", "Bytes", "Streams", "Num Stripes",
-                     "Trans Type"
-    ]
-  }
+  ]
 }

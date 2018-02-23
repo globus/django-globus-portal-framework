@@ -7,7 +7,6 @@ from importlib import import_module
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 
-
 from globus_portal_framework.search import settings
 
 log = logging.getLogger(__name__)
@@ -22,9 +21,9 @@ def load_json_file(filename):
 SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
 
 
-def default_search_mapper(entry, schema):
+def default_search_mapper(gmeta_result, schema):
     """This mapper takes the given schema and maps all fields within the
-    search entry against it. Any non-matching results simply won't
+    gmeta entry against it. Any non-matching results simply won't
     show up in the result. This approach avoids a bunch of empty fields being
     displayed when rendered in the templates.
     :param entry:
@@ -42,12 +41,16 @@ def default_search_mapper(entry, schema):
         'foo': {'field_title': 'Foo', 'value': 'bar'}
         }
     """
-    search_hits = {k: {
+    entry = gmeta_result[0][settings.SEARCH_ENTRY_FIELD_PATH]
+    fields = {k: {
                        'field_title': schema[k].get('field_title', k),
                        'data': v
-                       }
-                   for k, v in entry[0].items() if schema.get(k)}
-    return search_hits
+                  } for k, v in entry.items() if schema.get(k)}
+    if not fields.get('title'):
+        fields['title'] = entry.get(settings.SEARCH_ENTRY_TITLE)
+        if isinstance(fields['title'], list):
+            fields['title'] = fields['title'].pop(0)
+    return fields
 
 
 def process_search_data(results):
