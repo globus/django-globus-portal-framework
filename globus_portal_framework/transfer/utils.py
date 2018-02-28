@@ -30,8 +30,16 @@ def parse_globus_url(url):
 
 def preview(url, chunk_size=512):
     """Download the first number of 'bytes' the given 'url'
+
+    Raises ValueError if the url produced a connection error
     """
     # Use 'with' with 'stream' so we close the connection after we
     # return.
-    with requests.get(url, stream=True) as r:
-        return next(r.iter_content(chunk_size=chunk_size)).decode('utf-8')
+    try:
+        with requests.get(url, stream=True) as r:
+            if r.status_code is not 200:
+                raise ValueError('Request returned non-ok code: ' +
+                                 r.status_code)
+            return next(r.iter_content(chunk_size=chunk_size)).decode('utf-8')
+    except requests.exception.ConnectionError:
+        raise ValueError('Connection Error in request')
