@@ -198,10 +198,13 @@ def load_search_client(user):
     """Load a globus_sdk.SearchClient, with a token authorizer if the user is
     logged in or a generic one otherwise."""
     if user.is_authenticated:
-        token = user.social_auth.get(provider='globus')\
-            .extra_data['access_token']
-        authorizer = globus_sdk.AccessTokenAuthorizer(token)
-        return globus_sdk.SearchClient(authorizer=authorizer)
+        tok_list = user.social_auth.get(provider='globus').extra_data
+        if tok_list.get('other_tokens'):
+            service_tokens = {t['resource_server']: t
+                              for t in tok_list['other_tokens']}
+            authorizer = globus_sdk.AccessTokenAuthorizer(
+                service_tokens['search.api.globus.org']['access_token'])
+            return globus_sdk.SearchClient(authorizer=authorizer)
     return globus_sdk.SearchClient()
 
 

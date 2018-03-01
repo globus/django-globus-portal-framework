@@ -1,4 +1,5 @@
 import os
+import globus_sdk
 from unittest import mock
 from django.test import TestCase, Client
 from django.test.utils import override_settings
@@ -35,8 +36,10 @@ class SearchUtilsTest(TestCase):
         self.extra_data = {
             'user': self.real_user,
             'provider': 'globus',
-            'extra_data': {'access_token': 'foo'}
-        }
+            'extra_data': {'other_tokens': [
+                {'resource_server': 'search.api.globus.org',
+                 'access_token': 'foo'}
+            ]}}
         self.soc_auth = UserSocialAuth.objects.create(**self.extra_data)
         self.real_user.provider = 'globus'
 
@@ -48,7 +51,8 @@ class SearchUtilsTest(TestCase):
     @mock.patch('globus_sdk.SearchClient', MockSearchClient)
     def test_load_search_client(self):
         c = load_search_client(self.real_user)
-        assert c.kwargs['authorizer']
+        self.assertTrue(isinstance(c.kwargs['authorizer'],
+                                   globus_sdk.AccessTokenAuthorizer))
 
     @mock.patch('globus_portal_framework.search.settings.SEARCH_SCHEMA',
                 SEARCH_SCHEMA)

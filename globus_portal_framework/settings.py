@@ -64,9 +64,9 @@ SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
 }
 
 # Additional extras
-# SOCIAL_AUTH_GLOBUS_SCOPE = [
-#     'urn:globus:auth:scope:transfer.api.globus.org:all'
-# ]
+SOCIAL_AUTH_GLOBUS_SCOPE = [
+    'urn:globus:auth:scope:search.api.globus.org:search'
+]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_USE_SESSIONS = True

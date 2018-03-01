@@ -1,4 +1,5 @@
 from django.core.checks import Error, Warning, register
+from django.conf import settings as django_settings
 from importlib import import_module
 import logging
 
