@@ -1,16 +1,16 @@
-import os
-import globus_sdk
 from unittest import mock
 from django.test import TestCase, Client
 from django.test.utils import override_settings
-from django.contrib.auth.models import User, AnonymousUser
-from social_django.models import UserSocialAuth
+from django.contrib.auth.models import AnonymousUser
 from globus_portal_framework.tests.test_search import (get_mock_data,
                                                        SEARCH_SCHEMA,
                                                        MOCK_RESULT,
                                                        DEFAULT_MAPPER,
                                                        TEST_SCHEMA,
                                                        )
+from globus_portal_framework.tests.mocks import (
+    MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer
+)
 
 from globus_portal_framework.search.utils import (
     load_search_client, process_search_data, default_search_mapper,
@@ -21,36 +21,24 @@ class MockSearchGetSubject:
     data = {'content': [{'myindex': 'search_data'}]}
 
 
-class MockSearchClient:
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-
 class SearchUtilsTest(TestCase):
 
-    def setUp(self):
-        self.real_user = User.objects.create_user(username='bob')
-        self.extra_data = {
-            'user': self.real_user,
-            'provider': 'globus',
-            'extra_data': {'other_tokens': [
-                {'resource_server': 'search.api.globus.org',
-                 'access_token': 'foo'}
-            ]}}
-        self.soc_auth = UserSocialAuth.objects.create(**self.extra_data)
-        self.real_user.provider = 'globus'
-
-    @mock.patch('globus_sdk.SearchClient', MockSearchClient)
-    def test_load_search_client(self):
+    @mock.patch('globus_sdk.SearchClient', MockGlobusClient)
+    def test_load_search_client_with_anonymous_user(self):
         c = load_search_client(AnonymousUser())
-        assert c.kwargs == {}
+        self.assertFalse(globus_client_is_loaded_with_authorizer(c))
 
-    @mock.patch('globus_sdk.SearchClient', MockSearchClient)
-    def test_load_search_client(self):
-        c = load_search_client(self.real_user)
-        self.assertTrue(isinstance(c.kwargs['authorizer'],
-                                   globus_sdk.AccessTokenAuthorizer))
+    @mock.patch('globus_sdk.SearchClient', MockGlobusClient)
+    def test_load_search_client_with_real_user(self):
+        user = mock_user('bob', ['search.api.globus.org'])
+        c = load_search_client(user)
+        self.assertTrue(globus_client_is_loaded_with_authorizer(c))
+
+    @mock.patch('globus_sdk.SearchClient', MockGlobusClient)
+    def test_load_search_client_with_bad_token(self):
+        user = mock_user('bob', ['transfer.api.globus.org'])
+        with self.assertRaises(ValueError):
+            c = load_search_client(user)
 
     @mock.patch('globus_portal_framework.search.settings.SEARCH_SCHEMA',
                 SEARCH_SCHEMA)
