@@ -20,7 +20,7 @@ def load_json_file(filename):
 SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
 
 
-def search(index, query, filters, user=None, page=1):
+def post_search(index, query, filters, user=None, page=1):
     """Perform a search and return the relevant data for display to the user.
     Returns a dict with search info stripped, containing only two relevant
     fields:

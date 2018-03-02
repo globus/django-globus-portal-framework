@@ -1,61 +1,19 @@
-from django.core.checks import Error, Warning, register
-from django.conf import settings as django_settings
-from importlib import import_module
-import logging
+# This ensures the checks are registered by Django and run on startup
+from globus_portal_framework.search import checks
 
-from globus_portal_framework.search import settings
+from globus_portal_framework.search.utils import (
+    post_search,
+    get_subject,
+    default_search_mapper,
+    load_search_client,
+    process_search_data,
+    get_pagination,
+    get_filters,
+    get_facets
+)
 
-log = logging.getLogger(__name__)
-log.debug('Debugging is active.')
-
-
-@register()
-def search_mapper_check(app_configs, **kwargs):
-    if not hasattr(settings, 'SEARCH_MAPPER'):
-        return [Error(
-                'SEARCH_MAPPER is not defined.',
-                hint='Set SEARCH_MAPPER in your settings.py',
-                obj=settings,
-                id='globus_portal_framework.search.E001',
-                )]
-
-    mod_name, func = settings.SEARCH_MAPPER
-    mapper = None
-    try:
-        mod = import_module(mod_name)
-        mapper = getattr(mod, func, None)
-    except ModuleNotFoundError:
-        pass
-
-    if mapper is None:
-        return [Error(
-                'Could not find custom mapper %s at %s' % (func, mod_name),
-                hint='Ensure the path is set correctly',
-                obj=settings,
-                id='globus_portal_framework.search.E002',
-                )]
-
-    return []
-
-
-@register()
-def search_schema_check(app_configs, **kwargs):
-    if not hasattr(settings, 'SEARCH_SCHEMA'):
-        return [Error(
-                'SEARCH_MAPPER is not defined.',
-                hint='Set SEARCH_MAPPER in your settings.py',
-                obj=settings,
-                id='globus_portal_framework.search.E003',
-                )]
-    try:
-        with open(settings.SEARCH_SCHEMA):
-            pass
-    except FileNotFoundError:
-        return [Error(
-                'Could not find SEARCH_SCHEMA at %s' % settings.SEARCH_SCHEMA,
-                hint='Ensure the path is set correctly in your settings.py',
-                obj=settings,
-                id='globus_portal_framework.search.E004',
-                )]
-
-    return []
+__all__ = [
+    'post_search', 'get_subject', 'default_search_mapper',
+    'load_search_client', 'process_search_data', 'get_pagination',
+    'get_filters', 'get_facets'
+]
