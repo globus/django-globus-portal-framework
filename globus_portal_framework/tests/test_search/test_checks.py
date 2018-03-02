@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.test.utils import override_settings
-from globus_portal_framework.search import (search_mapper_check,
-                                            search_schema_check)
+from globus_portal_framework.search.checks import (search_mapper_check,
+                                                   search_schema_check)
 from unittest import mock
 
 
@@ -26,21 +26,11 @@ class DjangoChecksTest(TestCase):
 
     @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
                 ('does.not.exist', 'nope'))
-    @override_settings(SEARCH_MAPPER=('does.not.exist', 'nope'))
     def test_mapper_with_invalid_mapper_returns_error(self):
         r = search_mapper_check(None)
         self.assertTrue(isinstance(r, list))
         self.assertEquals(len(r), 1)
-        self.assertEquals(r[0].id, 'globus_portal_framework.search.E002')
-
-    @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
-                (TEST_MAPPER[0], ''))
-    @override_settings(SEARCH_MAPPER=(TEST_MAPPER[0], ''))
-    def test_unset_mapper_returns_error(self):
-        r = search_mapper_check(None)
-        self.assertTrue(isinstance(r, list))
-        self.assertEquals(len(r), 1)
-        self.assertEquals(r[0].id, 'globus_portal_framework.search.E002')
+        self.assertEquals(r[0].id, 'globus_portal_framework.search.E001')
 
     @mock.patch('globus_portal_framework.search.settings.SEARCH_SCHEMA',
                 TEST_SCHEMA)
@@ -53,4 +43,4 @@ class DjangoChecksTest(TestCase):
     def test_schema_check_with_nonexistent_file(self):
         r = search_schema_check(None)
         self.assertEquals(len(r), 1)
-        self.assertEquals(r[0].id, 'globus_portal_framework.search.E004')
+        self.assertEquals(r[0].id, 'globus_portal_framework.search.E002')
