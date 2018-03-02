@@ -2,7 +2,6 @@ from __future__ import division
 
 import json
 import logging
-from datetime import datetime
 from importlib import import_module
 from urllib.parse import quote_plus, unquote
 import globus_sdk
@@ -19,6 +18,53 @@ def load_json_file(filename):
 
 
 SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
+
+
+def search(index, query, filters, user=None, page=1):
+    """Perform a search and return the relevant data for display to the user.
+    Returns a dict with search info stripped, containing only two relevant
+    fields:
+
+    {
+        'search_results': [{'title': 'My title'...} ...],
+        'facets': [{
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'buckets': [{'@datatype': 'GBucket',
+               '@version': '2017-09-01',
+               'count': 1310,
+               'field_name': 'mdf.resource_type',
+               'value': 'record'},
+              {'@datatype': 'GBucket',
+               '@version': '2017-09-01',
+               'count': 4,
+               'field_name': 'mdf.resource_type',
+               'value': 'dataset'}],
+            }, ...]
+    }
+
+    See Search docs here:
+    https://docs.globus.org/api/search/schemas/GSearchRequest/
+    """
+    if not index or not query:
+        return {'search_results': [], 'facets': []}
+
+    client = load_search_client(user)
+    gfilters = get_filters(filters)
+    result = client.post_search(
+        index,
+        {
+            'q': query,
+            'facets': SEARCH_SCHEMA['facets'],
+            'filters': gfilters,
+            'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
+            'limit': settings.SEARCH_RESULTS_PER_PAGE
+        })
+    return {'search_results': process_search_data(result.data['gmeta']),
+            'facets': get_facets(result, SEARCH_SCHEMA, filters),
+            'pagination': get_pagination(result.data['total'],
+                                         result.data['offset'])
+            }
 
 
 def default_search_mapper(gmeta_result, schema):
@@ -53,6 +99,32 @@ def default_search_mapper(gmeta_result, schema):
     return fields
 
 
+def get_subject(subject, user):
+    """Get a subject and run the result through the SEARCH_MAPPER defined
+    in settings.py. If no subject exists, return context with the 'subject'
+    and an 'error' message."""
+    client = load_search_client(user)
+    try:
+        result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
+        return process_search_data([result.data])[0]
+    except globus_sdk.exc.SearchAPIError:
+        return {'subject': subject, 'error': 'No data was found for subject'}
+
+
+def load_search_client(user):
+    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
+    logged in or a generic one otherwise."""
+    if user.is_authenticated:
+        tok_list = user.social_auth.get(provider='globus').extra_data
+        if tok_list.get('other_tokens'):
+            service_tokens = {t['resource_server']: t
+                              for t in tok_list['other_tokens']}
+            authorizer = globus_sdk.AccessTokenAuthorizer(
+                service_tokens['search.api.globus.org']['access_token'])
+            return globus_sdk.SearchClient(authorizer=authorizer)
+    return globus_sdk.SearchClient()
+
+
 def process_search_data(results):
     """
     Process results in a general search result, running the mapping function
@@ -62,6 +134,8 @@ def process_search_data(results):
     in from a simple query to Globus Search. See here:
     https://docs.globus.org/api/search/schemas/GMetaResult/
     :return: A list of search results:
+
+
     """
     mod_name, func_name = settings.SEARCH_MAPPER
     mod = import_module(mod_name)
@@ -75,8 +149,8 @@ def process_search_data(results):
     return structured_results
 
 
-def _get_pagination(total_results, offset,
-                    per_page=settings.SEARCH_RESULTS_PER_PAGE):
+def get_pagination(total_results, offset,
+                   per_page=settings.SEARCH_RESULTS_PER_PAGE):
     """
     Prepare pagination according to Globus Search. Since Globus Search handles
     returning paginated results, we calculate the offsets and send along which
@@ -111,7 +185,7 @@ def _get_pagination(total_results, offset,
     }
 
 
-def _get_filters(filters):
+def get_filters(filters):
     """
     Get Globus Search filters for each facet. Currently only supports
     "match_all".
@@ -134,7 +208,7 @@ def _get_filters(filters):
     } for name, values in filters.items()]
 
 
-def _get_facets(search_result, facet_map, filters):
+def get_facets(search_result, facet_map, filters):
     """Go through a search result, and add an attribute 'checked' to all facets
     which were originally provided as filters in the result. """
     facets = search_result.data.get('facet_results', [])
@@ -148,93 +222,3 @@ def _get_facets(search_result, facet_map, filters):
             if filtered_facets and bucket['value'] in filtered_facets:
                 bucket['checked'] = True
     return facets
-
-
-def search(index, query, filters, user=None, page=1):
-    """Perform a search and return the relevant data for display to the user.
-    Returns a dict with search info stripped, containing only two relevant
-    fields:
-
-    {
-        'search_results': [{'title': 'My title'...} ...],
-        'facets': [{
-            '@datatype': 'GFacetResult',
-            '@version': '2017-09-01',
-            'buckets': [{'@datatype': 'GBucket',
-               '@version': '2017-09-01',
-               'count': 1310,
-               'field_name': 'mdf.resource_type',
-               'value': 'record'},
-              {'@datatype': 'GBucket',
-               '@version': '2017-09-01',
-               'count': 4,
-               'field_name': 'mdf.resource_type',
-               'value': 'dataset'}],
-            }, ...]
-    }
-
-    See Search docs here:
-    https://docs.globus.org/api/search/schemas/GSearchRequest/
-    """
-    if not index or not query:
-        return {'search_results': [], 'facets': []}
-
-    client = load_search_client(user)
-    gfilters = _get_filters(filters)
-    result = client.post_search(
-        index,
-        {
-            'q': query,
-            'facets': SEARCH_SCHEMA['facets'],
-            'filters': gfilters,
-            'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
-            'limit': settings.SEARCH_RESULTS_PER_PAGE
-        })
-    return {'search_results': process_search_data(result.data['gmeta']),
-            'facets': _get_facets(result, SEARCH_SCHEMA, filters),
-            'pagination': _get_pagination(result.data['total'],
-                                          result.data['offset'])
-            }
-
-
-def load_search_client(user):
-    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
-    logged in or a generic one otherwise."""
-    if user.is_authenticated:
-        tok_list = user.social_auth.get(provider='globus').extra_data
-        if tok_list.get('other_tokens'):
-            service_tokens = {t['resource_server']: t
-                              for t in tok_list['other_tokens']}
-            authorizer = globus_sdk.AccessTokenAuthorizer(
-                service_tokens['search.api.globus.org']['access_token'])
-            return globus_sdk.SearchClient(authorizer=authorizer)
-    return globus_sdk.SearchClient()
-
-
-def get_subject(subject, user):
-    """Get a subject and run the result through the SEARCH_MAPPER defined
-    in settings.py. If no subject exists, return context with the 'subject'
-    and an 'error' message."""
-    client = load_search_client(user)
-    try:
-        result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
-        return process_search_data([result.data])[0]
-    except globus_sdk.exc.SearchAPIError:
-        return {'subject': subject, 'error': 'No data was found for subject'}
-
-
-def map_datacite(gmeta_result, schema):
-    fields = default_search_mapper([gmeta_result[0]['perfdata']], schema)
-    fields['title'] = \
-        gmeta_result[0]['perfdata'].get('titles', [''])[0] \
-        or gmeta_result['subject']
-    if gmeta_result[0].get('metadata'):
-        # Use titles defined in schema, fall back to ugly headers if those
-        # don't exist.
-        titles = SEARCH_SCHEMA.get('metadata', {}).get('field_titles') or \
-            gmeta_result[0]['metadata'][0]
-        fields['metadata'] = {
-            'table_head': titles,
-            'table_body': gmeta_result[0]['metadata'][1:]
-        }
-    return fields

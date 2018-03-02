@@ -12,11 +12,9 @@ from globus_portal_framework.tests.test_search import (get_mock_data,
                                                        TEST_SCHEMA,
                                                        )
 
-from globus_portal_framework.search.utils import (load_search_client,
-                                                  process_search_data,
-                                                  default_search_mapper,
-                                                  _get_pagination,
-                                                  _get_filters)
+from globus_portal_framework.search.utils import (
+    load_search_client, process_search_data, default_search_mapper,
+    get_pagination, get_filters)
 
 
 class MockSearchGetSubject:
@@ -77,15 +75,18 @@ class SearchUtilsTest(TestCase):
 
     @override_settings(RESULTS_PER_PAGE=10, MAX_PAGES=10)
     def test_pagination(self):
-        self.assertEqual(_get_pagination(1000, 0)['current_page'], 1)
-        self.assertEqual(_get_pagination(1000, 10)['current_page'], 2)
-        self.assertEqual(_get_pagination(1000, 20)['current_page'], 3)
-        self.assertEqual(len(_get_pagination(1000, 0)['pages']), 10)
+        self.assertEqual(get_pagination(1000, 0)['current_page'], 1)
+        self.assertEqual(get_pagination(1000, 10)['current_page'], 2)
+        self.assertEqual(get_pagination(1000, 20)['current_page'], 3)
+        self.assertEqual(len(get_pagination(1000, 0)['pages']), 10)
 
     def test_get_filters(self):
-        r = _get_filters({'titles': ['foo']})
+        r = get_filters({'titles': ['foo']})
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]['type'], 'match_all')
 
-        r = _get_filters({'titles': ['foo', 'bar']})
+        r = get_filters({'titles': ['foo', 'bar']})
         self.assertEqual(len(r), 1)
+
+    def test_get_facets(self):
+        pass
