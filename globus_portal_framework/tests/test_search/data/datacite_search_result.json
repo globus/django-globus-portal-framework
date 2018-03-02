@@ -1,7 +1,7 @@
 {
   "@datatype": "GMetaResult",
   "@version": "2017-09-01",
-  "content": [{
+  "content": [{"perfdata": {
     "alternate_identifiers": "013454",
     "contributors": "Wagner, Rick; Hallman, Eric J.; O’Shea, Brian W.; Burns, Jack O.; Norman, Michael L.; Harkness, Robert; So, Geoffrey (2013):",
     "creators": "Hallman, Eric J. Wagner, Rick",
@@ -21,6 +21,6 @@
     "subjects": ["Went Nile", "Mosquito", "Virus", "Health", "Murder Bugs"],
     "titles": "West Nile Virus (WNV) Mosquito Test Results",
     "version": "1.0.0"
-  }],
+  }}],
   "subject": "https://www.globus.org/app/transfer?origin_id=e38ee745-6d04-11e5-ba46-22000b92c6ec&origin_path=%2FSchleife%2Fcharge_density_and_difference_proton_MgO_V_O_v_0.5%2F"
 }

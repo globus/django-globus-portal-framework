@@ -71,8 +71,7 @@ class SearchUtilsTest(TestCase):
         schema = get_mock_data(TEST_SCHEMA)
         data = default_search_mapper(mock_data['content'],
                                      schema['fields'])
-        self.assertEqual(len(data), 1)
-        self.assertTrue(data.get('titles'))
+        self.assertEqual(sorted(list(data.keys())), ['title', 'titles'])
         self.assertEqual(sorted(data['titles'].keys()),
                          ['data', 'field_title'])
 
