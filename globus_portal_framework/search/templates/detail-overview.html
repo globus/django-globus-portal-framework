@@ -3,6 +3,7 @@
 
 
 {%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
   <link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
   <link rel="stylesheet" type="text/css" href="{% static 'css/detail-overview.css' %}" />
 {%endblock%}
@@ -10,43 +11,53 @@
 {% block detail_body %}
 
 <div class="row">
-    <div class="col-sm-4 column">
-        <h3 class="text-center ml-3 mb-5 mt-3">General Info</h3>
+    <div class="col-sm-4 border-right">
+        <h3 class="text-center mb-5 my-5">General Info</h3>
         <div id="column-general-info">
-            <ul class="m-0 p-0">
+            <ul>
                 {% if fields.resource_type %}
-                <li><i class="far fa-file fa-2x pr-2"></i>{{fields.resource_type.data.value}}</li>
+                <li class="my-4">
+                    <i class="far fa-file mr-1" style="font-size: 32px"></i>
+                    {{fields.resource_type.data.value}}
+                </li>
                 {% endif %}
 
                 {% if fields.subjects %}
-                <li><i class="fas fa-tag fa-2x pr-2"></i>Tags
+                <li class="my-4">
+                    <i class="fas fa-tag mr-1" style="font-size: 32px"></i>
+                    Tags
                     {% for subject in fields.subjects.data %}
-                        <span class="alert alert-info px-1 py-0" role="alert"><a href="#">{{subject.value}}</a></span>
+                        <span class="badge badge-primary">{{subject.value}}</span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.language %}
-                <li><i class="far fa-flag fa-2x pr-2"></i>{{fields.language.data.value}}</li>
+                <li class="my-4">
+                    <i class="far fa-flag mr-1" style="font-size: 32px"></i>
+                    {{fields.language.data.value}}
+                </li>
                 {% endif %}
 
                 {% if fields.formats %}
-                <li><i class="fas fa-paperclip fa-2x pr-2"></i>Formats
+                <li class="my-4"><i class="fas fa-paperclip mr-1" style="font-size: 32px"></i>Formats
                     {% for format in fields.formats.data %}
-                        <span class="alert alert-info px-1 py-0" role="alert"><a href="#">{{format.value}}</a></span>
+                        <span class="badge badge-primary">{{format.value}}</span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.publication_year %}
-                <li><i class="far fa-calendar fa-2x pr-2"></i>{{ fields.publication_year.data.value }}
+                <li class="my-4">
+                    <i class="far fa-calendar mr-1" style="font-size: 32px"></i>
+                    {{ fields.publication_year.data.value }}
                 </li>
                 {% endif %}
             </ul>
         </div>
     </div>
-    <div class="col-sm-4 column">
-        <h3 class="text-center mb-5 mt-3">Descriptive Metadata</h3>
+    <div class="col-sm-4 border-right">
+        <h3 class="text-center mb-5 my-5">Descriptive Metadata</h3>
         <div class="column-content">
 
             <h5>{{fields.creators.field_title}}</h5>
@@ -67,7 +78,7 @@
         </div>
     </div>
     <div class="col-sm-4">
-        <h3 class="text-center mb-5 mt-3">Data Provider</h3>
+        <h3 class="text-center mb-5 my-5">Data Provider</h3>
         <div class="column-content">
 
             <h5>{{fields.identifier.field_title}}</h5>

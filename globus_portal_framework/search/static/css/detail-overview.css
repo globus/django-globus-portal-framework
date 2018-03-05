@@ -1,9 +1,4 @@
 
-.column {
-    border-right: 1px solid #ccc;
-    min-height: 250px;
-}
-
 .column-content * {
     margin: 0px 0px 0px 20px;
     padding: 0px 0px 0px 0px;
@@ -15,7 +10,7 @@
 }
 
 #column-general-info ul, #column-general-info li {
-    font-size: 18px;
+    font-size: 24px;
     list-style-type: none;
     list-style-position: inside;
 }
