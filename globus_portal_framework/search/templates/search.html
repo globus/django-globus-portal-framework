@@ -61,19 +61,22 @@
         {% endif %}
         {% include "components/search-results.html" %}
 
-        <nav aria-label="Search results pages" class="text-center">
-          <ul id="pagination" class="pagination">
-            {% for page in search.pagination.pages %}
-            {% if page.number == search.pagination.current_page %}
-            <li class="active">
-            {% else %}
-            <li>
-            {% endif %}
-              <a href="#" onclick="customSearch({{page.number}});">{{page.number}}</a>
-            </li>
-            {% endfor %}
-          </ul>
-        </nav>
+
+        <div class="row justify-content-md-center">
+          <nav class="mt-3 mb-5" aria-label="Search Results Pages">
+            <ul class="pagination">
+              {% for page in search.pagination.pages %}
+              {% if page.number == search.pagination.current_page %}
+              <li class="page-item active">
+              {% else %}
+              <li class="page-item">
+              {% endif %}
+                <a class="page-link" href="#" onclick="customSearch({{page.number}});">{{page.number}}</a>
+              </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        </div>
 
       </div>
     </div>
