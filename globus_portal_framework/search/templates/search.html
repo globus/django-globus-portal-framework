@@ -53,7 +53,10 @@
 
       <div id="results" style="display: inline;">
         {% if not request.user.username %}
-        <div class="well">NOTE: Your search results are limited. Logging in can improve search results by displaying private results if you have permissions associated with your account.
+        <div class="alert alert-dark" role="alert">
+          NOTE: Your search results are limited. Logging in can improve search
+          results by displaying private results if you have permissions associated
+          with your account.
         </div>
         {% endif %}
         {% include "components/search-results.html" %}
