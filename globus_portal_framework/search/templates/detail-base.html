@@ -41,12 +41,7 @@
 
         <div class="card-body">
             <ul class="nav nav-tabs">
-              <li class="nav-item ml-2">
-                <a class="nav-link" href="{% url 'detail' subject %}"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>Overview</a>
-              </li>
-              <li class="nav-item ml-2">
-                <a class="nav-link" href="{% url 'detail-metadata' subject %}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span>Metadata</a>
-              </li>
+            {% include "components/detail-nav.html" %}
             </ul>
             <div class="container">
                 {%block detail_body %}
