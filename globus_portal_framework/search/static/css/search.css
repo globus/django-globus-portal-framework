@@ -16,6 +16,10 @@ h1, h2, h3, h4, h5, a {
     font-weight: 300;
 }
 
+.badge-primary {
+    background-color: #337ab7;
+}
+
 /*************************
  Main
 *************************/
