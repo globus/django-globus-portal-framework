@@ -53,15 +53,14 @@ def parse_globus_url(url):
     if 'globus://' not in url:
         raise ValueError('url "{}" did not start with "globus://"'.format(url))
     url_chunks = url.replace('globus://', '').split(':')
-    if len(url_chunks) >= 2 and len(url_chunks[0]) == 36:
-        return {
-            'endpoint': url_chunks[0],
-            # Not actually sure if extra ':' are valid, but we'll reconstruct
-            # the URL accordingly just to be sure.
-            'path': ':'.join(url_chunks[1:])
-        }
-    raise ValueError('Unable to find ":" to split path from endpoint for {}'
-                     ''.format(url))
+    if len(url_chunks) < 2:
+        raise ValueError('Unable to find ":" to split path from endpoint for '
+                         '{}'.format(url))
+    if len(url_chunks[0]) != 36:
+        raise ValueError('Malformed Globus endpoint UUID does not'
+                         'contain 36 characters: {}'
+                         ''.format(url_chunks[0]))
+    return url_chunks[0], ':'.join(url_chunks[1:])
 
 
 def preview(url, chunk_size=512):
@@ -69,9 +68,8 @@ def preview(url, chunk_size=512):
 
     Raises ValueError if the url produced a connection error
     """
-    # Use 'with' with 'stream' so we close the connection after we
-    # return.
     try:
+        # Use 'with' with 'stream' so we close the connection after we return.
         with requests.get(url, stream=True) as r:
             if r.status_code is not 200:
                 raise ValueError('Request returned non-ok code: ' +
