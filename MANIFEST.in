@@ -4,9 +4,11 @@ include requirements.txt
 
 include *.py
 recursive-include globus_portal_framework *.css
+recursive-include globus_portal_framework *.css.map
 recursive-include globus_portal_framework *.eot
 recursive-include globus_portal_framework *.html
 recursive-include globus_portal_framework *.js
+recursive-include globus_portal_framework *.js.map
 recursive-include globus_portal_framework *.json
 recursive-include globus_portal_framework *.otf
 recursive-include globus_portal_framework *.svg

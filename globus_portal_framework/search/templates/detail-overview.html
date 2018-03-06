@@ -1,72 +1,63 @@
-{%extends "components/detail-base.html"%}
+{%extends "detail-base.html"%}
 {% load static %}
 
 
 {%block headextras%}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/search/detail-base.css' %}" />
-  <link rel="stylesheet" type="text/css" href="{% static 'css/search/detail-overview.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-overview.css' %}" />
 {%endblock%}
 
-{% block subheading %}
-<h3>{{project_title}}</h3>
-<h2>{{fields.title.value}}</h2>
-{% endblock %}
-
-{% block subbody %}
+{% block detail_body %}
 
 <div class="row">
-    <div class="col-sm-4 column">
-        <h3 class="column-content">General Info</h3>
-        <div class="column-general-info">
+    <div class="col-sm-4 border-right">
+        <h3 class="text-center mb-5 my-5">General Info</h3>
+        <div id="column-general-info">
             <ul>
-                {% if fields.rights_list %}
-                <li><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
-                {{fields.rights_list.data.value}}
-                </li>
-                {% endif %}
-
                 {% if fields.resource_type %}
-                <li><span class="glyphicon glyphicon-file" aria-hidden="true"></span>
-                {{fields.resource_type.data.value}}
+                <li class="my-4">
+                    <i class="far fa-file mr-1" style="font-size: 32px"></i>
+                    {{fields.resource_type.data.value}}
                 </li>
                 {% endif %}
 
                 {% if fields.subjects %}
-                <li>
-                    <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
+                <li class="my-4">
+                    <i class="fas fa-tag mr-1" style="font-size: 32px"></i>
                     Tags
                     {% for subject in fields.subjects.data %}
-                        <span class="alert alert-info" role="alert"><a href="#">{{subject.value}}</a></span>
+                        <span class="badge badge-primary">{{subject.value}}</span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.language %}
-                <li><span class="glyphicon glyphicon-flag" aria-hidden="true"></span>
-                {{fields.language.data.value}}
+                <li class="my-4">
+                    <i class="far fa-flag mr-1" style="font-size: 32px"></i>
+                    {{fields.language.data.value}}
                 </li>
                 {% endif %}
 
                 {% if fields.formats %}
-                <li>
-                    <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span>
-                    Formats
+                <li class="my-4"><i class="fas fa-paperclip mr-1" style="font-size: 32px"></i>Formats
                     {% for format in fields.formats.data %}
-                        <span class="alert alert-info" role="alert"><a href="#">{{format.value}}</a></span>
+                        <span class="badge badge-primary">{{format.value}}</span>
                     {% endfor %}
                 </li>
                 {% endif %}
 
                 {% if fields.publication_year %}
-                <li><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-                {{ fields.publication_year.data.value }}
+                <li class="my-4">
+                    <i class="far fa-calendar-alt mr-1" style="font-size: 32px"></i>
+                    {{ fields.publication_year.data.value }}
                 </li>
                 {% endif %}
             </ul>
         </div>
     </div>
-    <div class="col-sm-4 column">
-        <h3 class="text-center column-title">Descriptive Metadata</h3>
+    <div class="col-sm-4 border-right">
+        <h3 class="text-center mb-5 my-5">Descriptive Metadata</h3>
         <div class="column-content">
 
             <h5>{{fields.creators.field_title}}</h5>
@@ -87,7 +78,7 @@
         </div>
     </div>
     <div class="col-sm-4">
-        <h3 class="text-center column-title">Data Provider</h3>
+        <h3 class="text-center mb-5 my-5">Data Provider</h3>
         <div class="column-content">
 
             <h5>{{fields.identifier.field_title}}</h5>

@@ -1,0 +1,55 @@
+{%extends "base.html"%}
+{% load static %}
+
+{%block title%}Detail{%endblock%}
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
+{%endblock%}
+
+{%block body%}
+  {%include "components/header.html"%}
+
+{% include "components/error.html"%}
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+              <a href="/">Back to Search</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <div id="card-heading-logo" class="pr-2">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div id="card-heading-titles">
+                    {% block detail_title %}
+                    <h3>{{project_title}}</h3>
+                    <h2>{{fields.title.value}}</h2>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <ul class="nav nav-tabs">
+            {% include "components/detail-nav.html" %}
+            </ul>
+            <div class="container">
+                {%block detail_body %}
+                {%endblock%}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

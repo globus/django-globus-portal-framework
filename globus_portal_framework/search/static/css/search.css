@@ -1,125 +1,23 @@
 
 /* General */
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_4_0.woff') format('woff');
-    font-weight: 100 ;
-}
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_3_0.woff') format('woff');
-    font-weight: 500 ;
-}
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_1_0.woff') format('woff');
-    font-weight: 300 ;
-}
-@font-face {
-    font-family: 'museosans';
-    src: url('../fonts/221E91_0_0.woff') format('woff');
-    font-weight: 700 ;
-}
 html, body {
   font-family: museosans,"Helvetica Neue",Helvetica,Arial,sans-serif;
   font-weight: 300;
-  margin: 0;
-  padding: 0;
   font-size: 14px;
   color: #333;
 }
-html * {
-  box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-}
+
 h1 { font-size: 30px; }
 h2 { font-size: 26px; }
 h3 { font-size: 18px; }
 h5 { font-size: 16px; }
-h1, h2, h3, h4, h5 {
+h1, h2, h3, h4, h5, a {
     color: #708FCA;
-    font-weight: 100;
+    font-weight: 300;
 }
-main .container {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-main .row { margin-bottom: 10px; }
 
-/*************************
- Header
-*************************/
-header {
-  margin-bottom: 10px;
-  font-weight: 100;
-  background-color: #ededed;
-}
-header .navbar {
-  margin-bottom: 0;
-}
-header .navbar .navbar-brand {
-  height: auto;
-}
-header .navbar #beta {
-  margin-top: 3px;
-}
-header .navbar .navbar-toggle {
-    border-color: #bbb;
-}
-header .navbar .navbar-toggle .icon-bar {
-    background-color: #bbb;
-}
-header .navbar .nav {
-    margin-top: 17px;
-}
-header .navbar .nav > li {
-    font-size: 17px;
-    margin-left: 8px;
-    margin-right: 8px;
-    font-weight: 100;
-}
-header .navbar .nav > li > a {
-    color: #fff;
-    border-radius: 4px;
-}
-.navbar-btn {
-    font-size: 17px;
-    font-weight: 100;
-    color: #fff;
-    border-radius: 4px;
-    background-color: #186eb8;
-    border: 0;
-    margin-top: 15px;
-}
-.nav>li>a:focus,
-.nav>li>a:hover,
-.nav>li>a:active {
-    background-color: #468cc8;
-    color: #fff;
-}
-#user_icon {
-    width: 30px;
-    height: 30px;
-    margin-right: 10px;
-}
-/* Media Queries */
-@media (min-width: 768px) {
-  header .navbar .navbar-brand {
-      margin-left: 0;
-  }
-  #user_icon {
-      width: 36px;
-      height: 36px;
-  }
-  header .navbar .nav > li {
-    margin-left: 15px;
-    margin-right: 0px;
-  }
-  .navbar-nav>li>a {
-    margin-top: inherit;
-    padding: 8px 12px;
-  }
+.badge-primary {
+    background-color: #337ab7;
 }
 
 /*************************
@@ -127,32 +25,22 @@ header .navbar .nav > li > a {
 *************************/
 /* search bar */
 
-body {
-  margin-top: 55px;
-}
-
 #search-form {
     display: flex;
     flex-direction: row;
 }
 
 #search-form #search-input,
-#search-form #search-btn,
-#search-form #index-select {
+#search-form #search-btn {
     font-size: 17px;
     height: 42px;
     border-radius: 4px;
     text-indent: 10px;
-    margin-top: 30px;
-    margin-bottom: 30px;
 }
-#search-form #search-btn,
-#search-form #index-select-dropdown {
+#search-form #search-btn  {
   color: #fff;
   background: #186eb8;
   border-color: #186eb8;
-  margin-right: 10px;
-  top: 0;
 }
 
 #search-form #search-input {
@@ -160,12 +48,7 @@ body {
     margin-right: -42px;
 }
 
-#search-form #index-select {
-    margin-right: -25px;
-}
-
 #results #search-result .result-item em {
-  font-style: normal;
   font-weight: bold;
 }
 /* Media Queries */
@@ -178,53 +61,15 @@ body {
   }
 }
 /* sidebar */
-#sidebar {
-  margin-bottom: 10px;
-}
-#sidebar .panel .panel-heading {
-  color: #fff;
-  background: #186eb8;
-  border-color: #186eb8;
-}
-#sidebar .panel .panel-heading,
-#sidebar .panel .panel-heading.collapsed {
-  border-radius: 4px;
-}
-#sidebar .panel .panel-heading {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-#sidebar .panel .panel-heading h3.panel-title{
+#sidebar .card .card-header h3.card-title{
   font-weight: 300;
 }
 legend {
     font-size: 16px;
-    margin-bottom: 10px;
 }
-fieldset.facet-fieldset {
-  margin-bottom: 15px;
-}
-fieldset.facet-fieldset input {
-  margin-right: 5px;
+fieldset.facet-fieldset legend {
+    border-bottom: 1px solid #ccc;
 }
 .fieldset-container {
-    max-height: 200px;
-    overflow-y: scroll;
-}
-
-/* Media Queries */
-
-@media (min-width: 768px) {
-  #sidebar .panel {
-    border: 0;
-    box-shadow: none;
-  }
-  #sidebar .panel .panel-heading {
-    display: none;
-  }
-  #sidebar .panel .panel-body.collapse,
-  #sidebar .panel .panel-body {
-    display: block;
-    padding: 0;
-  }
+    max-height: 300px;
 }

@@ -1,0 +1,13 @@
+
+#card-heading-logo {
+    float: left;
+    font-size: 35px;
+}
+
+#card-heading-titles * {
+    font-weight: 700;
+    padding-top: 0px;
+    margin-top: 0px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
