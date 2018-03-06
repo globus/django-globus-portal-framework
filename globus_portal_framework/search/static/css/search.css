@@ -71,6 +71,5 @@ fieldset.facet-fieldset legend {
     border-bottom: 1px solid #ccc;
 }
 .fieldset-container {
-    max-height: 200px;
-    overflow-y: scroll;
+    max-height: 300px;
 }
