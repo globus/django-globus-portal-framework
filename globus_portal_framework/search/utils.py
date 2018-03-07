@@ -202,17 +202,51 @@ def get_filters(filters):
     } for name, values in filters.items()]
 
 
-def get_facets(search_result, facet_map, filters):
-    """Go through a search result, and add an attribute 'checked' to all facets
-    which were originally provided as filters in the result. """
+def get_facets(search_result, search_schema, filters):
+    """Prepare facets for display. Globus Search data is removed from results
+    and the results are ordered according to the facet map. Empty categories
+    are removed and any filters the user checked are tracked.
+
+    :param search_result: A raw search result from Globus Search
+    :param search_schema: SEARCH_SCHEMA in settings.py
+    :param filters: A dict of user-selected filters, an example like this:
+        {'searchdata.contributors.value': ['Cobb, Jane', 'Reynolds, Malcolm']}
+
+    :return: A list of facets. An example is here:
+        [
+            {
+            'name': 'Contributor'
+            'buckets': [{
+                   'checked': False,
+                   'count': 4,
+                   'field_name': 'searchdata.contributors.contributor_name',
+                   'value': 'Cobb, Jane'},
+                  {'checked': True,
+                   'count': 4,
+                   'field_name': 'searchdata.contributors.contributor_name',
+                   'value': 'Reynolds, Malcolm'}
+                   # ...<More Buckets>
+                   ],
+            },
+            # ...<More Facets>
+        ]
+
+      """
     facets = search_result.data.get('facet_results', [])
-    # Create a table we can use to lookup facets by name
-    fac_lookup = {f['name']: f['field_name'] for f in facet_map['facets']}
-    # Set the field_name identifier on each facet
-    for facet in facets:
-        for bucket in facet['buckets']:
-            bucket['field_name'] = fac_lookup[facet['name']]
-            filtered_facets = filters.get(bucket['field_name'])
-            if filtered_facets and bucket['value'] in filtered_facets:
-                bucket['checked'] = True
-    return facets
+    # Remove facets without buckets so we don't display empty fields
+    pruned_facets = {f['name']: f['buckets'] for f in facets if f['buckets']}
+    cleaned_facets = []
+    for f in search_schema['facets']:
+        buckets = pruned_facets.get(f['name'])
+        if buckets:
+            facet = {'name': f['name'], 'buckets': []}
+            for bucket in buckets:
+                facet['buckets'].append({
+                    'count': bucket['count'],
+                    'value': bucket['value'],
+                    'field_name': f['field_name'],
+                    'checked': bucket['value'] in
+                    filters.get(f['field_name'], [])
+                })
+            cleaned_facets.append(facet)
+    return cleaned_facets
