@@ -61,7 +61,8 @@ def index(request):
     http://myhost/?q=foo*&page=2&filter.my.special.filter=goodresults
     """
     context = {}
-    query = request.GET.get('q') or request.session.get('query')
+    query = request.GET.get('q') or request.session.get('query') or \
+        settings.DEFAULT_QUERY
     if query:
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}

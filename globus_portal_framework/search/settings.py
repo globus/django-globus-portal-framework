@@ -21,3 +21,8 @@ SEARCH_ENTRY_TITLE = getattr(settings, 'SEARCH_ENTRY_TITLE', 'titles')
 
 SEARCH_RESULTS_PER_PAGE = getattr(settings, 'SEARCH_RESULTS_PER_PAGE', 10)
 SEARCH_MAX_PAGES = getattr(settings, 'SEARCH_MAX_PAGES', 10)
+# This will be the automatic search query when the user loads the page, if
+# they have not submitted their own query or there is no query loaded in the
+# session. "*" will automatically search everything, but may not be desirable
+# if there is a lot of search data in the index, as searches will take a while
+DEFAULT_QUERY = getattr(settings, 'DEFAULT_QUERY', '')
