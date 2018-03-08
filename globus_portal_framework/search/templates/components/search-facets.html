@@ -7,7 +7,7 @@
             <input type="checkbox" name="filter.{{field.field_name}}"
                     value="{{field.value}}" class="facet-checkbox mr-1"
                     {# Reset page to 1 if user facets on a paginated search #}
-                    onchange="customSearch(1);"
+                    onchange="customSearch(1);" autocomplete="off"
                     {% if field.checked %}
                     checked
                     {% endif %}
