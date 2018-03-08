@@ -82,6 +82,11 @@ def preview(user, url, chunk_size=512):
             if r.status_code is not 200:
                 raise ValueError('Request returned non-ok code: ' +
                                  r.status_code)
-            return next(r.iter_content(chunk_size=chunk_size)).decode('utf-8')
+            chunk = next(r.iter_content(chunk_size=chunk_size)).decode('utf-8')
+            # The last line will likely come back truncated, so chop it off
+            # so that the preview data we get is cleaner. Since all the data
+            # we get back will be text (we can't process other formats), this
+            # should always work.
+            return '\n'.join(chunk.split('\n')[:-1])
     except UnicodeDecodeError:
         return 'binary'
