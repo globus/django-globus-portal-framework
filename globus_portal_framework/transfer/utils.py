@@ -63,17 +63,25 @@ def parse_globus_url(url):
     return url_chunks[0], ':'.join(url_chunks[1:])
 
 
-def preview(url, chunk_size=512):
+def preview(user, url, chunk_size=512):
     """Download the first number of 'bytes' the given 'url'
+
+    Returns 'binary' if content is binary
 
     Raises ValueError if the url produced a connection error
     """
     try:
+        tok_list = user.social_auth.get(provider='globus').extra_data
+        service_tokens = {t['resource_server']: t
+                          for t in tok_list['other_tokens']}
+        headers = {'Authorization': 'Bearer {}'.format(
+            service_tokens['petrel_https_server']['access_token']
+        )}
         # Use 'with' with 'stream' so we close the connection after we return.
-        with requests.get(url, stream=True) as r:
+        with requests.get(url, stream=True, headers=headers) as r:
             if r.status_code is not 200:
                 raise ValueError('Request returned non-ok code: ' +
                                  r.status_code)
             return next(r.iter_content(chunk_size=chunk_size)).decode('utf-8')
-    except requests.exception.ConnectionError:
-        raise ValueError('Connection Error in request')
+    except UnicodeDecodeError:
+        return 'binary'
