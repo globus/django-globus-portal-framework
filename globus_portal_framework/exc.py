@@ -50,3 +50,15 @@ class PreviewBinaryData(PreviewException):
     def __init__(self):
         self.code = 'BinaryData'
         self.message = 'Preview is unable to display binary data.'
+
+
+class ExpiredGlobusToken(Exception):
+    def __init__(self, token_name=''):
+        """
+        :param token_name: Name of Globus Token
+        """
+        self.message = 'Your Globus Token has expired.'
+        self.token_name = token_name
+
+    def __str__(self):
+        return self.message

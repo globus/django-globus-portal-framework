@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Social Django needed for Globus Auth
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    'globus_portal_framework.middleware.TokenExpiredMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [

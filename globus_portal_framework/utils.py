@@ -1,4 +1,15 @@
 import globus_sdk
+from django.conf import settings
+
+
+def validate_token(tok):
+    ac = globus_sdk.ConfidentialAppAuthClient(
+        settings.SOCIAL_AUTH_GLOBUS_KEY,
+        settings.SOCIAL_AUTH_GLOBUS_SECRET
+    )
+    # We probably shouldn't call this directly every time, since it incurs
+    # a cost on each request made with a token.
+    return ac.oauth2_validate_token(tok['access_token']).get('active', False)
 
 
 def load_globus_access_token(user, token_name):
