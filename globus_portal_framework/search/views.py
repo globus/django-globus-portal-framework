@@ -71,6 +71,7 @@ def index(request):
                                               request.user,
                                               request.GET.get('page', 1))
         request.session['search'] = {
+            'full_query': request.get_full_path(),
             'query': query,
             'filters': filters,
         }
