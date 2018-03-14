@@ -25,21 +25,21 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="/">{{project_title}}</a>
+        <a class="navbar-brand" href="/">{{ project_title|default:"Globus Portal Framework" }}</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto"></ul>
           <ul class="navbar-nav my-lg-0">
-            {%if request.user.is_authenticated %}
+            {%if auth_enabled and request.user.is_authenticated %}
             <li>
               <a class="nav-link" href="{% url 'logout' %}?next=/">Logout</a>
             </li>
             <li>
               <a class="nav-link" href="/">{{request.user.username }}</a>
             </li>
-            {% else %}
+            {% elif auth_enabled %}
             <li>
               <a class="nav-link" href="{% url 'login' %}globus?next=/">Login</a>
             </li>

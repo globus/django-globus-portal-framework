@@ -3,9 +3,6 @@ from os.path import join, dirname
 from django.conf import settings
 
 
-FOO = getattr(settings, 'FOO', "default_value")
-
-PROJECT_TITLE = getattr(settings, 'PROJECT_TITLE', 'Globus Portal Framework')
 # "perfdata" search index
 SEARCH_INDEX = getattr(settings, 'SEARCH_INDEX',
                        '5e83718e-add0-4f06-a00d-577dc78359bc')
