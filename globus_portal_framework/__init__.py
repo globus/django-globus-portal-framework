@@ -1,13 +1,21 @@
 
 from globus_portal_framework.version import __version__
 
+from globus_portal_framework.utils import (load_auth_client,
+                                           load_globus_access_token)
+
+from globus_portal_framework.exc import (PreviewPermissionDenied,
+                                         PreviewServerError, PreviewException,
+                                         PreviewBinaryData, PreviewNotFound)
+
 from globus_portal_framework import search, transfer
 
 from globus_portal_framework.search import (
     post_search, get_subject, default_search_mapper
 )
-from globus_portal_framework.transfer.utils import (
-    transfer_file, preview
+from globus_portal_framework.transfer import (
+    load_transfer_client, check_exists, transfer_file, parse_globus_url,
+    preview,
 )
 
 
@@ -15,10 +23,16 @@ __all__ = [
 
     '__version__',
 
+    'load_auth_client', 'load_globus_access_token',
+
+    'PreviewPermissionDenied', 'PreviewServerError', 'PreviewException',
+    'PreviewBinaryData', 'PreviewNotFound',
+
     'search', 'transfer',
 
-    'post_search', 'get_subject', 'default_search_mapper',
+    'post_search', 'get_subject', 'default_search_mapper', 'load_search_client'
 
-    'load_transfer_client', 'transfer_file', 'parse_globus_url', 'preview',
+    'load_transfer_client', 'check_exists', 'transfer_file',
+    'parse_globus_url', 'preview',
 
 ]
