@@ -100,7 +100,7 @@ def default_search_mapper(gmeta_result, schema):
     return fields
 
 
-def get_subject(subject, user):
+def get_subject(subject, user=None):
     """Get a subject and run the result through the SEARCH_MAPPER defined
     in settings.py. If no subject exists, return context with the 'subject'
     and an 'error' message."""
@@ -112,7 +112,7 @@ def get_subject(subject, user):
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
-def load_search_client(user):
+def load_search_client(user=None):
     """Load a globus_sdk.SearchClient, with a token authorizer if the user is
     logged in or a generic one otherwise."""
     return load_globus_client(user, globus_sdk.SearchClient,
