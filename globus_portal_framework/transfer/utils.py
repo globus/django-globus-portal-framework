@@ -3,7 +3,12 @@ import globus_sdk
 import logging
 import os
 
-from globus_portal_framework.utils import load_globus_client
+from globus_portal_framework.utils import (load_globus_client,
+                                           load_globus_access_token)
+from globus_portal_framework import (PreviewPermissionDenied,
+                                     PreviewServerError, PreviewException,
+                                     PreviewBinaryData, PreviewNotFound)
+from globus_portal_framework.transfer import settings as transfer_settings
 
 log = logging.getLogger(__name__)
 
@@ -11,6 +16,25 @@ log = logging.getLogger(__name__)
 def load_transfer_client(user):
     return load_globus_client(user, globus_sdk.TransferClient,
                               'transfer.api.globus.org')
+
+
+def check_exists(user, src_ep, src_path):
+    """Check if a file exists on a Globus Endpoint
+
+    If the file exists, Returns True
+
+    Raises globus_sdk.TransferAPIError if the file does not exist,
+    the endpoint is not active, or the user does not have permission."""
+    tc = load_transfer_client(user)
+    try:
+        tc.operation_ls(src_ep, path=src_path)
+    except globus_sdk.TransferAPIError as tapie:
+        # File exists but is not a directory. We'll not take it personally.
+        if tapie.code == 'ExternalError.DirListingFailed.NotDirectory':
+            pass
+        else:
+            raise
+    return True
 
 
 def transfer_file(user, source_endpoint, source_path,
@@ -66,27 +90,36 @@ def parse_globus_url(url):
 def preview(user, url, chunk_size=512):
     """Download the first number of 'bytes' the given 'url'
 
-    Returns 'binary' if content is binary
-
-    Raises ValueError if the url produced a connection error
+    Raises PreviewException if fetching the preview data if there are any
+    errors, which will be one of the following Exceptions:
+    (All exceptions located under globus_portal_framework)
+    * PreviewPermissionDenied -- insufficient permissions
+    * PreviewNotFound -- file not found on preview server
+    * PreviewBinaryData -- Data is not text
+    * PreviewServerError -- Preview server threw a 500 error
+    * PreviewException -- Something else we didn't expect
     """
     try:
-        tok_list = user.social_auth.get(provider='globus').extra_data
-        service_tokens = {t['resource_server']: t
-                          for t in tok_list['other_tokens']}
-        headers = {'Authorization': 'Bearer {}'.format(
-            service_tokens['petrel_https_server']['access_token']
-        )}
+        token = load_globus_access_token(user,
+                                         transfer_settings.PREVIEW_TOKEN_NAME)
+        headers = {'Authorization': 'Bearer {}'.format(token)}
         # Use 'with' with 'stream' so we close the connection after we return.
         with requests.get(url, stream=True, headers=headers) as r:
-            if r.status_code is not 200:
-                raise ValueError('Request returned non-ok code: ' +
-                                 r.status_code)
-            chunk = next(r.iter_content(chunk_size=chunk_size)).decode('utf-8')
-            # The last line will likely come back truncated, so chop it off
-            # so that the preview data we get is cleaner. Since all the data
-            # we get back will be text (we can't process other formats), this
-            # should always work.
-            return '\n'.join(chunk.split('\n')[:-1])
+            if r.status_code == 200:
+                chunk = next(r.iter_content(chunk_size=chunk_size)).decode(
+                             'utf-8')
+                # The last line will likely come back truncated, so chop it off
+                # so that the preview data we get is cleaner. Since all the
+                # data we get back will be text (we can't process other
+                # formats), this should always work.
+                return '\n'.join(chunk.split('\n')[:-1])
+            elif r.status_code in [401, 403]:
+                raise PreviewPermissionDenied()
+            elif r.status_code == 404:
+                raise PreviewNotFound()
+            elif r.status_code >= 500 or r.status_code < 600:
+                raise PreviewServerError(r.status_code, r.text)
+            else:
+                raise PreviewException()
     except UnicodeDecodeError:
-        return 'binary'
+        raise PreviewBinaryData()
