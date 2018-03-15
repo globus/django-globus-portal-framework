@@ -87,7 +87,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
-                'globus_portal_framework.search.context_processors.globals',
+                'globus_portal_framework.context_processors.globals',
             ],
         },
     },
