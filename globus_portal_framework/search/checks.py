@@ -21,8 +21,10 @@ def search_mapper_check(app_configs, **kwargs):
 
     if mapper is None:
         return [Error(
-                'Could not find custom mapper %s at %s' % (func, mod_name),
-                hint='Ensure the path is set correctly',
+                'Could not find "SEARCH_MAPPER" %s at %s' % (func, mod_name),
+                hint='Check "SEARCH_MAPPER" in settings.py is a function '
+                     'located at '
+                     '"%s"' % '.'.join(settings.SEARCH_MAPPER),
                 obj=settings,
                 id='globus_portal_framework.search.E001',
                 )]
