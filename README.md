@@ -11,7 +11,7 @@ Let's get started with a simple Globus Search portal.
 
 ```
     $ pip install django-admin
-    $ pip install -e https://github.com/globusonline/django-globus-portal-framework
+    $ pip install -e git+https://github.com/globusonline/django-globus-portal-framework#egg=django-globus-portal-framework
     $ django-admin startproject myproject
 ```
 
@@ -21,13 +21,13 @@ Integrate it into your app in `myproject/settings.py`
     INSTALLED_APPS = [
         ...
         # This contains general Globus portal tools
-        'django-globus-portal-framework',
+        'globus_portal_framework',
         # This contains a search portal we will use for this demo
-        'django-globus-portal-framework.search',
+        'globus_portal_framework.search',
     ]
 ```
 
-Then wire up the search portal in your 'myproject/urls.py'
+Then wire up the search portal in your `myproject/urls.py`
 
 ```
     from django.urls import path, include
@@ -59,7 +59,7 @@ For our portal, ensure your Globus App has these settings:
 * **Redirect URL**--http://localhost:8000/complete/globus/
 * **Native App**--Unchecked
 
-After you create your app, add these to 'myproject/settings.py'
+After you create your app, add these to `myproject/settings.py`
 
 ```
     SOCIAL_AUTH_GLOBUS_KEY = '<YOUR APP CLIENT ID>'
@@ -119,7 +119,7 @@ override them in your settings.py:
 SEARCH_INDEX = 'perfdata'
 # Path to the schema defining which facets and fields will be displayed.
 SEARCH_SCHEMA = os.path.join(BASE_DIR,
-                             'myproject/data/datacite.json')
+                             'myproject/data/my_search_fields.json')
 # A function for preparing search results in template data
 SEARCH_MAPPER = ('myproject.utils', 'my_mapper')
 # The nested path for search entry data in Globus Search. Typically this is
@@ -129,7 +129,7 @@ SEARCH_ENTRY_FIELD_PATH = 'perfdata'
 
 A common search schema file looks like this:
 
-`myproject/data/myfields.json`
+`myproject/data/my_search_fields.json`
 ```
 {
   "fields": {
@@ -156,19 +156,22 @@ A common search schema file looks like this:
 An example for needing a custom SEARCH_MAPPER would be to parse dates before
 they are used within the templates. An example would look like this:
 
-
+`myproject/utils.py`
 ```
     from datetime import datetime
     from globus_portal_framework import default_search_mapper
 
 
     def my_mapper(entry, schema):
-
+        # Automap fields in settings.SEARCH_SCHEMA
         fields = default_search_mapper(entry, schema)
-        # Dates from my search index are formatted: '2018-12-30'
-        # Format them into datetimes for Django templates
-        fields['dates'] = [{'value': datetime.strptime(d.get('value'), '%Y-%m-%d')}
-                           for d in fields.get('dates', [])]
+        # Dates from my search index are formatted: '2018-12-30'. Format them into
+        # datetimes for Django templates. Disregard other info in ['dates']['data']
+        if fields.get('dates'):
+            fields['dates']['data'] = [
+                {'value': datetime.strptime(d['value'], '%Y-%m-%d')}
+                for d in fields['dates']['data'] if d.get('value')
+            ]
         return fields
 ```
 
@@ -186,6 +189,9 @@ TEMPLATES = [
 ]
 ```
 
+**Note**: You _must_ name your file `/components/search-results.html` in order
+for your template to override the builtin.
+
 `myproject/templates/components/search-results.html`
 ```
 <h2>Search Results</h2>
@@ -199,7 +205,7 @@ TEMPLATES = [
       Contributors: {%for contributor in result.fields.contributors.data%}
                 {{contributor.contributor_name}}{% if not forloop.last %},{%endif%}
                 {%endfor%}<br>
-      <strong>My Custom Date Field:{% for date in result.fields.dates.data %}
+      <strong>Date: {% for date in result.fields.dates.data %}
       {{date.value}}<br>
       {% endfor %}
       </strong>
