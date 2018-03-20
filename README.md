@@ -5,6 +5,11 @@ Tools, including Globus Search, Transfer, Auth, and more! Drop in pre-built
 defaults to get started quickly, and easily tweak any component when you
 need to do things your way.
 
+## Requirements
+
+* Python 3
+* Django 2.0
+
 ## 5 Minute Quick-Start
 
 Let's get started with a simple Globus Search portal.
