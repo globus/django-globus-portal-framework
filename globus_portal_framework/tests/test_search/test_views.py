@@ -15,7 +15,7 @@ class SearchViewsTest(TestCase):
 
     def test_index(self):
         r = self.c.get('/')
-        assert r.status_code == 200
+        self.assertEqual(r.status_code, 200)
 
     @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
                 test_search.DEFAULT_MAPPER)

@@ -1,6 +1,11 @@
+from datetime import datetime
+import pytz
 from django.contrib.auth.models import User
 from social_django.models import UserSocialAuth
 import globus_sdk
+
+# Two days in seconds
+TOKEN_EXPIRE_TIME = 48 * 60 * 60
 
 
 class MockGlobusClient:
@@ -17,15 +22,17 @@ def mock_user(username, tokens):
     :param tokens: token scopes, such as ['search.api.globus.org']
     :return: Django User Object
     """
-    user = User.objects.create_user(username=username)
+    user = User.objects.create_user(username, username + '@globus.org',
+                                    'globusrocks')
     extra_data = {
         'user': user,
         'provider': 'globus',
         'extra_data': {'other_tokens': [
             {'resource_server': token,
-             'access_token': 'foo'}
+             'access_token': 'foo', 'expires_in': TOKEN_EXPIRE_TIME}
         ] for token in tokens}
     }
+    user.last_login = datetime.now(pytz.utc)
     soc_auth = UserSocialAuth.objects.create(**extra_data)
     user.provider = 'globus'
     user.save()

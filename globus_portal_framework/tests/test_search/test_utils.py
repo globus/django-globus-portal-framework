@@ -1,7 +1,10 @@
+from datetime import timedelta
 from unittest import mock
 from django.test import TestCase, Client
 from django.test.utils import override_settings
 from django.contrib.auth.models import AnonymousUser
+from django.utils import timezone
+
 from globus_portal_framework.tests.test_search import (get_mock_data,
                                                        SEARCH_SCHEMA,
                                                        MOCK_RESULT,
@@ -15,6 +18,8 @@ from globus_portal_framework.tests.mocks import (
 from globus_portal_framework.search.utils import (
     load_search_client, process_search_data, default_search_mapper,
     get_pagination, get_filters)
+
+from globus_portal_framework.exc import ExpiredGlobusToken
 
 
 class MockSearchGetSubject:
@@ -33,6 +38,15 @@ class SearchUtilsTest(TestCase):
         user = mock_user('bob', ['search.api.globus.org'])
         c = load_search_client(user)
         self.assertTrue(globus_client_is_loaded_with_authorizer(c))
+
+    @mock.patch('globus_sdk.SearchClient', MockGlobusClient)
+    @override_settings(SESSION_COOKIE_AGE=9999999999)
+    def test_load_search_client_expired_tokens_raises_exception(self):
+        user = mock_user('bob', ['search.api.globus.org'])
+        user.last_login = timezone.now() - timedelta(days=3)
+        user.save()
+        with self.assertRaises(ExpiredGlobusToken):
+            c = load_search_client(user)
 
     @mock.patch('globus_sdk.SearchClient', MockGlobusClient)
     def test_load_search_client_with_bad_token(self):
