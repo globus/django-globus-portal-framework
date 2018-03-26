@@ -4,10 +4,12 @@ import logging
 import os
 
 from globus_portal_framework.utils import (load_globus_client,
-                                           load_globus_access_token)
+                                           load_globus_access_token,
+                                           validate_token)
 from globus_portal_framework import (PreviewPermissionDenied,
                                      PreviewServerError, PreviewException,
-                                     PreviewBinaryData, PreviewNotFound)
+                                     PreviewBinaryData, PreviewNotFound,
+                                     ExpiredGlobusToken)
 from globus_portal_framework.transfer import settings as transfer_settings
 
 log = logging.getLogger(__name__)
@@ -113,7 +115,12 @@ def preview(user, url, chunk_size=512):
                 # data we get back will be text (we can't process other
                 # formats), this should always work.
                 return '\n'.join(chunk.split('\n')[:-1])
-            elif r.status_code in [401, 403]:
+            elif r.status_code == 401:
+                if not validate_token(token):
+                    raise ExpiredGlobusToken(
+                        token_name=transfer_settings.PREVIEW_TOKEN_NAME)
+                raise PreviewPermissionDenied()
+            elif r.status_code == 403:
                 raise PreviewPermissionDenied()
             elif r.status_code == 404:
                 raise PreviewNotFound()

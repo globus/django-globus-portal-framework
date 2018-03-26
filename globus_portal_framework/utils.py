@@ -1,15 +1,19 @@
+from datetime import timedelta
+from django.utils import timezone
 import globus_sdk
 from django.conf import settings
+from globus_portal_framework.exc import ExpiredGlobusToken
 
 
 def validate_token(tok):
+    """Validate if the given token is active.
+
+    Returns true if active, raises ExpiredGlobusToken exception if not"""
     ac = globus_sdk.ConfidentialAppAuthClient(
         settings.SOCIAL_AUTH_GLOBUS_KEY,
         settings.SOCIAL_AUTH_GLOBUS_SECRET
     )
-    # We probably shouldn't call this directly every time, since it incurs
-    # a cost on each request made with a token.
-    return ac.oauth2_validate_token(tok['access_token']).get('active', False)
+    return ac.oauth2_validate_token(tok).get('active', False)
 
 
 def load_globus_access_token(user, token_name):
@@ -22,6 +26,9 @@ def load_globus_access_token(user, token_name):
                               for t in tok_list['other_tokens']}
             service_token = service_tokens.get(token_name)
             if service_token:
+                exp_td = timedelta(seconds=service_token['expires_in'])
+                if user.last_login + exp_td < timezone.now():
+                    raise ExpiredGlobusToken(token_name=token_name)
                 return service_token['access_token']
             else:
                 raise ValueError('Attempted to load {} for user {}, but no '

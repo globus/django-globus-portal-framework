@@ -6,7 +6,8 @@ from globus_portal_framework.utils import (load_auth_client,
 
 from globus_portal_framework.exc import (PreviewPermissionDenied,
                                          PreviewServerError, PreviewException,
-                                         PreviewBinaryData, PreviewNotFound)
+                                         PreviewBinaryData, PreviewNotFound,
+                                         ExpiredGlobusToken)
 
 from globus_portal_framework import search, transfer
 
@@ -26,7 +27,7 @@ __all__ = [
     'load_auth_client', 'load_globus_access_token',
 
     'PreviewPermissionDenied', 'PreviewServerError', 'PreviewException',
-    'PreviewBinaryData', 'PreviewNotFound',
+    'PreviewBinaryData', 'PreviewNotFound', 'ExpiredGlobusToken',
 
     'search', 'transfer',
 
