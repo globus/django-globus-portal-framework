@@ -1,0 +1,37 @@
+{%extends "detail-base.html"%}
+
+{% block detail_body %}
+
+<div class="row">
+  <div class="col-md-12">
+
+    {% if transfer_link %}
+    <div class="alert alert-success mt-3" role="alert">
+      <p>Your file is being transferred, you can check the status
+        <a target="_blank" href="{{transfer_link}}">here</a>.
+      </p>
+    </div>
+    {% endif %}
+
+    <div class="card mt-4">
+      <div class="card-header">{{fields.title.value}}</div>
+      <div class="card-body">
+        <h5 class="mb-0">Filename:</h5><p>{{fields.remote_file_manifest.filename}}</p>
+        <h5 class="mb-0">Length: </h5><p>{{fields.remote_file_manifest.length}}</p>
+        <h5 class="mb-0">URL: </h5><p>{{fields.remote_file_manifest.url}}</p>
+        <h5 class="mb-0">MD5: </h5><p>{{fields.remote_file_manifest.md5}}</p>
+        <h5 class="mb-0">SHA256: </h5><p>{{fields.remote_file_manifest.sha256}}</p>
+      </div>
+      <div class="card-footer">
+        {% if helper_page_link and request.user.is_authenticated %}
+        <a href="{{helper_page_link}}" class="btn btn-primary">Transfer File</a>
+        {% elif not request.user.is_authenticated %}
+        <a href="#" class="btn btn-primary disabled">Login to Transfer this File</a>
+        {% else %}
+
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

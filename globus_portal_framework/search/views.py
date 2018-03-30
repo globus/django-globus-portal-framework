@@ -1,5 +1,20 @@
+import logging
+from os.path import basename
+from urllib.parse import unquote
+import globus_sdk
 from django.shortcuts import render
-from globus_portal_framework.search import utils, settings
+from django.urls import reverse
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from globus_portal_framework.search import settings
+from globus_portal_framework.transfer import settings as t_settings
+from globus_portal_framework import (preview, helper_page_transfer,
+                                     get_helper_page_url, parse_globus_url,
+                                     get_subject, post_search,
+                                     PreviewException, ExpiredGlobusToken,
+                                     check_exists)
+
+log = logging.getLogger(__name__)
 
 
 def index(request):
@@ -66,10 +81,9 @@ def index(request):
     if query:
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}
-        context['search'] = utils.post_search(settings.SEARCH_INDEX, query,
-                                              filters,
-                                              request.user,
-                                              request.GET.get('page', 1))
+        context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
+                                        request.user,
+                                        request.GET.get('page', 1))
         request.session['search'] = {
             'full_query': request.get_full_path(),
             'query': query,
@@ -101,7 +115,7 @@ def detail(request, subject):
     }
     """
     return render(request, 'detail-overview.html',
-                  utils.get_subject(subject, request.user))
+                  get_subject(subject, request.user))
 
 
 def detail_metadata(request, subject):
@@ -111,4 +125,55 @@ def detail_metadata(request, subject):
     displaying tabular data about an object.
     """
     return render(request, 'detail-metadata.html',
-                  utils.get_subject(subject, request.user))
+                  get_subject(subject, request.user))
+
+
+@csrf_exempt
+def detail_transfer(request, subject):
+    context = get_subject(subject, request.user)
+    task_url = 'https://www.globus.org/app/activity/{}/overview'
+    if request.user.is_authenticated:
+        try:
+            ep, path = parse_globus_url(unquote(subject))
+            check_exists(request.user, ep, path)
+            if request.method == 'POST':
+                task = helper_page_transfer(request, ep, path,
+                                            helper_page_is_dest=True)
+                context['transfer_link'] = task_url.format(task['task_id'])
+            this_url = reverse('detail-transfer', args=[subject])
+            full_url = request.build_absolute_uri(this_url)
+            # This url will serve as both the POST destination and Cancel URL
+            context['helper_page_link'] = get_helper_page_url(
+                full_url, full_url, folder_limit=1, file_limit=0)
+        except globus_sdk.TransferAPIError as tapie:
+            if tapie.code == 'EndpointPermissionDenied':
+                messages.error(request, 'You do not have permission to '
+                                        'transfer files from this endpoint.')
+            elif tapie.code == 'ClientError.NotFound':
+                messages.error(request, tapie.message.replace('Directory',
+                                                              'File'))
+            elif tapie.code == 'AuthenticationFailed' \
+                    and tapie.message == 'Token is not active':
+                raise ExpiredGlobusToken()
+            else:
+                log.error('Unexpected Error found during transfer request',
+                          tapie)
+                messages.error(request, tapie.message)
+    return render(request, 'detail-transfer.html', context)
+
+
+def detail_preview(request, subject):
+    context = get_subject(subject, request.user)
+    if request.user.is_authenticated:
+        try:
+            _, path = parse_globus_url(unquote(subject))
+            context['subject_title'] = basename(path)
+            url = '{}{}'.format(t_settings.GLOBUS_HTTP_ENDPOINT, path)
+            context['preview_data'] = \
+                preview(request.user, url, t_settings.PREVIEW_DATA_SIZE)
+        except PreviewException as pe:
+            if pe.code in ['UnexpectedError', 'ServerError']:
+                log.error(pe)
+            log.debug('User error: {}'.format(pe))
+            messages.error(request, pe.message)
+    return render(request, 'detail-preview.html', context)

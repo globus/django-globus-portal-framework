@@ -2,6 +2,8 @@ import requests
 import globus_sdk
 import logging
 import os
+from django.core.validators import URLValidator
+
 
 from globus_portal_framework.utils import (load_globus_client,
                                            load_globus_access_token,
@@ -27,16 +29,102 @@ def check_exists(user, src_ep, src_path):
 
     Raises globus_sdk.TransferAPIError if the file does not exist,
     the endpoint is not active, or the user does not have permission."""
+    is_file(user, src_ep, src_path)
+    return True
+
+
+def is_file(user, src_ep, src_path, raises=False):
+    """Check if a file exists on a Globus Endpoint
+
+    Return true if the path at the endpoint is a file, false if it's a
+    directory, and false if the file does not exist.
+
+    :param raises: Raise a TransferAPIError if the file/dir does not exist
+
+    Raises globus_sdk.TransferAPIError if the file does not exist,
+    the endpoint is not active, or the user does not have permission."""
     tc = load_transfer_client(user)
     try:
         tc.operation_ls(src_ep, path=src_path)
+        return False
     except globus_sdk.TransferAPIError as tapie:
         # File exists but is not a directory. We'll not take it personally.
         if tapie.code == 'ExternalError.DirListingFailed.NotDirectory':
-            pass
+            return True
+        elif not raises:
+            return False
         else:
             raise
-    return True
+
+
+def get_helper_page_url(callback_url, cancel_url='', folder_limit=5,
+                        file_limit=5, label=''):
+    """
+    Get a link for the Globus helper page
+
+    https://docs.globus.org/api/helper-pages/browse-endpoint/
+
+    Raises ValidationError if callback_url or cancel_url is malformed
+    :param callback_url: The URL the user will be redirected to after choosing
+    files and folders on the Globus helper page. You should define a POST
+    endpoint and use the django.views.decorators.csrf.csrf_exempt decorator
+    :param cancel_url: The panic 'nope' url. You should use the same URL you
+    used to show this link, which you can get with request.build_absolute_uri()
+    :param folder_limit: folders the user can choose, or 0 if they can't
+    :param file_limit: files the user can choose, or 0 if they can't
+    :param label: Label for transfer, showing up on the globus.org status page
+    :return: A URL for the browse endpoint helper page
+    """
+    check_url_valid = URLValidator()
+    check_url_valid(callback_url)
+    params = {
+            'method': 'POST',
+            'action': callback_url,
+            'folderlimit': folder_limit,
+            'filelimit': file_limit,
+            'label': label or 'Service Transfer Request'
+        }
+    if cancel_url:
+        check_url_valid(cancel_url)
+        params['cancelurl'] = cancel_url
+    return requests.Request(
+        'GET',
+        'https://www.globus.org/app/browse-endpoint',
+        params=params
+    ).prepare().url
+
+
+def helper_page_transfer(request, endpoint, path, helper_page_is_dest=True):
+    """Transfer the result of a helper page to a given endpoint and path.
+
+    NOTE! Currently only transferring a file to a folder is supported.
+
+    :param request: The request, for gleaning POST data and error checking
+    :param ep: Globus endpoint for transfer
+    :param path: path for the 'ep' globus endpoint
+    :param helper_page_is_dest: designate if the endpoint and path from the
+    helper page should be used for the destination on this transfer.
+    If not, it will be the source.
+    :return: A TranferData object for a Globus transfer
+    http://globus-sdk-python.readthedocs.io/en/stable/clients/transfer/#globus_sdk.TransferData  # noqa
+    """
+    if request.method != 'POST':
+        raise ValueError('Helper Page Transfer must be done in a POST request')
+    if request.user.is_anonymous:
+        raise ValueError('User must be logged in to transfer data.')
+    if request.POST.get('folder[1]') or request.POST.get('file[0]'):
+        raise NotImplemented('Only zero or one folder is supported.')
+
+    h_ep, h_path = request.POST.get('endpoint_id'), request.POST.get('path')
+    os.path.join(h_path, request.POST.get('folder[0]', ''))
+
+    if helper_page_is_dest:
+        src_ep, src_path, dest_ep, dest_path = endpoint, path, h_ep, h_path
+    else:
+        src_ep, src_path, dest_ep, dest_path = h_ep, h_path, endpoint, path
+
+    return transfer_file(request.user, src_ep, src_path, dest_ep,
+                         dest_path, request.POST.get('label'))
 
 
 def transfer_file(user, source_endpoint, source_path,

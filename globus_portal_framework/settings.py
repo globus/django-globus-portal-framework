@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'social_django',
     'globus_portal_framework',
-    'globus_portal_framework.search'
+    'globus_portal_framework.search',
+    'globus_portal_framework.transfer'
 ]
 
 MIDDLEWARE = [
@@ -67,8 +68,14 @@ SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
 }
 
 # Additional extras
+GLOBUS_HTTP_ENDPOINT = 'https://b4eab318-fc86-11e7-a5a9-0a448319c2f8' \
+                       '.petrel.host'
+PREVIEW_TOKEN_NAME = 'petrel_https_server'
+
 SOCIAL_AUTH_GLOBUS_SCOPE = [
-    'urn:globus:auth:scope:search.api.globus.org:search'
+    'urn:globus:auth:scope:search.api.globus.org:search',
+    'urn:globus:auth:scope:transfer.api.globus.org:all',
+    'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all'
 ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
