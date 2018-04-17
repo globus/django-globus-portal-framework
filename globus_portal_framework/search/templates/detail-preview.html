@@ -5,6 +5,10 @@
 <h2>{{subject_title}}</h2>
 {% endblock %}
 
+{# Silence regular messages so we can display them closer to preview #}
+{% block detail_messages %}
+{% endblock %}
+
 {% block detail_body %}
 
 <div class="row">
@@ -30,7 +34,7 @@
         {% if permission_error %}
           {% include "components/permission-error.html" %}
         {% elif messages %}
-          {% include "components/header.html" %}
+          {% include "components/messages.html" %}
         {% endif %}
       </div>
     </div>

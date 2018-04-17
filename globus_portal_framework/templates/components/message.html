@@ -1,0 +1,16 @@
+{% comment %}
+Note Django Messages vs Bootstrap Alerts:
+https://docs.djangoproject.com/en/2.0/ref/contrib/messages/#django.contrib.messages.storage.base.Message
+https://getbootstrap.com/docs/4.0/components/alerts/
+{% endcomment %}
+<div class="alert
+{% if message.level_tag == 'debug' %}alert-secondary
+{% elif message.level_tag == 'info' %}alert-info
+{% elif message.level_tag == 'success' %}alert-success
+{% elif message.level_tag == 'warning' %}alert-warning
+{% elif message.level_tag == 'error' %}alert-danger
+{% else %}alert-dark
+{% endif %}
+" role="alert">
+  {{message}}
+</div>

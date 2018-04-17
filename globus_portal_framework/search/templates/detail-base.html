@@ -9,9 +9,6 @@
 {%endblock%}
 
 {%block body%}
-  {%include "components/header.html"%}
-
-{% include "components/error.html"%}
 
 <div class="container mt-3">
     <div class="row">
@@ -22,6 +19,13 @@
         </div>
     </div>
 </div>
+
+{%block detail_messages %}
+<div class="container my-3">
+    {%include "components/messages.html"%}
+</div>
+{%endblock%}
+
 
 <div class="container mb-5">
 
