@@ -25,9 +25,13 @@
 {%endblock%}
 
 {%block body%}
-  {%include "components/header.html"%}
+
 
 <div class="container">
+
+  <div class="mt-4">
+  {%include "components/messages.html"%}
+  </div>
 
   <form id="search-form" class="my-4" name="search_form" action="/">
     <input type="text" id="search-input" autocomplete="off"
