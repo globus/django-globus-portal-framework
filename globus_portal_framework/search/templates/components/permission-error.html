@@ -1,0 +1,8 @@
+<div class="alert alert-warning" role="alert">
+  <p>You do not have access to view this data.</p>
+  {% if fields.globus_group %}
+  <a class="font-weight-bold" href="https://www.globus.org/app/groups/{{fields.globus_group}}/" target="_blank">
+    You can join this group for access here.
+  </a>
+  {% endif %}
+</div>

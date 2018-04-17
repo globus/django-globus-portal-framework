@@ -110,6 +110,34 @@ Run migrations and startup your project:
 
 Now you can login at `http://localhost:8000`
 
+## Adding Globus Transfer
+
+Ensure you have the transfer scope set in `myproject/settings.py`
+
+    SOCIAL_AUTH_GLOBUS_SCOPE = [
+        'urn:globus:auth:scope:search.api.globus.org:search',
+        'urn:globus:auth:scope:transfer.api.globus.org:all',
+    ]
+
+Remember you need to re-login for the transfer scope! If you want to log out
+all current users you can generate a new `SECRET_KEY`, which will invalidate
+all live sessions.
+
+## Adding Globus Preview
+
+You will need to setup a Globus HTTP endpoint on top of your GCS endpoint,
+which is not covered by this tutorial. Given that you have one setup, you
+can add it with the following settings:
+
+    SOCIAL_AUTH_GLOBUS_SCOPE = [
+        'urn:globus:auth:scope:search.api.globus.org:search',
+        'https://auth.globus.org/scopes/<My HTTP Endpoint Scope>/all'
+    ]
+
+    GLOBUS_HTTP_ENDPOINT = 'https://<My HTTP Scope>.petrel.host'
+    PREVIEW_TOKEN_NAME = '<My Preview Token Name'
+
+
 ## Customizing Your Portal
 
 Now for the fun stuff, customizing the portal to your specific use case.

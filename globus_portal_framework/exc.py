@@ -1,8 +1,6 @@
 
-class PreviewException(Exception):
-    """
-    Exceptions when trying to fetch data from Globus Preview
-    """
+
+class GlobusPortalException(Exception):
     def __init__(self, code='', message=''):
         """
         :param code: A short string that can be checked against, such as
@@ -19,6 +17,16 @@ class PreviewException(Exception):
 
     def __repr__(self):
         return str(self)
+
+
+class PreviewException(GlobusPortalException):
+    """
+    Exceptions when trying to fetch data from Globus Preview
+    """
+    def __init__(self):
+        self.code = 'UnexpectedError'
+        self.message = 'There was an unexpected error ' \
+                       'when fetching preview data.'
 
 
 class PreviewPermissionDenied(PreviewException):
@@ -52,13 +60,15 @@ class PreviewBinaryData(PreviewException):
         self.message = 'Preview is unable to display binary data.'
 
 
-class ExpiredGlobusToken(Exception):
+class ExpiredGlobusToken(GlobusPortalException):
     def __init__(self, token_name=''):
         """
         :param token_name: Name of Globus Token
         """
-        self.message = 'Your Globus Token has expired.'
+        self.code = 'ExpiredGlobusToken'
         self.token_name = token_name
-
-    def __str__(self):
-        return self.message
+        if token_name:
+            self.message = 'Your Globus Token has expired: "{}"' \
+                           ''.format(token_name)
+        else:
+            self.message = 'Your Globus Token has expired.'

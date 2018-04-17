@@ -1,0 +1,40 @@
+{%extends "detail-base.html"%}
+
+{% block detail_title %}
+<h3>{{project_title}}</h3>
+<h2>{{subject_title}}</h2>
+{% endblock %}
+
+{% block detail_body %}
+
+<div class="row">
+  <div class="col-md-12">
+
+    <div class="card mt-4">
+      <div class="card-header">{{subject_title}} -- Preview of initial {{preview_data_size}}</div>
+      <div class="card-body">
+        {% if globus_http_access == 'disabled' %}
+            <div class="alert alert-info" role="alert">
+              <p>Preview is not currently available</p>
+            </div>
+        {% endif %}
+        {% if not request.user.is_authenticated %}
+          <div class="alert alert-info" role="alert">
+            <p>You must be logged in to view preview data.</p>
+          </div>
+        {% else %}
+          <pre>{{preview_data}}</pre>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        {% if permission_error %}
+          {% include "components/permission-error.html" %}
+        {% elif messages %}
+          {% include "components/header.html" %}
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

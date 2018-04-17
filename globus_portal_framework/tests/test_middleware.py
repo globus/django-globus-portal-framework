@@ -7,7 +7,7 @@ from django.urls import path, reverse
 from django.utils import timezone
 
 from globus_portal_framework import load_transfer_client, ExpiredGlobusToken
-from globus_portal_framework.tests.mocks import mock_user
+from globus_portal_framework.tests.mocks import get_logged_in_client
 
 
 def my_transfer_view(request):
@@ -27,10 +27,8 @@ T_MIDDLEWARE = 'globus_portal_framework.middleware.ExpiredTokenMiddleware'
 class TestExpiredTokensMiddleware(TestCase):
 
     def setUp(self):
-        self.c = Client()
-        self.user = mock_user('bob', ['transfer.api.globus.org'])
-        # Password is set in mocks, and is always 'globusrocks' for this func
-        self.c.login(username='bob', password='globusrocks')
+        self.c, self.user = get_logged_in_client('bob',
+                                                 ['transfer.api.globus.org'])
 
     @override_settings(ROOT_URLCONF=__name__)
     def test_middleware_normal_usage(self):
