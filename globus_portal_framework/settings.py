@@ -115,6 +115,35 @@ DATABASES = {
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'stream': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler',
+        },
+    },
+
+    'loggers': {
+        'django.db.backends': {
+                    'handlers': ['stream'],
+                    # 'handlers': ['null'],  # Quiet by default!
+                    # 'propagate': False,
+                    'level': 'WARNING',
+                    },
+        'globus_portal_framework': {
+            'handlers': ['stream'],
+            'level': 'DEBUG',
+            'propagate': True,
+        }
+    },
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
