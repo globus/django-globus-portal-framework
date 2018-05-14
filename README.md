@@ -134,8 +134,13 @@ can add it with the following settings:
         'https://auth.globus.org/scopes/<My HTTP Endpoint Scope>/all'
     ]
 
-    GLOBUS_HTTP_ENDPOINT = 'https://<My HTTP Scope>.petrel.host'
-    PREVIEW_TOKEN_NAME = '<My Preview Token Name'
+    # It is assumed each search entry will contain a link to the HTTP endpoint
+    # The portal will expect it under the following GMETA entry JSON path:
+    # GMETA.content.[].settings[SEARCH_ENTRY_FIELD_PATH].settings[ENTRY_SERVICE_VARS][globus_http_link]
+    ENTRY_SERVICE_VARS = {
+        'globus_http_link': 'my_globus_http_link',
+        'globus_http_scope': 'my_globus_http_scope'
+    }
 
 
 ## Customizing Your Portal
