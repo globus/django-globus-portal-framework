@@ -11,7 +11,8 @@ from globus_portal_framework.transfer import settings as t_settings
 from globus_portal_framework import (preview, helper_page_transfer,
                                      get_helper_page_url, parse_globus_url,
                                      get_subject, post_search,
-                                     PreviewException, ExpiredGlobusToken,
+                                     PreviewException, PreviewURLNotFound,
+                                     ExpiredGlobusToken,
                                      check_exists)
 
 log = logging.getLogger(__name__)
@@ -164,16 +165,32 @@ def detail_transfer(request, subject):
 
 def detail_preview(request, subject):
     context = get_subject(subject, request.user)
-    if request.user.is_authenticated:
-        try:
+    try:
+        url, scope = context['service'].get('globus_http_link'), \
+                     context['service'].get('globus_http_scope')
+        # TODO: DEPRECATED -- Remove this "elif" block at version 0.3.0
+        if (not url or not scope) and (t_settings.GLOBUS_HTTP_ENDPOINT and
+                                       t_settings.PREVIEW_TOKEN_NAME):
             _, path = parse_globus_url(unquote(subject))
             context['subject_title'] = basename(path)
             url = '{}{}'.format(t_settings.GLOBUS_HTTP_ENDPOINT, path)
-            context['preview_data'] = \
-                preview(request.user, url, t_settings.PREVIEW_DATA_SIZE)
-        except PreviewException as pe:
-            if pe.code in ['UnexpectedError', 'ServerError']:
-                log.error(pe)
-            log.debug('User error: {}'.format(pe))
-            messages.error(request, pe.message)
+            scope = t_settings.PREVIEW_TOKEN_NAME
+            log.warning(
+                'settings.GLOBUS_HTTP_ENDPOINT and settings.PREVIEW_TOKEN_NAME'
+                ' are deprecated and will be removed in a future version. '
+                'Please instead retrieve the URL from the search result under '
+                'the key defined by "globus_http_link" and "globus_http_scope"'
+                ' in settings.ENTRY_SERVICE_VARS')
+        if not url or not scope:
+            log.debug('Preview URL or Scope not found. Searched '
+                      'entry {} using settings.ENTRY_SERVICE_VARS, result: {}'
+                      ''.format(url, scope, subject, context['service']))
+            raise PreviewURLNotFound(subject)
+        context['preview_data'] = \
+            preview(request.user, url, scope, t_settings.PREVIEW_DATA_SIZE)
+    except PreviewException as pe:
+        if pe.code in ['UnexpectedError', 'ServerError']:
+            log.error(pe)
+        log.debug('User error: {}'.format(pe))
+        messages.error(request, pe.message)
     return render(request, 'detail-preview.html', context)

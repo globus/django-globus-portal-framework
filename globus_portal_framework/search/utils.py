@@ -7,6 +7,7 @@ from urllib.parse import quote_plus, unquote
 import globus_sdk
 
 from globus_portal_framework.search import settings
+from globus_portal_framework.transfer import settings as t_settings
 from globus_portal_framework.utils import load_globus_client
 
 log = logging.getLogger(__name__)
@@ -100,6 +101,24 @@ def default_search_mapper(gmeta_result, schema):
     return fields
 
 
+def default_service_mapper(gmeta_result, entry_service_vars):
+    """
+    Like the default search mapper, but looks for ENTRY_SERVICE_VARS for
+    each search result. This function should only be updated if the variables
+    are scattered in the entry and custom logic is the only way to retrieve
+    them. Otherwise, update ENTRY_SERVICE_VARS in settings.py
+    :param gmeta_result: The current gmeta_result
+    :param variable_map: Typically ENTRY_SERVICE_VARS stored in settings
+    :return: A dict matching the keys in variable_map, with values of vars
+    found in the gmeta_result. If the key doesn't exist, the variable is set
+    to None
+    """
+    entry = gmeta_result[0][settings.SEARCH_ENTRY_FIELD_PATH]
+    return {
+        key: entry.get(val) for key, val in entry_service_vars.items()
+    }
+
+
 def get_subject(subject, user=None):
     """Get a subject and run the result through the SEARCH_MAPPER defined
     in settings.py. If no subject exists, return context with the 'subject'
@@ -131,14 +150,20 @@ def process_search_data(results):
 
 
     """
-    mod_name, func_name = settings.SEARCH_MAPPER
-    mod = import_module(mod_name)
-    mapper = getattr(mod, func_name, default_search_mapper)
+    field_mod_name, field_func_name = settings.SEARCH_MAPPER
+    field_mod = import_module(field_mod_name)
+    field_mapper = getattr(field_mod, field_func_name, default_search_mapper)
+    service_mod_name, service_func_name = t_settings.ENTRY_SERVICE_VARS_MAPPER
+    service_mod = import_module(service_mod_name)
+    service_mapper = getattr(service_mod, service_func_name,
+                             default_service_mapper)
     structured_results = []
     for entry in results:
         structured_results.append({
             'subject': quote_plus(entry['subject']),
-            'fields': mapper(entry['content'], SEARCH_SCHEMA['fields'])
+            'fields': field_mapper(entry['content'], SEARCH_SCHEMA['fields']),
+            'service': service_mapper(entry['content'],
+                                      t_settings.ENTRY_SERVICE_VARS)
         })
     return structured_results
 

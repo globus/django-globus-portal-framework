@@ -15,6 +15,12 @@ from globus_portal_framework import (
     PreviewException, PreviewPermissionDenied, PreviewNotFound,
     PreviewServerError, PreviewBinaryData)
 
+MY_ENTRY_SERVICE_VARS = {
+    'globus_group': 'my_globus_group',
+    'globus_http_link': 'my_globus_http_link',
+    'globus_http_scope': 'my_globus_http_scope'
+}
+
 
 class MockSearchGetSubject:
     data = test_search.get_mock_data(test_search.MOCK_RESULT)
@@ -60,10 +66,15 @@ class SearchViewsTest(TestCase):
         r = client.get(reverse('detail-transfer', args=[self.subject_url]))
         self.assertEqual(r.status_code, 200)
 
+    @mock.patch('globus_portal_framework.search.views.log')
     @mock.patch('globus_portal_framework.search.views.preview')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
-    def test_detail_preview(self, get_subject, preview):
+    @mock.patch('globus_portal_framework.search.views.t_settings.'
+                'ENTRY_SERVICE_VARS', MY_ENTRY_SERVICE_VARS)
+    @mock.patch('globus_portal_framework.search.utils.t_settings.'
+                'ENTRY_SERVICE_VARS', MY_ENTRY_SERVICE_VARS)
+    def test_detail_preview(self, get_subject, preview, log):
         preview.return_value = mock.Mock()
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])
@@ -72,11 +83,16 @@ class SearchViewsTest(TestCase):
         self.assertEqual(len(r.context['messages']), 0)
         self.assertEqual(r.status_code, 200)
         self.assertTrue(preview.called)
+        self.assertFalse(log.warning.called)
 
     @mock.patch('globus_portal_framework.search.views.log')
     @mock.patch('globus_portal_framework.search.views.preview')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
+    @mock.patch('globus_portal_framework.search.views.t_settings.'
+                'ENTRY_SERVICE_VARS', MY_ENTRY_SERVICE_VARS)
+    @mock.patch('globus_portal_framework.search.utils.t_settings.'
+                'ENTRY_SERVICE_VARS', MY_ENTRY_SERVICE_VARS)
     def test_detail_preview_exceptions(self, get_subject, preview, log):
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])

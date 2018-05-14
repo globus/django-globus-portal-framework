@@ -8,6 +8,7 @@ from globus_portal_framework.exc import (GlobusPortalException,
                                          PreviewPermissionDenied,
                                          PreviewServerError, PreviewException,
                                          PreviewBinaryData, PreviewNotFound,
+                                         PreviewURLNotFound,
                                          ExpiredGlobusToken)
 
 from globus_portal_framework import search, transfer
@@ -29,11 +30,12 @@ __all__ = [
 
     'GlobusPortalException', 'PreviewPermissionDenied', 'PreviewServerError',
     'PreviewException', 'PreviewBinaryData', 'PreviewNotFound',
-    'ExpiredGlobusToken',
+    'PreviewURLNotFound', 'ExpiredGlobusToken',
 
     'search', 'transfer',
 
-    'post_search', 'get_subject', 'default_search_mapper', 'load_search_client'
+    'post_search', 'get_subject', 'default_search_mapper',
+    'load_search_client',
 
     'load_transfer_client', 'check_exists', 'transfer_file',
     'parse_globus_url', 'preview', 'helper_page_transfer',

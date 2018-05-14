@@ -177,7 +177,7 @@ def parse_globus_url(url):
     return url_chunks[0], ':'.join(url_chunks[1:])
 
 
-def preview(user, url, chunk_size=512):
+def preview(user, url, scope, chunk_size=512):
     """Download the first number of 'bytes' the given 'url'
 
     Raises PreviewException if fetching the preview data if there are any
@@ -190,8 +190,7 @@ def preview(user, url, chunk_size=512):
     * PreviewException -- Something else we didn't expect
     """
     try:
-        token = load_globus_access_token(user,
-                                         transfer_settings.PREVIEW_TOKEN_NAME)
+        token = load_globus_access_token(user, scope)
         headers = {'Authorization': 'Bearer {}'.format(token)}
         # Use 'with' with 'stream' so we close the connection after we return.
         with requests.get(url, stream=True, headers=headers) as r:

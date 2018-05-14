@@ -19,8 +19,12 @@
     "rights_list": "Apache2",
     "sizes": "20.04 MB",
     "subjects": ["Went Nile", "Mosquito", "Virus", "Health", "Murder Bugs"],
-    "titles": "West Nile Virus (WNV) Mosquito Test Results",
-    "version": "1.0.0"
+    "titles": "West SAIED Virus (WNV) Mosquito Test Results",
+    "version": "1.0.0",
+
+    "my_globus_http_link": "UUID.server.org",
+    "my_globus_http_scope": "scope.server.org"
+
   }}],
   "subject": "https://www.globus.org/app/transfer?origin_id=e38ee745-6d04-11e5-ba46-22000b92c6ec&origin_path=%2FSchleife%2Fcharge_density_and_difference_proton_MgO_V_O_v_0.5%2F"
 }

@@ -35,6 +35,14 @@ class PreviewPermissionDenied(PreviewException):
         self.message = 'You do not have access to view this data'
 
 
+class PreviewURLNotFound(PreviewException):
+    def __init__(self, subject):
+        self.code = 'URLNotFound'
+        self.message = 'No Globus HTTP URL was provided for this search ' \
+                       'entry'
+        self.subject = subject
+
+
 class PreviewNotFound(PreviewException):
     def __init__(self):
         self.code = 'NotFound'
