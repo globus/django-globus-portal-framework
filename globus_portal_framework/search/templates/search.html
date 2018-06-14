@@ -33,7 +33,7 @@
   {%include "components/messages.html"%}
   </div>
 
-  <form id="search-form" class="my-4" name="search_form" action="/">
+  <form id="search-form" class="my-4" name="search_form" action="{% url 'search' %}">
     <input type="text" id="search-input" autocomplete="off"
            data-provide="typeahead" name="q"
            value="{{request.session.search.query}}" placeholder="Start your search here">
@@ -46,7 +46,7 @@
     <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
       <div id="filters">
         <div id="facet-container">
-          <form id="facet-form" action="/">
+          <form id="facet-form" action="{% url 'search' %}">
             {% include "components/search-facets.html" %}
           </form>
         </div>
