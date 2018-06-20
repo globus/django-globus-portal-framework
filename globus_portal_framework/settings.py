@@ -78,7 +78,7 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all'
 ]
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 CSRF_USE_SESSIONS = True
 
 ROOT_URLCONF = 'globus_portal_framework.urls'

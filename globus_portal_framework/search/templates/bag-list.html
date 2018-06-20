@@ -1,0 +1,47 @@
+{%extends "base.html"%}
+{% load static %}
+
+{%block title%}My Bags{%endblock%}
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+  <!--<link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />-->
+{%endblock%}
+
+
+{%block body%}
+
+{%block detail_messages %}
+<div class="container my-3">
+    {%include "components/messages.html"%}
+</div>
+{%endblock%}
+
+
+<div class="row mt-5">
+  <div class="col"></div>
+
+  <div class="col-10">
+
+    <div class="card">
+        <div class="card-header">
+          <h2>Bags</h2>
+        </div>
+
+        <div class="card-body">
+            <div class="container">
+              <h5>Your bags</h5>
+              <ul>
+                {% for bag in bags %}
+                <li>{{bag.id}}</li>
+                {% endfor %}
+              </ul>
+            </div>
+        </div>
+    </div>
+  </div>
+  <div class="col"></div>
+
+</div>
+
+{%endblock%}

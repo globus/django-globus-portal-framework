@@ -1,8 +1,8 @@
 import logging
 from os.path import basename
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 import globus_sdk
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
@@ -13,7 +13,9 @@ from globus_portal_framework import (preview, helper_page_transfer,
                                      get_subject, post_search,
                                      PreviewException, PreviewURLNotFound,
                                      ExpiredGlobusToken,
-                                     check_exists)
+                                     check_exists, load_globus_access_token)
+from globus_portal_framework.search.models import Minid
+from concierge.api import create_bag
 
 log = logging.getLogger(__name__)
 
@@ -76,21 +78,28 @@ def index(request):
     Example request:
     http://myhost/?q=foo*&page=2&filter.my.special.filter=goodresults
     """
+    query, filters, page = get_search_query_params(request)
+    query = query or request.session.get('query') or settings.DEFAULT_QUERY
     context = {}
-    query = request.GET.get('q') or request.session.get('query') or \
-        settings.DEFAULT_QUERY
+
     if query:
-        filters = {k.replace('filter.', ''): request.GET.getlist(k)
-                   for k in request.GET.keys() if k.startswith('filter.')}
         context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
-                                        request.user,
-                                        request.GET.get('page', 1))
+                                        request.user, page)
         request.session['search'] = {
-            'full_query': request.get_full_path(),
+            'full_query': urlparse(request.get_full_path()).query,
             'query': query,
             'filters': filters,
         }
     return render(request, 'search.html', context)
+
+
+def get_search_query_params(request):
+    query = request.GET.get('q')
+    filters = {k.replace('filter.', ''): request.GET.getlist(k)
+               for k in request.GET.keys() if k.startswith('filter.')}
+    page = request.GET.get('page', 1)
+    log.debug('Query: {}, Filters: {}, Page: {}'.format(query, filters, page))
+    return query, filters, page
 
 
 def detail(request, subject):
@@ -194,3 +203,49 @@ def detail_preview(request, subject):
         log.debug('User error: {}'.format(pe))
         messages.error(request, pe.message)
     return render(request, 'detail-preview.html', context)
+
+
+def bag_create(request):
+    if request.method == 'GET':
+        context = {}
+        query, filters, page = get_search_query_params(request)
+        context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
+                                        request.user, fetch_all=True)
+        log.debug('{} result candidates for bag creation'.format(
+            len(context['search']['search_results'])))
+        request.session['candidate_bags'] = \
+            [sr['service']['remote_file_manifest']
+            for sr in context['search']['search_results']]
+        request.session.modified = True
+        # log.debug(context['search']['search_results'][0]['service'])
+        return render(request, 'bag-create.html', context)
+    if request.method == 'POST':
+        bag_name = request.POST.get('bag-name')
+        rfm_urls = request.POST.getlist('rfm-urls')
+        can_bags = request.session.get('candidate_bags')
+        if not can_bags or not rfm_urls or not bag_name:
+            log.error('Error creating a bag. Bag name "{}", Session stored '
+                      'manifests ({}), or user chosen bag urls ({}) were empty'
+                      ''.format(bag_name, len(can_bags), len(rfm_urls)))
+            messages.error(request, 'There was an error creating your bag, '
+                                    'please contact your system administrator.'
+                           )
+            return redirect('bag-list')
+        del request.session['candidate_bags']
+
+
+        manifests = [b for b in can_bags if b['url'] in rfm_urls]
+        tok = load_globus_access_token(request.user, 'auth.globus.org')
+        resp = create_bag('https://concierge.fair-research.org', manifests,
+                           request.user.get_full_name(), request.user.email,
+                           'testbag', tok)
+        minid = Minid(id=resp['minid_id'], user=request.user)
+        minid.save()
+        messages.info(request, 'Your bag {} has been created with {} files.'
+                      ''.format(minid.id, len(manifests)))
+        return redirect('bag-list')
+
+
+def bag_list(request):
+    context = {'bags': Minid.objects.filter(user=request.user)}
+    return render(request, 'bag-list.html', context)

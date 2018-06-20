@@ -22,7 +22,7 @@ def load_json_file(filename):
 SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
 
 
-def post_search(index, query, filters, user=None, page=1):
+def post_search(index, query, filters, user=None, page=1, fetch_all=False):
     """Perform a search and return the relevant data for display to the user.
     Returns a dict with search info stripped, containing only two relevant
     fields:
@@ -53,15 +53,21 @@ def post_search(index, query, filters, user=None, page=1):
 
     client = load_search_client(user)
     gfilters = get_filters(filters)
-    result = client.post_search(
-        index,
-        {
-            'q': query,
-            'facets': SEARCH_SCHEMA['facets'],
-            'filters': gfilters,
+    post_search_params = {
+        'q': query,
+        'facets': SEARCH_SCHEMA['facets'],
+        'filters': gfilters,
+    }
+    if fetch_all:
+        post_search_params['limit'] = 10000
+    else:
+        post_search_params.update({
             'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
             'limit': settings.SEARCH_RESULTS_PER_PAGE
         })
+
+
+    result = client.post_search(index, post_search_params)
     return {'search_results': process_search_data(result.data['gmeta']),
             'facets': get_facets(result, SEARCH_SCHEMA, filters),
             'pagination': get_pagination(result.data['total'],
@@ -113,9 +119,17 @@ def default_service_mapper(gmeta_result, entry_service_vars):
     found in the gmeta_result. If the key doesn't exist, the variable is set
     to None
     """
-    entry = gmeta_result[0][settings.SEARCH_ENTRY_FIELD_PATH]
+    def get_entry(get_method, default):
+        if callable(get_method):
+            return get_method
+        if isinstance(get_method, str):
+            return lambda x: x.get(get_method)
+        return lambda x: x.get(default)
+
+    entry = gmeta_result[0]
     return {
-        key: entry.get(val) for key, val in entry_service_vars.items()
+        key: get_entry(val, key)(entry)
+        for key, val in entry_service_vars.items()
     }
 
 

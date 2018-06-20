@@ -5,7 +5,8 @@ from django.conf import settings
 ENTRY_SERVICE_VARS = {
     'globus_group': 'globus_group',
     'globus_http_link': 'globus_http_link',
-    'globus_http_scope': 'globus_http_scope'
+    'globus_http_scope': 'globus_http_scope',
+    'remote_file_manifest': None,
 }
 ENTRY_SERVICE_VARS_MAPPER = getattr(settings, 'ENTRY_SERVICE_VARS_MAPPER',
                                     ('globus_portal_framework',

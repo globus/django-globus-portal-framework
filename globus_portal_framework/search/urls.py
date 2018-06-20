@@ -1,5 +1,6 @@
 from django.urls import path
-from globus_portal_framework.search.views import (index, detail,
+from globus_portal_framework.search.views import (index, bag_list, bag_create,
+                                                  detail,
                                                   detail_metadata,
                                                   detail_transfer,
                                                   detail_preview)
@@ -13,6 +14,8 @@ urlpatterns = [
          name='detail-preview'),
     path('detail-transfer/<path:subject>', detail_transfer,
          name='detail-transfer'),
+    path('bags/create/', bag_create, name='bag-create'),
+    path('bags/', bag_list, name='bag-list'),
     path('detail/<path:subject>/', detail, name='detail'),
     path('', index, name='search')
 ]
