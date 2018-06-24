@@ -22,7 +22,8 @@ def load_json_file(filename):
 SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
 
 
-def post_search(index, query, filters, user=None, page=1, fetch_all=False):
+def post_search(index, query, filters, user=None, page=1,
+                limit=settings.SEARCH_RESULTS_PER_PAGE):
     """Perform a search and return the relevant data for display to the user.
     Returns a dict with search info stripped, containing only two relevant
     fields:
@@ -52,26 +53,19 @@ def post_search(index, query, filters, user=None, page=1, fetch_all=False):
         return {'search_results': [], 'facets': []}
 
     client = load_search_client(user)
-    gfilters = get_filters(filters)
-    post_search_params = {
+
+    result = client.post_search(index, {
         'q': query,
         'facets': SEARCH_SCHEMA['facets'],
-        'filters': gfilters,
-    }
-    if fetch_all:
-        post_search_params['limit'] = 10000
-    else:
-        post_search_params.update({
-            'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
-            'limit': settings.SEARCH_RESULTS_PER_PAGE
-        })
-
-
-    result = client.post_search(index, post_search_params)
+        'filters': get_filters(filters),
+        'offset': (int(page) - 1) * limit,
+        'limit': limit
+    })
     return {'search_results': process_search_data(result.data['gmeta']),
             'facets': get_facets(result, SEARCH_SCHEMA, filters),
             'pagination': get_pagination(result.data['total'],
-                                         result.data['offset'])
+                                         result.data['offset']),
+            'total_results': result.get('total')
             }
 
 
@@ -125,12 +119,18 @@ def default_service_mapper(gmeta_result, entry_service_vars):
         if isinstance(get_method, str):
             return lambda x: x.get(get_method)
         return lambda x: x.get(default)
-
     entry = gmeta_result[0]
-    return {
+    results = {
         key: get_entry(val, key)(entry)
         for key, val in entry_service_vars.items()
     }
+    dbg = ', '.join(['({}){}'.format('*' if val else '!', key)
+                     for key, val in results.items()])
+    log.debug('Found service vars: {}'.format(dbg))
+    return results
+
+
+
 
 
 def get_subject(subject, user=None):

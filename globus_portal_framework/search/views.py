@@ -210,7 +210,8 @@ def bag_create(request):
         context = {}
         query, filters, page = get_search_query_params(request)
         context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
-                                        request.user, fetch_all=True)
+                                        request.user, limit=settings.BAG_LIMIT)
+        log.debug(context['search']['search_results'][0]['service'].keys())
         log.debug('{} result candidates for bag creation'.format(
             len(context['search']['search_results'])))
         request.session['candidate_bags'] = \
@@ -220,13 +221,13 @@ def bag_create(request):
         # log.debug(context['search']['search_results'][0]['service'])
         return render(request, 'bag-create.html', context)
     if request.method == 'POST':
-        bag_name = request.POST.get('bag-name')
+        bag_title = request.POST.get('bag-name')
         rfm_urls = request.POST.getlist('rfm-urls')
         can_bags = request.session.get('candidate_bags')
-        if not can_bags or not rfm_urls or not bag_name:
+        if not can_bags or not rfm_urls or not bag_title:
             log.error('Error creating a bag. Bag name "{}", Session stored '
                       'manifests ({}), or user chosen bag urls ({}) were empty'
-                      ''.format(bag_name, len(can_bags), len(rfm_urls)))
+                      ''.format(bag_title, len(can_bags), len(rfm_urls)))
             messages.error(request, 'There was an error creating your bag, '
                                     'please contact your system administrator.'
                            )
@@ -238,7 +239,7 @@ def bag_create(request):
         tok = load_globus_access_token(request.user, 'auth.globus.org')
         resp = create_bag('https://concierge.fair-research.org', manifests,
                            request.user.get_full_name(), request.user.email,
-                           'testbag', tok)
+                           bag_title, tok)
         minid = Minid(id=resp['minid_id'], user=request.user)
         minid.save()
         messages.info(request, 'Your bag {} has been created with {} files.'

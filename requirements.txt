@@ -4,5 +4,6 @@ globus_sdk
 # Currently need the latest development for search detail results, which
 # is specified in the setup.py dependency_links
 #-e git+https://github.com/globus/globus-sdk-python#egg=globus_sdk_python
+#-e git+https://github.com/globusonline/concierge-cli#egg=concierge-cli
 python-social-auth[django]>=0.3.6
 six

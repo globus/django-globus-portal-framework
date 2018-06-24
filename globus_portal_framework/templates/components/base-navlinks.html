@@ -1,0 +1,15 @@
+{%if auth_enabled and request.user.is_authenticated %}
+<li>
+  <a class="nav-link" href="{% url 'bag-list' %}">My Bags</a>
+</li>
+<li>
+  <a class="nav-link" href="#">{{request.user.username }}</a>
+</li>
+<li>
+  <a class="nav-link" href="{% url 'logout' %}?next=/">Logout</a>
+</li>
+{% elif auth_enabled %}
+<li>
+  <a class="nav-link" href="{% url 'login' %}globus?next=/">Login</a>
+</li>
+{% endif %}

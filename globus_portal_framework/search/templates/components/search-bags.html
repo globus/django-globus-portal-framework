@@ -1,4 +1,4 @@
-{% if search.facets %}
+{% if search.facets and user.is_authenticated %}
 <form>
 <input type="button" onclick="location.href='{% url 'bag-create' %}?{{request.session.search.full_query}}';" value="Create Cohort" />
 </form>
