@@ -10,6 +10,6 @@ MINID_CATEGORY_CHOICES = (
 class Minid(models.Model):
     # ID is a minid
     id = models.CharField(max_length=128, primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    users = models.ManyToManyField(User, blank=True)
     category = models.CharField(max_length=128, choices=MINID_CATEGORY_CHOICES)
-    description = models.CharField(max_length=128)
+    description = models.CharField(max_length=128, null=True)
