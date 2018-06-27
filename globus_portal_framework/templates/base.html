@@ -11,6 +11,9 @@
 
     {# Custom Fonts #}
     <script type="text/javascript" src="{% static 'js/fontawesome-all.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 
     {# Django CSRF Protection #}
     {% csrf_token %}
@@ -44,8 +47,5 @@
 
     <!-- Page footer -->
     {% include 'components/footer.html' %}
-    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
   </body>
 </html>
