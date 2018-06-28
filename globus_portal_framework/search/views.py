@@ -240,14 +240,33 @@ def bag_create(request):
 
         manifests = [b for b in can_bags if b['url'] in rfm_urls]
         tok = load_globus_access_token(request.user, 'auth.globus.org')
-        resp = create_bag('https://concierge.fair-research.org', manifests,
-                           request.user.get_full_name(), request.user.email,
-                           bag_title, tok)
-        minid = Minid(id=resp['minid_id'], user=request.user)
-        minid.save()
-        messages.info(request, 'Your bag {} has been created with {} files.'
-                      ''.format(minid.id, len(manifests)))
-        return redirect('bag-list')
+        try:
+            resp = create_bag('https://concierge.fair-research.org', manifests,
+                               request.user.get_full_name(), request.user.email,
+                               bag_title, tok)
+            minid = Minid(id=resp['minid_id'], description=bag_title)
+            minid.save()
+            minid.users.add(request.user)
+            messages.info(request, 'Your bag {} has been created with {} files.'
+                                   ''.format(minid.id, len(manifests)))
+            return redirect('bag-list')
+        except minid_client_api.MinidAPIException as minid_exc:
+            if minid_exc.type == 'minid_auth_error':
+                messages.error(request,
+                               'The minid service may not have recognized your email, '
+                               'try the following and let us know if it does not work '
+                               '(This is a known problem we are trying to fix, thank '
+                               'you for your patience): {}'.format(
+                                   minid_exc.message))
+                log.error(minid_exc.message)
+            else:
+                log.error(minid_exc.message)
+        except Exception as e:
+            log.error('General Exception: {}'.format(e))
+        messages.error(request, 'We were not able to create your bag, please '
+                                'let us know so we can fix this.')
+        return redirect('bag-create')
+
 
 
 def bag_list(request):
