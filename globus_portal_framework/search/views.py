@@ -212,11 +212,14 @@ def bag_create(request):
         context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
                                         request.user, limit=settings.BAG_LIMIT)
         log.debug(context['search']['search_results'][0]['service'].keys())
+
+        rfm_lists = [sr['service']['remote_file_manifest']
+            for sr in context['search']['search_results']]
+        flat_rfm_list = [item for sublist in rfm_lists for item in sublist]
+
         log.debug('{} result candidates for bag creation'.format(
             len(context['search']['search_results'])))
-        request.session['candidate_bags'] = \
-            [sr['service']['remote_file_manifest']
-            for sr in context['search']['search_results']]
+        request.session['candidate_bags'] = flat_rfm_list
         request.session.modified = True
         # log.debug(context['search']['search_results'][0]['service'])
         return render(request, 'bag-create.html', context)
@@ -248,5 +251,5 @@ def bag_create(request):
 
 
 def bag_list(request):
-    context = {'bags': Minid.objects.filter(user=request.user)}
+    context = {'bags': Minid.objects.filter(users=request.user)}
     return render(request, 'bag-list.html', context)
