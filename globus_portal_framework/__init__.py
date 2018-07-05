@@ -1,5 +1,5 @@
 # This ensures the checks are registered by Django and run on startup
-from globus_portal_framework import checks
+from globus_portal_framework import checks  # noqa
 
 from globus_portal_framework.version import __version__
 

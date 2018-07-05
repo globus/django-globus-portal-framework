@@ -1,6 +1,5 @@
 from os.path import join, dirname
 import json
-from django.conf import settings
 
 MOCK_DETAIL_OVERVIEW = 'globus_portal_framework/data/' \
                        'mock-detail-overview.json'

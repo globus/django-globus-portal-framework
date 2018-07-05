@@ -1,7 +1,5 @@
 from unittest import mock
-import json
-from django.test import TestCase, Client, RequestFactory
-from django.test.utils import override_settings
+from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
@@ -15,7 +13,7 @@ from globus_portal_framework.tests.mocks import (
 )
 
 from globus_portal_framework import (
-    load_transfer_client, transfer_file, parse_globus_url, preview,
+    load_transfer_client, transfer_file, parse_globus_url,
     helper_page_transfer, get_helper_page_url, check_exists, is_file
 )
 
@@ -163,10 +161,10 @@ class TransferUtilsTest(TestCase):
     @mock.patch('globus_sdk.TransferData')
     def test_transfer_file(self, tdata, tclient):
         user = mock_user('bob', ['transfer.api.globus.org'])
-        task = transfer_file(user,
-                             self.foo_endpoint, 'mydir/file1.txt',
-                             self.bar_endpoint, 'mybardir/file1.txt',
-                             'My foo-bar file transfer')
+        transfer_file(user,
+                      self.foo_endpoint, 'mydir/file1.txt',
+                      self.bar_endpoint, 'mybardir/file1.txt',
+                      'My foo-bar file transfer')
         args, kwargs = tdata.call_args
         self.assertEqual(args[1:], (self.foo_endpoint, self.bar_endpoint))
         self.assertEqual(kwargs['label'], 'My foo-bar file transfer')

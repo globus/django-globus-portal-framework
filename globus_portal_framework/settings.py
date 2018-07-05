@@ -199,6 +199,6 @@ STATIC_URL = '/static/'
 
 # Override any settings here if a local_settings.py file exists
 try:
-    from globus_portal_framework.local_settings import *
+    from globus_portal_framework.local_settings import *  # noqa
 except ImportError:
     pass

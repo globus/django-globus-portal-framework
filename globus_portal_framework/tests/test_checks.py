@@ -1,8 +1,7 @@
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.test.utils import override_settings
 from globus_portal_framework.checks import (
     search_mapper_check, search_schema_check)
-from unittest import mock
 
 
 def test_mapper_func(data, schema):

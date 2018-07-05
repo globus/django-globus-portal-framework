@@ -30,5 +30,5 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
     def test_load_transfer_client_with_bad_token(self):
         user = mock_user('bob', ['transfer.api.globus.org'])
         with self.assertRaises(ValueError):
-            c = load_globus_client(user, globus_sdk.SearchClient,
-                                   'search.api.globus.org')
+            load_globus_client(user, globus_sdk.SearchClient,
+                               'search.api.globus.org')

@@ -1,6 +1,6 @@
 from datetime import timedelta
 from unittest import mock
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.test.utils import override_settings
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
@@ -43,13 +43,13 @@ class SearchUtilsTest(TestCase):
         user.last_login = timezone.now() - timedelta(days=3)
         user.save()
         with self.assertRaises(ExpiredGlobusToken):
-            c = load_search_client(user)
+            load_search_client(user)
 
     @mock.patch('globus_sdk.SearchClient', MockGlobusClient)
     def test_load_search_client_with_bad_token(self):
         user = mock_user('bob', ['transfer.api.globus.org'])
         with self.assertRaises(ValueError):
-            c = load_search_client(user)
+            load_search_client(user)
 
     @override_settings(SEARCH_SCHEMA=SEARCH_SCHEMA,
                        DEFAULT_MAPPER=DEFAULT_MAPPER)

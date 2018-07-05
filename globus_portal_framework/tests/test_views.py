@@ -5,11 +5,9 @@ from django.test import TestCase, Client
 from django.test.utils import override_settings
 from django.urls import reverse
 
-from globus_sdk import TransferAPIError
-
 from globus_portal_framework.tests import test_gsearch
 from globus_portal_framework.tests.mocks import (
-    get_logged_in_client, MockTransferClient, MockTransferAPIError)
+    get_logged_in_client, MockTransferClient)
 
 from globus_portal_framework import (
     PreviewException, PreviewPermissionDenied, PreviewNotFound,

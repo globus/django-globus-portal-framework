@@ -7,8 +7,6 @@ def globals(request):
     transfer_scope_set = any(['transfer.api.globus.org' in scope
                               for scope in scopes])
 
-    service = getattr(settings, 'ENTRY_SERVICE_VARS', {})
-
     return {
         'project_title': getattr(settings, 'PROJECT_TITLE',
                                  'Globus Portal Framework'),
