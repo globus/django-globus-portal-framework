@@ -17,6 +17,7 @@ def my_transfer_view(request):
     load_transfer_client(request.user)
     return resp
 
+
 urlpatterns = [
     path('', my_transfer_view, name='my_transfer_view')
 ]

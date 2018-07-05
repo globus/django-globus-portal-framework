@@ -4,11 +4,13 @@ import json
 import logging
 from importlib import import_module
 from urllib.parse import quote_plus, unquote
+
+from django.conf import settings
+
 import globus_sdk
 
-from globus_portal_framework.search import settings
-from globus_portal_framework.transfer import settings as t_settings
-from globus_portal_framework.utils import load_globus_client
+from globus_portal_framework import load_globus_client
+
 
 log = logging.getLogger(__name__)
 
@@ -153,7 +155,7 @@ def process_search_data(results):
     field_mod_name, field_func_name = settings.SEARCH_MAPPER
     field_mod = import_module(field_mod_name)
     field_mapper = getattr(field_mod, field_func_name, default_search_mapper)
-    service_mod_name, service_func_name = t_settings.ENTRY_SERVICE_VARS_MAPPER
+    service_mod_name, service_func_name = settings.ENTRY_SERVICE_VARS_MAPPER
     service_mod = import_module(service_mod_name)
     service_mapper = getattr(service_mod, service_func_name,
                              default_service_mapper)
@@ -163,7 +165,7 @@ def process_search_data(results):
             'subject': quote_plus(entry['subject']),
             'fields': field_mapper(entry['content'], SEARCH_SCHEMA['fields']),
             'service': service_mapper(entry['content'],
-                                      t_settings.ENTRY_SERVICE_VARS)
+                                      settings.ENTRY_SERVICE_VARS)
         })
     return structured_results
 

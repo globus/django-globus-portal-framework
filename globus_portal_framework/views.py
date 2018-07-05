@@ -6,14 +6,13 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from globus_portal_framework.search import settings
-from globus_portal_framework.transfer import settings as t_settings
-from globus_portal_framework import (preview, helper_page_transfer,
-                                     get_helper_page_url, parse_globus_url,
-                                     get_subject, post_search,
-                                     PreviewException, PreviewURLNotFound,
-                                     ExpiredGlobusToken,
-                                     check_exists)
+from django.conf import settings
+
+from globus_portal_framework import (
+    preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
+    get_subject, post_search, PreviewException, PreviewURLNotFound,
+    ExpiredGlobusToken, check_exists
+)
 
 log = logging.getLogger(__name__)
 
@@ -169,12 +168,12 @@ def detail_preview(request, subject):
         url, scope = context['service'].get('globus_http_link'), \
                      context['service'].get('globus_http_scope')
         # TODO: DEPRECATED -- Remove this "elif" block at version 0.3.0
-        if (not url or not scope) and (t_settings.GLOBUS_HTTP_ENDPOINT and
-                                       t_settings.PREVIEW_TOKEN_NAME):
+        if (not url or not scope) and (settings.GLOBUS_HTTP_ENDPOINT and
+                                       settings.PREVIEW_TOKEN_NAME):
             _, path = parse_globus_url(unquote(subject))
             context['subject_title'] = basename(path)
-            url = '{}{}'.format(t_settings.GLOBUS_HTTP_ENDPOINT, path)
-            scope = t_settings.PREVIEW_TOKEN_NAME
+            url = '{}{}'.format(settings.GLOBUS_HTTP_ENDPOINT, path)
+            scope = settings.PREVIEW_TOKEN_NAME
             log.warning(
                 'settings.GLOBUS_HTTP_ENDPOINT and settings.PREVIEW_TOKEN_NAME'
                 ' are deprecated and will be removed in a future version. '
@@ -187,7 +186,7 @@ def detail_preview(request, subject):
                       ''.format(url, scope, subject, context['service']))
             raise PreviewURLNotFound(subject)
         context['preview_data'] = \
-            preview(request.user, url, scope, t_settings.PREVIEW_DATA_SIZE)
+            preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
             log.error(pe)

@@ -14,7 +14,7 @@ from globus_portal_framework.tests.mocks import (
     MockTransferClient, MockTransferAPIError
 )
 
-from globus_portal_framework.transfer.utils import (
+from globus_portal_framework import (
     load_transfer_client, transfer_file, parse_globus_url, preview,
     helper_page_transfer, get_helper_page_url, check_exists, is_file
 )
@@ -58,7 +58,7 @@ class TransferUtilsTest(TestCase):
             load_transfer_client(user)
 
     @mock.patch('globus_sdk.TransferAPIError', MockTransferAPIError)
-    @mock.patch('globus_portal_framework.transfer.utils.is_file')
+    @mock.patch('globus_portal_framework.gtransfer.is_file')
     def test_check_exists(self, is_file):
         check_exists(self.user, self.foo_endpoint, 'path')
         self.assertTrue(is_file.called)
@@ -118,7 +118,7 @@ class TransferUtilsTest(TestCase):
             get_helper_page_url('http://example.com/transfer_callback',
                                 cancel_url='you_shall_not_go_back.edu')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_transfer(self, transfer_file):
         request = self.globus_helper_page_request()
         helper_page_transfer(request, self.foo_endpoint, '/path',
@@ -132,7 +132,7 @@ class TransferUtilsTest(TestCase):
         self.assertEqual(dest_path, '/helper_page_path')
         self.assertEqual(label, 'my transfer')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_transfer_helper_page_as_source(self, transfer_file):
         request = self.globus_helper_page_request()
         helper_page_transfer(request, self.foo_endpoint, '/path',
@@ -145,14 +145,14 @@ class TransferUtilsTest(TestCase):
         self.assertEqual(dest_ep, self.bar_endpoint)
         self.assertEqual(dest_path, '/helper_page_path')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_raises_error_for_gets(self, transfer_file):
         request = self.factory.get('/transfer_stuff')
         request.user = self.user
         with self.assertRaises(ValueError):
             helper_page_transfer(request, self.foo_endpoint, '/path')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_raises_error_for_anonymous_user(self, transfer_file):
         request = self.globus_helper_page_request()
         request.user = AnonymousUser

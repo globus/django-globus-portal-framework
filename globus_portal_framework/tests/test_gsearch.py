@@ -5,21 +5,18 @@ from django.test.utils import override_settings
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
 
-from globus_portal_framework.tests.test_search import (get_mock_data,
-                                                       SEARCH_SCHEMA,
-                                                       MOCK_RESULT,
-                                                       DEFAULT_MAPPER,
-                                                       TEST_SCHEMA,
-                                                       )
+from globus_portal_framework.tests import (
+    get_mock_data, SEARCH_SCHEMA, MOCK_RESULT, DEFAULT_MAPPER, TEST_SCHEMA,)
+
 from globus_portal_framework.tests.mocks import (
     MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer
 )
 
-from globus_portal_framework.search.utils import (
+from globus_portal_framework import (
     load_search_client, process_search_data, default_search_mapper,
-    get_pagination, get_filters)
+    get_pagination, get_filters,
 
-from globus_portal_framework.exc import ExpiredGlobusToken
+    ExpiredGlobusToken)
 
 
 class MockSearchGetSubject:
@@ -54,10 +51,8 @@ class SearchUtilsTest(TestCase):
         with self.assertRaises(ValueError):
             c = load_search_client(user)
 
-    @mock.patch('globus_portal_framework.search.settings.SEARCH_SCHEMA',
-                SEARCH_SCHEMA)
-    @mock.patch('globus_portal_framework.search.settings.SEARCH_MAPPER',
-                DEFAULT_MAPPER)
+    @override_settings(SEARCH_SCHEMA=SEARCH_SCHEMA,
+                       DEFAULT_MAPPER=DEFAULT_MAPPER)
     def test_process_search_data(self):
         mock_data = get_mock_data(MOCK_RESULT)
         data = process_search_data([mock_data])

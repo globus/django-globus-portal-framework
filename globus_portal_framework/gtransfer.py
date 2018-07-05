@@ -3,16 +3,15 @@ import globus_sdk
 import logging
 import os
 from django.core.validators import URLValidator
+from django.conf import settings
 
 
-from globus_portal_framework.utils import (load_globus_client,
-                                           load_globus_access_token,
-                                           validate_token)
-from globus_portal_framework import (PreviewPermissionDenied,
-                                     PreviewServerError, PreviewException,
-                                     PreviewBinaryData, PreviewNotFound,
-                                     ExpiredGlobusToken)
-from globus_portal_framework.transfer import settings as transfer_settings
+from globus_portal_framework import (
+    PreviewPermissionDenied, PreviewServerError, PreviewException,
+    PreviewBinaryData, PreviewNotFound, ExpiredGlobusToken,
+
+    load_globus_client, load_globus_access_token, validate_token
+)
 
 log = logging.getLogger(__name__)
 
@@ -205,7 +204,7 @@ def preview(user, url, scope, chunk_size=512):
             elif r.status_code == 401:
                 if not validate_token(token):
                     raise ExpiredGlobusToken(
-                        token_name=transfer_settings.PREVIEW_TOKEN_NAME)
+                        token_name=settings.PREVIEW_TOKEN_NAME)
                 raise PreviewPermissionDenied()
             elif r.status_code == 403:
                 raise PreviewPermissionDenied()

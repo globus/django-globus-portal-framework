@@ -2,7 +2,7 @@ from datetime import timedelta
 from django.utils import timezone
 import globus_sdk
 from django.conf import settings
-from globus_portal_framework.exc import ExpiredGlobusToken
+from globus_portal_framework import ExpiredGlobusToken
 
 
 def validate_token(tok):

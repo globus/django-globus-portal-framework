@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 import globus_sdk
 
 
-from globus_portal_framework.utils import load_globus_client
+from globus_portal_framework import load_globus_client
 
 from globus_portal_framework.tests.mocks import (
     MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer

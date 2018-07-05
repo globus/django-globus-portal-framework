@@ -15,9 +15,45 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+###############################################################################
+# Search Settings
+###############################################################################
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
+# "perfdata" search index
+SEARCH_INDEX = '5e83718e-add0-4f06-a00d-577dc78359bc'
+SEARCH_MAPPER = ('globus_portal_framework', 'default_search_mapper')
+SEARCH_SCHEMA = os.path.join(os.path.dirname(__file__), 'data/datacite.json')
+
+SEARCH_ENTRY_FIELD_PATH = 'perfdata'
+# Specify the field containing the title
+SEARCH_ENTRY_TITLE = 'titles'
+
+SEARCH_RESULTS_PER_PAGE = 10
+SEARCH_MAX_PAGES = 10
+# This will be the automatic search query when the user loads the page, if
+# they have not submitted their own query or there is no query loaded in the
+# session. "*" will automatically search everything, but may not be desirable
+# if there is a lot of search data in the index, as searches will take a while
+DEFAULT_QUERY = '*'
+
+###############################################################################
+# Transfer Settings
+###############################################################################
+
+
+# Variables stored per-search entry on the Globus Search index.
+ENTRY_SERVICE_VARS = {
+    'globus_group': 'globus_group',
+    'globus_http_link': 'globus_http_link',
+    'globus_http_scope': 'globus_http_scope'
+}
+ENTRY_SERVICE_VARS_MAPPER = ('globus_portal_framework',
+                             'default_service_vars_mapper')
+PREVIEW_DATA_SIZE = 2048
+
+###############################################################################
+# General Settings
+###############################################################################
 
 # Create 'local_settings.py' and put your below values there to avoid
 # accidentally committing them.
@@ -38,8 +74,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'social_django',
     'globus_portal_framework',
-    'globus_portal_framework.search',
-    'globus_portal_framework.transfer'
 ]
 
 MIDDLEWARE = [

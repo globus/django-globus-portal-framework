@@ -15,6 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from globus_portal_framework.views import (index, detail,
+                                           detail_metadata,
+                                           detail_transfer,
+                                           detail_preview)
 
 urlpatterns = [
     # We will likely use this at some point
@@ -23,5 +27,12 @@ urlpatterns = [
     path('', include('social_django.urls')),
     path('', include('django.contrib.auth.urls')),
     # Globus search portal. Provides default url '/'.
-    path('', include('globus_portal_framework.search.urls'))
+    path('detail-metadata/<path:subject>', detail_metadata,
+         name='detail-metadata'),
+    path('detail-preview/<path:subject>', detail_preview,
+         name='detail-preview'),
+    path('detail-transfer/<path:subject>', detail_transfer,
+         name='detail-transfer'),
+    path('detail/<path:subject>/', detail, name='detail'),
+    path('', index, name='search')
 ]
