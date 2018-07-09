@@ -32,23 +32,28 @@ class SearchViewsTest(TestCase):
         # A valid subject url given our views
         self.subject_url = quote_plus('globus://{}:{}'.format(self.foo_ep,
                                                               'foo'))
+        self.index = 'myindex'
 
-    def test_index(self):
-        r = self.c.get('/')
+    @mock.patch('globus_portal_framework.views.post_search')
+    def test_index(self, post_search):
+        post_search.return_value = {}
+        r = self.c.get(reverse('search', args=[self.index]))
         self.assertEqual(r.status_code, 200)
 
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @override_settings(SEARCH_MAPPER=test_gsearch.DEFAULT_MAPPER)
     def test_detail(self, get_subject):
         get_subject.return_value = MockSearchGetSubject()
-        r = self.c.get(reverse('detail', args=['mysubject']))
+        url = reverse('detail', args=[self.index, 'mysubject'])
+        r = self.c.get(url)
         self.assertEqual(r.status_code, 200)
 
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @override_settings(SEARCH_MAPPER=test_gsearch.DEFAULT_MAPPER)
     def test_detail_metadata(self, get_subject):
         get_subject.return_value = MockSearchGetSubject()
-        r = self.c.get(reverse('detail-metadata', args=['mysubject']))
+        url = reverse('detail-metadata', args=[self.index, 'mysubject'])
+        r = self.c.get(url)
         self.assertEqual(r.status_code, 200)
 
     @mock.patch('globus_portal_framework.views.get_helper_page_url',
@@ -59,7 +64,8 @@ class SearchViewsTest(TestCase):
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])
         get_subject.return_value = MockSearchGetSubject()
-        r = client.get(reverse('detail-transfer', args=[self.subject_url]))
+        url = reverse('detail-transfer', args=[self.index, self.subject_url])
+        r = client.get(url)
         self.assertEqual(r.status_code, 200)
 
     @mock.patch('globus_portal_framework.views.log')
@@ -72,7 +78,8 @@ class SearchViewsTest(TestCase):
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])
         get_subject.return_value = MockSearchGetSubject()
-        r = client.get(reverse('detail-preview', args=[self.subject_url]))
+        url = reverse('detail-preview', args=[self.index, self.subject_url])
+        r = client.get(url)
         self.assertEqual(len(r.context['messages']), 0)
         self.assertEqual(r.status_code, 200)
         self.assertTrue(preview.called)
@@ -94,7 +101,9 @@ class SearchViewsTest(TestCase):
                 preview.side_effect = PreviewServerError(500, 'Serv Err')
             else:
                 preview.side_effect = exc
-            r = client.get(reverse('detail-preview', args=[self.subject_url]))
+            url = reverse('detail-preview',
+                          args=[self.index, self.subject_url])
+            r = client.get(url)
             self.assertEqual(len(r.context['messages']), 1)
             self.assertEqual(r.status_code, 200)
 

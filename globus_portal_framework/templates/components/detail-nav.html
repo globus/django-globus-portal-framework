@@ -1,17 +1,17 @@
 <li class="nav-item mx-4 py-2">
-  <a class="nav-link" style="font-size: 24px" href="{% url 'detail' subject %}">
+  <a class="nav-link" style="font-size: 24px" href="{% url 'detail' request.session.search.index subject %}">
     <i class="fas fa-info-circle" style="font-size: 32px"></i> Overview
   </a>
 </li>
 {% if transfer_enabled %}
 <li class="nav-item mx-4 py-2">
-  <a class="nav-link" style="font-size: 24px" href="{% url 'detail-transfer' subject %}">
+  <a class="nav-link" style="font-size: 24px" href="{% url 'detail-transfer' request.session.search.index subject %}">
     <i class="far fa-arrow-alt-circle-down" style="font-size: 32px"></i> Transfer
   </a>
 </li>
 {% endif %}
 <li class="nav-item mx-4 py-2">
-  <a class="nav-link" style="font-size: 24px" href="{% url 'detail-preview' subject %}">
+  <a class="nav-link" style="font-size: 24px" href="{% url 'detail-preview' request.session.search.index subject %}">
     <i class="far fa-image" style="font-size: 32px"></i> Preview
   </a>
 </li>

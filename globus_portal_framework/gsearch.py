@@ -121,13 +121,13 @@ def default_service_mapper(gmeta_result, entry_service_vars):
     }
 
 
-def get_subject(subject, user=None):
+def get_subject(index, subject, user=None):
     """Get a subject and run the result through the SEARCH_MAPPER defined
     in settings.py. If no subject exists, return context with the 'subject'
     and an 'error' message."""
     client = load_search_client(user)
     try:
-        result = client.get_subject(settings.SEARCH_INDEX, unquote(subject))
+        result = client.get_subject(index, unquote(subject))
         return process_search_data([result.data])[0]
     except globus_sdk.exc.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}

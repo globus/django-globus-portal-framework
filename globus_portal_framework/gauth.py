@@ -17,6 +17,8 @@ def validate_token(tok):
 
 
 def load_globus_access_token(user, token_name):
+    if not user:
+        return None
     if user.is_authenticated:
         tok_list = user.social_auth.get(provider='globus').extra_data
         if token_name == 'auth.globus.org':

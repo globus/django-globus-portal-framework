@@ -27,12 +27,12 @@ urlpatterns = [
     path('', include('social_django.urls')),
     path('', include('django.contrib.auth.urls')),
     # Globus search portal. Provides default url '/'.
-    path('detail-metadata/<path:subject>', detail_metadata,
+    path('<index>/detail-metadata/<path:subject>', detail_metadata,
          name='detail-metadata'),
-    path('detail-preview/<path:subject>', detail_preview,
+    path('<index>/detail-preview/<path:subject>', detail_preview,
          name='detail-preview'),
-    path('detail-transfer/<path:subject>', detail_transfer,
+    path('<index>/detail-transfer/<path:subject>', detail_transfer,
          name='detail-transfer'),
-    path('detail/<path:subject>/', detail, name='detail'),
-    path('', index, name='search')
+    path('<index>/detail/<path:subject>/', detail, name='detail'),
+    path('<index>/', index, name='search')
 ]

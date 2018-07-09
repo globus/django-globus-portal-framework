@@ -1,6 +1,6 @@
 import logging
 from os.path import basename
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 import globus_sdk
 from django.shortcuts import render
 from django.urls import reverse
@@ -17,12 +17,12 @@ from globus_portal_framework import (
 log = logging.getLogger(__name__)
 
 
-def index(request):
+def index(request, index):
     """
-    Search the index configured in settings.SEARCH_INDEX with the queryparams
-    'q' for query, 'filter.<filter>' for facet-filtering, 'page' for pagination
-    If the user visits this page again without a search query, we auto search
-    for them again using their last query. If the user is logged in, they will
+    Search the 'index' with the queryparams 'q' for query, 'filter.<filter>'
+    for facet-filtering, 'page' for pagination If the user visits this
+    page again without a search query, we auto search for them
+    again using their last query. If the user is logged in, they will
     automatically do a credentialed search for Globus Search to return
     confidential results. If more results than settings.SEARCH_RESULTS_PER_PAGE
     are returned, they are paginated (Globus Search does the pagination, we
@@ -81,18 +81,18 @@ def index(request):
     if query:
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}
-        context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
-                                        request.user,
+        context['search'] = post_search(index, query, filters, request.user,
                                         request.GET.get('page', 1))
         request.session['search'] = {
-            'full_query': request.get_full_path(),
+            'full_query': urlparse(request.get_full_path()).query,
             'query': query,
             'filters': filters,
+            'index': index,
         }
     return render(request, 'search.html', context)
 
 
-def detail(request, subject):
+def detail(request, index, subject):
     """
     Load a page for showing details for a single search result. The data is
     exactly the same as the entries loaded by the index page in the
@@ -115,22 +115,22 @@ def detail(request, subject):
     }
     """
     return render(request, 'detail-overview.html',
-                  get_subject(subject, request.user))
+                  get_subject(index, subject, request.user))
 
 
-def detail_metadata(request, subject):
+def detail_metadata(request, index, subject):
     """
     Render a metadata page for a result. This is functionally the same as the
     'detail' page except it renders a detail-metadata.html instead for
     displaying tabular data about an object.
     """
     return render(request, 'detail-metadata.html',
-                  get_subject(subject, request.user))
+                  get_subject(index, subject, request.user))
 
 
 @csrf_exempt
-def detail_transfer(request, subject):
-    context = get_subject(subject, request.user)
+def detail_transfer(request, index, subject):
+    context = get_subject(index, subject, request.user)
     task_url = 'https://www.globus.org/app/activity/{}/overview'
     if request.user.is_authenticated:
         try:
@@ -140,7 +140,7 @@ def detail_transfer(request, subject):
                 task = helper_page_transfer(request, ep, path,
                                             helper_page_is_dest=True)
                 context['transfer_link'] = task_url.format(task['task_id'])
-            this_url = reverse('detail-transfer', args=[subject])
+            this_url = reverse('detail-transfer', args=[index, subject])
             full_url = request.build_absolute_uri(this_url)
             # This url will serve as both the POST destination and Cancel URL
             context['helper_page_link'] = get_helper_page_url(
@@ -162,8 +162,8 @@ def detail_transfer(request, subject):
     return render(request, 'detail-transfer.html', context)
 
 
-def detail_preview(request, subject):
-    context = get_subject(subject, request.user)
+def detail_preview(request, index, subject):
+    context = get_subject(index, subject, request.user)
     try:
         url, scope = context['service'].get('globus_http_link'), \
                      context['service'].get('globus_http_scope')

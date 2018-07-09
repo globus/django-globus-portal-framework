@@ -4,7 +4,7 @@
   <div class="result-item">
 
     <h3 class="search-title mt-3">
-      <a href="{% url 'detail' result.subject %}" title="{{result.fields.title}}">{{result.fields.title.value}}</a>
+      <a href="{% url 'detail' request.session.search.index result.subject %}" title="{{result.fields.title}}">{{result.fields.title.value}}</a>
     </h3>
 
     <div class="result-fields">
