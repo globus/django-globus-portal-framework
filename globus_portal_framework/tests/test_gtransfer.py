@@ -159,6 +159,7 @@ class TransferUtilsTest(TestCase):
 
     @mock.patch('globus_sdk.TransferClient')
     @mock.patch('globus_sdk.TransferData')
+    @mock.patch('globus_portal_framework.gtransfer.log', mock.Mock())
     def test_transfer_file(self, tdata, tclient):
         user = mock_user('bob', ['transfer.api.globus.org'])
         transfer_file(user,
