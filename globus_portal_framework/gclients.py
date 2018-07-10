@@ -69,3 +69,15 @@ def load_globus_client(user, client, token_name, require_authorized=False):
 def load_auth_client(user):
     return load_globus_client(user, globus_sdk.AuthClient,
                               'auth.globus.org', require_authorized=True)
+
+
+def load_search_client(user=None):
+    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
+    logged in or a generic one otherwise."""
+    return load_globus_client(user, globus_sdk.SearchClient,
+                              'search.api.globus.org')
+
+
+def load_transfer_client(user):
+    return load_globus_client(user, globus_sdk.TransferClient,
+                              'transfer.api.globus.org')

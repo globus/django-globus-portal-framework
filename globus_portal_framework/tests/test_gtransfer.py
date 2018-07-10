@@ -8,12 +8,11 @@ import globus_sdk
 
 
 from globus_portal_framework.tests.mocks import (
-    MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer,
-    MockTransferClient, MockTransferAPIError
+    mock_user, MockTransferClient, MockTransferAPIError
 )
 
 from globus_portal_framework import (
-    load_transfer_client, transfer_file, parse_globus_url,
+    transfer_file, parse_globus_url,
     helper_page_transfer, get_helper_page_url, check_exists, is_file
 )
 
@@ -37,23 +36,6 @@ class TransferUtilsTest(TestCase):
                                     data=post_data)
         request.user = self.user
         return request
-
-    @mock.patch('globus_sdk.TransferClient', MockGlobusClient)
-    def test_load_search_client_with_anonymous_user(self):
-        c = load_transfer_client(AnonymousUser())
-        self.assertFalse(globus_client_is_loaded_with_authorizer(c))
-
-    @mock.patch('globus_sdk.TransferClient', MockGlobusClient)
-    def test_load_search_client_with_real_user(self):
-        user = mock_user('bob', ['transfer.api.globus.org'])
-        c = load_transfer_client(user)
-        self.assertTrue(globus_client_is_loaded_with_authorizer(c))
-
-    @mock.patch('globus_sdk.TransferClient', MockGlobusClient)
-    def test_load_transfer_client_with_bad_token(self):
-        user = mock_user('alice', ['search.api.globus.org'])
-        with self.assertRaises(ValueError):
-            load_transfer_client(user)
 
     @mock.patch('globus_sdk.TransferAPIError', MockTransferAPIError)
     @mock.patch('globus_portal_framework.gtransfer.is_file')

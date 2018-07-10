@@ -9,7 +9,7 @@ from django.conf import settings
 
 import globus_sdk
 
-from globus_portal_framework import load_globus_client
+from globus_portal_framework import load_search_client
 
 
 log = logging.getLogger(__name__)
@@ -131,13 +131,6 @@ def get_subject(index, subject, user=None):
         return process_search_data([result.data])[0]
     except globus_sdk.exc.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
-
-
-def load_search_client(user=None):
-    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
-    logged in or a generic one otherwise."""
-    return load_globus_client(user, globus_sdk.SearchClient,
-                              'search.api.globus.org')
 
 
 def process_search_data(results):

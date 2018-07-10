@@ -10,15 +10,10 @@ from globus_portal_framework import (
     PreviewPermissionDenied, PreviewServerError, PreviewException,
     PreviewBinaryData, PreviewNotFound, ExpiredGlobusToken,
 
-    load_globus_client, load_globus_access_token, validate_token
+    load_transfer_client, load_globus_access_token, validate_token
 )
 
 log = logging.getLogger(__name__)
-
-
-def load_transfer_client(user):
-    return load_globus_client(user, globus_sdk.TransferClient,
-                              'transfer.api.globus.org')
 
 
 def check_exists(user, src_ep, src_path):
