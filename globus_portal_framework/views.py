@@ -98,6 +98,27 @@ def search(request, index):
     return render(request, 'search.html', context)
 
 
+def search_debug(request, index):
+    context = {}
+    query = request.GET.get('q') or '*'
+    filters = {k.replace('filter.', ''): request.GET.getlist(k)
+               for k in request.GET.keys() if k.startswith('filter.')}
+    results = post_search(index, query, filters, request.user, 1)
+    context['search'] = results
+    context['facets'] = dumps(results['facets'], indent=2)
+    return render(request, 'search-debug.html', context)
+
+
+def search_debug_detail(request, index, subject):
+    sub = get_subject(index, subject, request.user)
+    debug_fields = {name: dumps(data, indent=2) for name, data in sub.items()}
+    from collections import OrderedDict
+    dfields = OrderedDict(debug_fields)
+    dfields.move_to_end('all')
+    sub['django_portal_framework_debug_fields'] = dfields
+    return render(request, 'search-debug-detail.html', sub)
+
+
 def detail(request, index, subject):
     """
     Load a page for showing details for a single search result. The data is

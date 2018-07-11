@@ -62,7 +62,12 @@
           results by displaying private results if you have permissions associated
           with your account.
         </div>
+        {% elif debug %}
+        <div class="alert alert-dark" role="alert">
+          See Debugging for fields <a href="{% url 'search-debug' request.session.search.index %}">here</a>.
+        </div>
         {% endif %}
+
         {% include "components/search-results.html" %}
 
 

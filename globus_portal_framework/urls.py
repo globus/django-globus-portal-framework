@@ -15,10 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from globus_portal_framework.views import (index, detail,
-                                           detail_metadata,
-                                           detail_transfer,
-                                           detail_preview)
+from globus_portal_framework.views import (
+    search, index_selection, search_debug, search_debug_detail,
+    detail, detail_metadata, detail_transfer, detail_preview
+)
 
 urlpatterns = [
     # We will likely use this at some point
