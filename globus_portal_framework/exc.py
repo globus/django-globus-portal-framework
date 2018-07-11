@@ -19,6 +19,18 @@ class GlobusPortalException(Exception):
         return str(self)
 
 
+class IndexNotFound(GlobusPortalException):
+    """
+    Exception when user tried to access an index not defined by this portal
+    """
+    def __init__(self, index):
+        self.code = 'IndexNotFound'
+        self.index = index
+        self.message = ('The index "{}" was not defined for this portal'
+                        ''.format(index)
+                        )
+
+
 class PreviewException(GlobusPortalException):
     """
     Exceptions when trying to fetch data from Globus Preview

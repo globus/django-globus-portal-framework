@@ -1,6 +1,7 @@
 import logging
 from os.path import basename
 from urllib.parse import unquote, urlparse
+from json import dumps
 import globus_sdk
 from django.shortcuts import render
 from django.urls import reverse
@@ -17,7 +18,12 @@ from globus_portal_framework import (
 log = logging.getLogger(__name__)
 
 
-def index(request, index):
+def index_selection(request):
+    context = {'search_indexes': settings.SEARCH_INDEXES}
+    return render(request, 'index-selection.html', context)
+
+
+def search(request, index):
     """
     Search the 'index' with the queryparams 'q' for query, 'filter.<filter>'
     for facet-filtering, 'page' for pagination If the user visits this

@@ -2,14 +2,12 @@ from __future__ import division
 
 import json
 import logging
-from importlib import import_module
+import collections
 from urllib.parse import quote_plus, unquote
-
+import globus_sdk
 from django.conf import settings
 
-import globus_sdk
-
-from globus_portal_framework import load_search_client
+from globus_portal_framework import load_search_client, IndexNotFound
 
 
 log = logging.getLogger(__name__)
@@ -55,70 +53,36 @@ def post_search(index, query, filters, user=None, page=1):
 
     client = load_search_client(user)
     gfilters = get_filters(filters)
+    index_data = get_index(index)
     result = client.post_search(
-        index,
+        index_data['uuid'],
         {
             'q': query,
-            'facets': SEARCH_SCHEMA['facets'],
+            'facets': index_data['facets'],
             'filters': gfilters,
             'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
             'limit': settings.SEARCH_RESULTS_PER_PAGE
         })
-    return {'search_results': process_search_data(result.data['gmeta']),
-            'facets': get_facets(result, SEARCH_SCHEMA, filters),
+    return {'search_results': process_search_data(index_data['fields'],
+                                                  result.data['gmeta']),
+            'facets': get_facets(result, index_data['facets'], filters),
             'pagination': get_pagination(result.data['total'],
                                          result.data['offset'])
             }
 
 
-def default_search_mapper(gmeta_result, schema):
-    """This mapper takes the given schema and maps all fields within the
-    gmeta entry against it. Any non-matching results simply won't
-    show up in the result. This approach avoids a bunch of empty fields being
-    displayed when rendered in the templates.
-    :param entry:
-        entry = {
-            'foo': 'bar'
-            'car': 'zar'
-        }
-    :param schema:
-        schema = {
-            'foo': {'field_title': 'Foo'}
-        }
-    :returns template_results:
-    Will return:
-        {
-        'foo': {'field_title': 'Foo', 'value': 'bar'}
-        }
+def get_index(index):
     """
-    entry = gmeta_result[0][settings.SEARCH_ENTRY_FIELD_PATH]
-    fields = {k: {
-                       'field_title': schema[k].get('field_title', k),
-                       'data': v
-                  } for k, v in entry.items() if schema.get(k)}
-    if not fields.get('title'):
-        fields['title'] = entry.get(settings.SEARCH_ENTRY_TITLE)
-        if isinstance(fields['title'], list):
-            fields['title'] = fields['title'].pop(0)
-    return fields
-
-
-def default_service_mapper(gmeta_result, entry_service_vars):
+    Get an index given an index index url. A 'url' is a short name used
+    to refer to a search index through the globus_portal_framework, and does
+    not represent the real index name or its UUID.
+    :param index:
+    :return: all data about the index or raises
     """
-    Like the default search mapper, but looks for ENTRY_SERVICE_VARS for
-    each search result. This function should only be updated if the variables
-    are scattered in the entry and custom logic is the only way to retrieve
-    them. Otherwise, update ENTRY_SERVICE_VARS in settings.py
-    :param gmeta_result: The current gmeta_result
-    :param variable_map: Typically ENTRY_SERVICE_VARS stored in settings
-    :return: A dict matching the keys in variable_map, with values of vars
-    found in the gmeta_result. If the key doesn't exist, the variable is set
-    to None
-    """
-    entry = gmeta_result[0][settings.SEARCH_ENTRY_FIELD_PATH]
-    return {
-        key: entry.get(val) for key, val in entry_service_vars.items()
-    }
+    data = settings.SEARCH_INDEXES.get(index)
+    if not data:
+        raise IndexNotFound(index)
+    return data
 
 
 def get_subject(index, subject, user=None):
@@ -127,13 +91,14 @@ def get_subject(index, subject, user=None):
     and an 'error' message."""
     client = load_search_client(user)
     try:
-        result = client.get_subject(index, unquote(subject))
-        return process_search_data([result.data])[0]
+        idata = get_index(index)
+        result = client.get_subject(idata['uuid'], unquote(subject))
+        return process_search_data(idata['fields'], [result.data])[0]
     except globus_sdk.exc.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
-def process_search_data(results):
+def process_search_data(field_mappers, results):
     """
     Process results in a general search result, running the mapping function
     for each result and preparing other general data for being shown in
@@ -145,21 +110,42 @@ def process_search_data(results):
 
 
     """
-    field_mod_name, field_func_name = settings.SEARCH_MAPPER
-    field_mod = import_module(field_mod_name)
-    field_mapper = getattr(field_mod, field_func_name, default_search_mapper)
-    service_mod_name, service_func_name = settings.ENTRY_SERVICE_VARS_MAPPER
-    service_mod = import_module(service_mod_name)
-    service_mapper = getattr(service_mod, service_func_name,
-                             default_service_mapper)
     structured_results = []
     for entry in results:
-        structured_results.append({
+        content = entry['content']
+        result = {
             'subject': quote_plus(entry['subject']),
-            'fields': field_mapper(entry['content'], SEARCH_SCHEMA['fields']),
-            'service': service_mapper(entry['content'],
-                                      settings.ENTRY_SERVICE_VARS)
-        })
+            'all': content
+        }
+
+        if len(content) == 0:
+            continue
+        default_content = content[0]
+
+        for mapper in field_mappers:
+            field = {}
+            if isinstance(mapper, str):
+                field = {mapper: default_content.get(mapper)}
+            if isinstance(mapper, collections.Iterable) and len(mapper) == 2:
+                field_name, map_approach = mapper
+                if isinstance(map_approach, str):
+                    field = {field_name: default_content.get(map_approach)}
+                elif callable(map_approach):
+                    field = {field_name: map_approach(content)}
+
+            if not field:
+                log.error('Unable to process mapper "{}"'.format(mapper))
+                continue
+
+            overwrites = [name for name in field.keys()
+                          if name in result.keys()]
+            if overwrites:
+                log.warning('{} defined by {} overwrite previous fields in '
+                            'search.'.format(overwrites, mapper))
+
+            result.update(field)
+            structured_results.append(result)
+
     return structured_results
 
 
@@ -222,7 +208,7 @@ def get_filters(filters):
     } for name, values in filters.items()]
 
 
-def get_facets(search_result, search_schema, filters):
+def get_facets(search_result, portal_defined_facets, filters):
     """Prepare facets for display. Globus Search data is removed from results
     and the results are ordered according to the facet map. Empty categories
     are removed and any filters the user checked are tracked.
@@ -256,7 +242,7 @@ def get_facets(search_result, search_schema, filters):
     # Remove facets without buckets so we don't display empty fields
     pruned_facets = {f['name']: f['buckets'] for f in facets if f['buckets']}
     cleaned_facets = []
-    for f in search_schema['facets']:
+    for f in portal_defined_facets:
         buckets = pruned_facets.get(f['name'])
         if buckets:
             facet = {'name': f['name'], 'buckets': []}

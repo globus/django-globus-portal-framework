@@ -34,5 +34,10 @@ urlpatterns = [
     path('<index>/detail-transfer/<path:subject>', detail_transfer,
          name='detail-transfer'),
     path('<index>/detail/<path:subject>/', detail, name='detail'),
-    path('<index>/', index, name='search')
+    path('<index>/', search, name='search'),
+    # path('<index>/search-debug/', search_debug,
+    #      name='search-debug'),
+    # path('<index>/search-debug-detail/<path:subject>', search_debug_detail,
+    #      name='search-debug-detail'),
+    path('', index_selection, name='index-selection'),
 ]
