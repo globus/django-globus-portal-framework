@@ -144,8 +144,7 @@ def process_search_data(field_mappers, results):
                             'search.'.format(overwrites, mapper))
 
             result.update(field)
-            structured_results.append(result)
-
+        structured_results.append(result)
     return structured_results
 
 
