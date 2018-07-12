@@ -18,13 +18,16 @@
     {% endif %}
 
     <div class="card mt-4">
-      <div class="card-header">{{fields.title.value}}</div>
+      <div class="card-header">{{result.title.value}}</div>
       <div class="card-body">
-        <h5 class="mb-0">Filename:</h5><p>{{fields.remote_file_manifest.filename}}</p>
-        <h5 class="mb-0">Length: </h5><p>{{fields.remote_file_manifest.length}}</p>
-        <h5 class="mb-0">URL: </h5><p>{{fields.remote_file_manifest.url}}</p>
-        <h5 class="mb-0">MD5: </h5><p>{{fields.remote_file_manifest.md5}}</p>
-        <h5 class="mb-0">SHA256: </h5><p>{{fields.remote_file_manifest.sha256}}</p>
+        {% for rfm in remote_file_manifests %}
+        <h5 class="mb-0">Filename:</h5><p>{{rfm.filename}}</p>
+        <h5 class="mb-0">Length: </h5><p>{{rfm.length}}</p>
+        <h5 class="mb-0">URL: </h5><p>{{rfm.url}}</p>
+        <h5 class="mb-0">MD5: </h5><p>{{rfm.md5}}</p>
+        <h5 class="mb-0">SHA256: </h5><p>{{rfm.sha256}}</p>
+        <br>
+        {% endfor %}
       </div>
       <div class="card-footer">
         {% if helper_page_link and request.user.is_authenticated %}

@@ -13,13 +13,13 @@ from globus_portal_framework import load_search_client, IndexNotFound
 log = logging.getLogger(__name__)
 
 
-def load_json_file(filename):
-    with open(filename) as f:
-        raw_data = f.read()
-        return json.loads(raw_data)
-
-
-SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
+# def load_json_file(filename):
+#     with open(filename) as f:
+#         raw_data = f.read()
+#         return json.loads(raw_data)
+#
+#
+# SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
 
 
 def post_search(index, query, filters, user=None, page=1):

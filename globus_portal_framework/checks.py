@@ -13,8 +13,10 @@ def search_mapper_check(app_configs, **kwargs):
         fields = idata.get('fields')
         if not fields:
             errors.append(Error(
-                'Could not find "fields" for settings.{}'.format(index_name)),
+                'Could not find "fields" for settings.SEARCH_INDEXES.{}'
+                ''.format(index_name),
                 obj=settings,
                 id='globus_portal_framework.E001'
+                )
             )
     return errors
