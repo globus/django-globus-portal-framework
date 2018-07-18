@@ -1,10 +1,11 @@
 from __future__ import division
-
+import os
 import json
 import logging
 import collections
 from urllib.parse import quote_plus, unquote
 import globus_sdk
+from django import template
 from django.conf import settings
 
 from globus_portal_framework import load_search_client, IndexNotFound
@@ -69,6 +70,26 @@ def post_search(index, query, filters, user=None, page=1):
             'pagination': get_pagination(result.data['total'],
                                          result.data['offset'])
             }
+
+
+def get_template(index, base_template):
+    """If a user has defined a custom template for visualizing search data for
+    their index, load that template. Otherwise, load the default template.
+
+    NOTE: Template paths are relative to django TEMPLATES in settings.py, """
+    template_override = base_template
+    try:
+        idata = get_index(index)
+        base_dir = idata.get('template_override_dir', '')
+        to = os.path.join(base_dir, base_template)
+        # Raises exception
+        template.loader.get_template(to)
+        template_override = to
+    except template.TemplateDoesNotExist:
+        pass
+    except Exception as e:
+        log.exception(e)
+    return template_override
 
 
 def get_index(index):

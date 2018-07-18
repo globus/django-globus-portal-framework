@@ -1,5 +1,7 @@
 {%extends "detail-base.html"%}
 
+{% load index_template %}
+
 {% block detail_title %}
 <h3>{{project_title}}</h3>
 <h2>{{subject_title}}</h2>
@@ -32,9 +34,11 @@
       </div>
       <div class="card-footer">
         {% if permission_error %}
-          {% include "components/permission-error.html" %}
+          {% index_template "components/permission-error.html" as it_pe %}
+          {% include it_pe %}
         {% elif messages %}
-          {% include "components/messages.html" %}
+          {% index_template "components/messages.html" as it_mess %}
+          {% include it_mess %}
         {% endif %}
       </div>
     </div>

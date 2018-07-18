@@ -24,7 +24,8 @@
 
 {%block detail_messages %}
 <div class="container my-3">
-    {%include "components/messages.html"%}
+    {% index_template "components/messages.html" as it_messages %}
+    {% include it_messages %}
 </div>
 {%endblock%}
 
@@ -39,7 +40,7 @@
                 </div>
                 <div id="card-heading-titles">
                     {% block detail_title %}
-                    <h3>{{project_title}}</h3>
+                    <h3>{{globus_portal_frametork.project_title}}</h3>
                     <h2>{{fields.title}}</h2>
                     {% endblock %}
                 </div>
@@ -48,7 +49,8 @@
 
         <div class="card-body">
             <ul class="nav nav-tabs">
-            {% include "components/detail-nav.html" %}
+            {% index_template "components/detail-nav.html" as it_detail_nav %}
+            {% include it_detail_nav %}
             </ul>
             <div class="container">
                 {%block detail_body %}

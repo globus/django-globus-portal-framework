@@ -12,7 +12,7 @@ from django.conf import settings
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
-    ExpiredGlobusToken, check_exists
+    ExpiredGlobusToken, check_exists, get_template
 )
 
 log = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ def search(request, index):
             'filters': filters,
             'index': index,
         }
-    return render(request, 'search.html', context)
+    return render(request, get_template(index, 'search.html'), context)
 
 
 def search_debug(request, index):
@@ -106,7 +106,7 @@ def search_debug(request, index):
     results = post_search(index, query, filters, request.user, 1)
     context['search'] = results
     context['facets'] = dumps(results['facets'], indent=2)
-    return render(request, 'search-debug.html', context)
+    return render(request, get_template(index, 'search-debug.html'), context)
 
 
 def search_debug_detail(request, index, subject):
@@ -116,7 +116,8 @@ def search_debug_detail(request, index, subject):
     dfields = OrderedDict(debug_fields)
     dfields.move_to_end('all')
     sub['django_portal_framework_debug_fields'] = dfields
-    return render(request, 'search-debug-detail.html', sub)
+    return render(request,
+                  get_template(index, 'search-debug-detail.html'), sub)
 
 
 def detail(request, index, subject):
@@ -151,7 +152,7 @@ def detail_metadata(request, index, subject):
     'detail' page except it renders a detail-metadata.html instead for
     displaying tabular data about an object.
     """
-    return render(request, 'detail-metadata.html',
+    return render(request, get_template(index, 'detail-metadata.html'),
                   get_subject(index, subject, request.user))
 
 
@@ -186,7 +187,8 @@ def detail_transfer(request, index, subject):
                 log.error('Unexpected Error found during transfer request',
                           tapie)
                 messages.error(request, tapie.message)
-    return render(request, 'detail-transfer.html', context)
+    return render(request,
+                  get_template(index, 'detail-transfer.html'), context)
 
 
 def detail_preview(request, index, subject):
@@ -194,19 +196,6 @@ def detail_preview(request, index, subject):
     try:
         url, scope = context['service'].get('globus_http_link'), \
                      context['service'].get('globus_http_scope')
-        # TODO: DEPRECATED -- Remove this "elif" block at version 0.3.0
-        if (not url or not scope) and (settings.GLOBUS_HTTP_ENDPOINT and
-                                       settings.PREVIEW_TOKEN_NAME):
-            _, path = parse_globus_url(unquote(subject))
-            context['subject_title'] = basename(path)
-            url = '{}{}'.format(settings.GLOBUS_HTTP_ENDPOINT, path)
-            scope = settings.PREVIEW_TOKEN_NAME
-            log.warning(
-                'settings.GLOBUS_HTTP_ENDPOINT and settings.PREVIEW_TOKEN_NAME'
-                ' are deprecated and will be removed in a future version. '
-                'Please instead retrieve the URL from the search result under '
-                'the key defined by "globus_http_link" and "globus_http_scope"'
-                ' in settings.ENTRY_SERVICE_VARS')
         if not url or not scope:
             log.debug('Preview URL or Scope not found. Searched '
                       'entry {} using settings.ENTRY_SERVICE_VARS, result: {}'
@@ -219,4 +208,4 @@ def detail_preview(request, index, subject):
             log.error(pe)
         log.debug('User error: {}'.format(pe))
         messages.error(request, pe.message)
-    return render(request, 'detail-preview.html', context)
+    return render(request, get_template(index, 'detail-preview.html'), context)

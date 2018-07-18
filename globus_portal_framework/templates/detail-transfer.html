@@ -38,7 +38,8 @@
         {% endif %}
 
         <div class="mt-3">
-        {% include 'components/messages.html' %}
+        {% index_template "components/messages.html" as it_messages %}
+        {% include it_messages %}
         </div>
 
       </div>

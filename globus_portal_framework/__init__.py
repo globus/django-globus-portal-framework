@@ -15,7 +15,7 @@ from globus_portal_framework.gclients import (
 )
 
 from globus_portal_framework.gsearch import (
-    post_search, get_subject,
+    post_search, get_subject, get_index, get_template,
     process_search_data, get_pagination,
     get_filters, get_facets
 )
@@ -38,7 +38,7 @@ __all__ = [
     'load_auth_client', 'load_transfer_client', 'load_search_client',
     'load_globus_client', 'load_globus_access_token', 'validate_token',
 
-    'post_search', 'get_subject',
+    'post_search', 'get_subject', 'get_index', 'get_template',
     'process_search_data', 'get_pagination',
     'get_filters', 'get_facets',
 
