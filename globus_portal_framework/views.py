@@ -142,7 +142,7 @@ def detail(request, index, subject):
                 }
     }
     """
-    return render(request, 'detail-overview.html',
+    return render(request, get_template(index, 'detail-overview.html'),
                   get_subject(index, subject, request.user))
 
 
@@ -194,12 +194,12 @@ def detail_transfer(request, index, subject):
 def detail_preview(request, index, subject):
     context = get_subject(index, subject, request.user)
     try:
-        url, scope = context['service'].get('globus_http_link'), \
-                     context['service'].get('globus_http_scope')
+        url, scope = context.get('globus_http_endpoint'), \
+                     context.get('globus_http_scope')
         if not url or not scope:
-            log.debug('Preview URL or Scope not found. Searched '
-                      'entry {} using settings.ENTRY_SERVICE_VARS, result: {}'
-                      ''.format(url, scope, subject, context['service']))
+            log.error('Preview Error: "globus_http_endpoint" or '
+                      '"globus_http_scope" not found, please add them to this '
+                      'index to use preview.')
             raise PreviewURLNotFound(subject)
         context['preview_data'] = \
             preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)

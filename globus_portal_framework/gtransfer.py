@@ -198,8 +198,7 @@ def preview(user, url, scope, chunk_size=512):
                 return '\n'.join(chunk.split('\n')[:-1])
             elif r.status_code == 401:
                 if not validate_token(token):
-                    raise ExpiredGlobusToken(
-                        token_name=settings.PREVIEW_TOKEN_NAME)
+                    raise ExpiredGlobusToken(token_name=scope)
                 raise PreviewPermissionDenied()
             elif r.status_code == 403:
                 raise PreviewPermissionDenied()
