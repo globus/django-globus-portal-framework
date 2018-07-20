@@ -1,6 +1,6 @@
 import logging
-from os.path import basename
-from urllib.parse import unquote, urlparse
+import os
+from urllib.parse import unquote, urlparse, urlencode
 from json import dumps
 import globus_sdk
 from django.shortcuts import render
@@ -191,21 +191,21 @@ def detail_transfer(request, index, subject):
                   get_template(index, 'detail-transfer.html'), context)
 
 
-def detail_preview(request, index, subject):
+def detail_preview(request, index, subject, endpoint=None, url_path=None):
     context = get_subject(index, subject, request.user)
     try:
-        url, scope = context.get('globus_http_endpoint'), \
-                     context.get('globus_http_scope')
-        if not url or not scope:
-            log.error('Preview Error: "globus_http_endpoint" or '
-                      '"globus_http_scope" not found, please add them to this '
-                      'index to use preview.')
+        scope = request.GET.get('scope')
+        if not any((endpoint, url_path, scope)):
+            log.error('Preview Error: Endpoint, Path, or Scope not given. '
+                      '(Got: {}, {}, {})'.format(endpoint, url_path, scope))
             raise PreviewURLNotFound(subject)
+        url = 'https://{}{}'.format(endpoint, url_path)
+        log.debug('Previewing with url: {}'.format(url))
         context['preview_data'] = \
             preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
-            log.error(pe)
+            log.exception(pe)
         log.debug('User error: {}'.format(pe))
         messages.error(request, pe.message)
     return render(request, get_template(index, 'detail-preview.html'), context)
