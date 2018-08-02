@@ -31,32 +31,35 @@ be used instead.
 
 Both examples here override 'search-results.html' to display custom results
 """
-import os
 import re
 import logging
 from django import template
-from globus_portal_framework import get_index, get_template
+from globus_portal_framework import get_template
 
 log = logging.getLogger(__name__)
 
 register = template.Library()
 
+
 class IndexTemplateNode(template.Node):
+
     def __init__(self, template_name, var_name):
         self.template_name = template_name
         self.var_name = var_name
+
     def render(self, context):
         template = self.template_name
         try:
-            template = get_template(
-                context['globus_portal_framework']['index'],
-                self.template_name
-            )
+            index = context['globus_portal_framework'].get('index', None)
+            if index is not None:
+                template = get_template(index, self.template_name)
+                log.debug('Loaded custom index template {} for {}'.format(
+                          template, index))
         except Exception as e:
             log.exception(e)
         context[self.var_name] = template
-        log.debug(template)
         return ''
+
 
 @register.tag
 def index_template(parser, token):
@@ -70,9 +73,11 @@ def index_template(parser, token):
         )
     m = re.search(r'(.*?) as (\w+)', arg)
     if not m:
-        raise template.TemplateSyntaxError("%r tag had invalid arguments" % tag_name)
+        raise template.TemplateSyntaxError('%r tag had invalid arguments' %
+                                           tag_name)
     template_name, var_name = m.groups()
-    if not (template_name[0] == template_name[-1] and template_name[0] in ('"', "'")):
+    if not (template_name[0] == template_name[-1] and
+            template_name[0] in ('"', "'")):
         raise template.TemplateSyntaxError(
             "%r tag's argument should be in quotes" % tag_name
         )
