@@ -199,7 +199,7 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
             log.error('Preview Error: Endpoint, Path, or Scope not given. '
                       '(Got: {}, {}, {})'.format(endpoint, url_path, scope))
             raise PreviewURLNotFound(subject)
-        url = 'https://{}{}'.format(endpoint, url_path)
+        url = 'https://{}/{}'.format(endpoint, url_path)
         log.debug('Previewing with url: {}'.format(url))
         context['preview_data'] = \
             preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)
