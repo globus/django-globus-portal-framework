@@ -20,13 +20,8 @@ from globus_portal_framework.views import (
     detail, detail_metadata, detail_transfer, detail_preview
 )
 
-urlpatterns = [
-    # We will likely use this at some point
-    path('admin/', admin.site.urls),
-    # Social auth provides /login /logout. Provides no default urls
-    path('', include('social_django.urls')),
-    path('', include('django.contrib.auth.urls')),
-    # Globus search portal. Provides default url '/'.
+# search detail for viewing info about a single search result
+detail_urlpatterns = [
     path('<index>/detail-metadata/<subject>', detail_metadata,
          name='detail-metadata'),
     path('<index>/detail-preview/<subject>/',
@@ -36,10 +31,20 @@ urlpatterns = [
     path('<index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
     path('<index>/detail/<subject>/', detail, name='detail'),
-    path('<index>/', search, name='search'),
-    path('<index>/search-debug/', search_debug,
-         name='search-debug'),
     path('<index>/search-debug-detail/<subject>/', search_debug_detail,
          name='search-debug-detail'),
+]
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # Social auth provides /login /logout. Provides no default urls
+    path('', include('social_django.urls')),
+    path('', include('django.contrib.auth.urls')),
+
+    # Globus search portal. Provides default url '/'.
     path('', index_selection, name='index-selection'),
+    path('<index>/', search, name='search'),
+    path('<index>/search-debug/', search_debug, name='search-debug'),
+    path('', include(detail_urlpatterns))
+
 ]
