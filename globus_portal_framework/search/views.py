@@ -16,6 +16,7 @@ from globus_portal_framework import (preview, helper_page_transfer,
                                      check_exists, load_globus_access_token)
 from globus_portal_framework.search.models import Minid
 from concierge.api import create_bag
+from minid_client import minid_client_api
 
 log = logging.getLogger(__name__)
 
