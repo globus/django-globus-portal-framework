@@ -41,8 +41,8 @@
                 </div>
                 <div id="card-heading-titles">
                     {% block detail_title %}
-                    <h3>{{globus_portal_frametork.project_title}}</h3>
-                    <h2>{{fields.title}}</h2>
+                    <h3>{{globus_portal_framework.index_data.name}}</h3>
+                    <h2>{{title|default:'Result'}}</h2>
                     {% endblock %}
                 </div>
             </div>

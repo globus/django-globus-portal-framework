@@ -163,7 +163,7 @@ def detail_transfer(request, index, subject):
     if request.user.is_authenticated:
         try:
             ep, path = parse_globus_url(unquote(subject))
-            check_exists(request.user, ep, path)
+            check_exists(request.user, ep, path, raises=True)
             if request.method == 'POST':
                 task = helper_page_transfer(request, ep, path,
                                             helper_page_is_dest=True)
@@ -174,19 +174,13 @@ def detail_transfer(request, index, subject):
             context['helper_page_link'] = get_helper_page_url(
                 full_url, full_url, folder_limit=1, file_limit=0)
         except globus_sdk.TransferAPIError as tapie:
-            if tapie.code == 'EndpointPermissionDenied':
-                messages.error(request, 'You do not have permission to '
-                                        'transfer files from this endpoint.')
-            elif tapie.code == 'ClientError.NotFound':
-                messages.error(request, tapie.message.replace('Directory',
-                                                              'File'))
-            elif tapie.code == 'AuthenticationFailed' \
+            if tapie.code == 'AuthenticationFailed' \
                     and tapie.message == 'Token is not active':
                 raise ExpiredGlobusToken()
             else:
+                context['detail_error'] = tapie
                 log.error('Unexpected Error found during transfer request',
                           tapie)
-                messages.error(request, tapie.message)
     return render(request,
                   get_template(index, 'detail-transfer.html'), context)
 
@@ -206,6 +200,6 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
             log.exception(pe)
+        context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
-        messages.error(request, pe.message)
     return render(request, get_template(index, 'detail-preview.html'), context)

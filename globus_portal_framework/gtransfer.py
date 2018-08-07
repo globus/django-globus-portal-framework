@@ -16,14 +16,14 @@ from globus_portal_framework import (
 log = logging.getLogger(__name__)
 
 
-def check_exists(user, src_ep, src_path):
+def check_exists(user, src_ep, src_path, raises=False):
     """Check if a file exists on a Globus Endpoint
 
     If the file exists, Returns True
 
     Raises globus_sdk.TransferAPIError if the file does not exist,
     the endpoint is not active, or the user does not have permission."""
-    is_file(user, src_ep, src_path)
+    is_file(user, src_ep, src_path, raises=raises)
     return True
 
 

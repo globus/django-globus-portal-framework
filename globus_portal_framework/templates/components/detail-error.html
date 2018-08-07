@@ -1,0 +1,21 @@
+{% if detail_error %}
+  {% if detail_error.code == 'PermissionDenied' %}
+  <div class="alert alert-warning" role="alert">
+    <p>You do not have access to view this data.</p>
+    {% if fields.globus_group %}
+    <a class="font-weight-bold" href="https://www.globus.org/app/groups/{{fields.globus_group}}/" target="_blank">
+      You can join the ramses Group for access here.
+    </a>
+    {% endif %}
+  </div>
+  {% elif detail_error.code == 'NotFound' %}
+  <div class="alert alert-warning" role="alert">
+    <p>The file has likely been moved or deleted. Please contact your Search administrator
+    to update this search record.</p>
+  </div>
+  {% elif detail_error.code == 'Unexpected'  %}
+  <div class="alert alert-danger" role="alert">
+    <p>{{detail_error.message}}</p>
+  </div>
+  {% endif %}
+{% endif %}

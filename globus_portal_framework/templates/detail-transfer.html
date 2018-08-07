@@ -1,4 +1,6 @@
 {%extends "detail-base.html"%}
+{% load index_template %}
+
 
 {% block detail_body %}
 
@@ -18,23 +20,30 @@
     {% endif %}
 
     <div class="card mt-4">
-      <div class="card-header">{{result.title.value}}</div>
+      <div class="card-header">{{title|default:'Result'}}</div>
       <div class="card-body">
-        {% for rfm in remote_file_manifests %}
-        <h5 class="mb-0">Filename:</h5><p>{{rfm.filename}}</p>
-        <h5 class="mb-0">Length: </h5><p>{{rfm.length}}</p>
-        <h5 class="mb-0">URL: </h5><p>{{rfm.url}}</p>
-        <h5 class="mb-0">MD5: </h5><p>{{rfm.md5}}</p>
-        <h5 class="mb-0">SHA256: </h5><p>{{rfm.sha256}}</p>
+        {% for man in remote_file_manifest %}
+        <h5 class="mb-0">Filename:</h5><p>{{man.filename}}</p>
+        <h5 class="mb-0">Length: </h5><p>{{man.length}}</p>
+        <h5 class="mb-0">URL: </h5><p>{{man.url}}</p>
+        <h5 class="mb-0">MD5: </h5><p>{{man.md5}}</p>
+        <h5 class="mb-0">SHA256: </h5><p>{{man.sha256}}</p>
         <br>
         {% endfor %}
       </div>
+
       <div class="card-footer">
         {% if helper_page_link and request.user.is_authenticated %}
         <a href="{{helper_page_link}}" class="btn btn-primary">Transfer File</a>
         {% elif not request.user.is_authenticated %}
         <a href="#" class="btn btn-primary disabled">Login to Transfer this File</a>
+        {% elif detail_error.code == 'EndpointPermissionDenied' %}
+          {% index_template "components/permission-error.html" as it_pe %}
+          {% include it_pe %}
         {% else %}
+        <div class="alert alert-error" role="alert">
+          {{ detail_error.error}}
+        </div>
         {% endif %}
 
         <div class="mt-3">

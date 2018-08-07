@@ -3,15 +3,17 @@
     <i class="fas fa-info-circle" style="font-size: 32px"></i> Overview
   </a>
 </li>
-{% if transfer_enabled %}
+{% if not transfer_enabled %}
 <li class="nav-item mx-4 py-2">
   <a class="nav-link" style="font-size: 24px" href="{% url 'detail-transfer' globus_portal_framework.index subject %}">
     <i class="far fa-arrow-alt-circle-down" style="font-size: 32px"></i> Transfer
   </a>
 </li>
 {% endif %}
+{% if not globus_http_endpoint or not globus_http_path or not globus_http_scope %}
 <li class="nav-item mx-4 py-2">
-  <a class="nav-link" style="font-size: 24px" href="{% url 'detail-preview' globus_portal_framework.index subject %}">
+  <a class="nav-link" style="font-size: 24px" href="{% url 'detail-preview' globus_portal_framework.index subject globus_http_endpoint globus_http_path %}?scope={{globus_http_scope}}">
     <i class="far fa-image" style="font-size: 32px"></i> Preview
   </a>
 </li>
+{% endif %}
