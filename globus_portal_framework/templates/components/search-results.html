@@ -4,24 +4,16 @@
   <div class="result-item">
 
     <h3 class="search-title mt-3">
-      <a href="{% url 'detail' request.session.search.index result.subject %}" title="{{result.fields.title}}">{{result.fields.title.value}}</a>
+      <a href="{% url 'detail' globus_portal_framework.index result.subject %}" title="{{result.title|default:'Result'}}">{{result.title|default:'Result'}}</a>
     </h3>
 
     <div class="result-fields">
-      Creators: {%for creator in result.fields.creators.data%}
-                {{creator.creator_name.value}}{% if not forloop.last %},{%endif%}
-                {%endfor%}<br>
-      Contributors: {%for contributor in result.fields.contributors.data%}
-                {{contributor.contributor_name}}{% if not forloop.last %},{%endif%}
-                {%endfor%}<br>
-      Date: {{result.fields.publication_year.data.value}}<br>
-      Version: {{result.fields.version.data.value}}<br>
-      Data Formats:
-      {% for format in result.fields.formats.data %}
-      <button class="btn btn-primary btn-sm ml-1 py-0" style="background-color: #337ab7">
-        {{format.value}}
-      </button>
+      {% for field_dict in result.all|slice:"0:2" %}
+        {% for name, data in field_dict.items|slice:"0:2" %}
+          {{name}}: Present<br>
+        {% endfor %}
       {% endfor %}
+      Create a file called templates/your_template_override_dir/components/search-results.html to change this layout.
       <br>
     </div>
 

@@ -53,8 +53,9 @@ class IndexTemplateNode(template.Node):
             index = context['globus_portal_framework'].get('index', None)
             if index is not None:
                 template = get_template(index, self.template_name)
-                log.debug('Loaded custom index template {} for {}'.format(
-                          template, index))
+                if template != self.template_name:
+                    log.debug('Loaded custom index template {} for {}'.format(
+                              template, index))
         except Exception as e:
             log.exception(e)
         context[self.var_name] = template
