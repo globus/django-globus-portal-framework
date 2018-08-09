@@ -162,7 +162,11 @@ def detail_transfer(request, index, subject):
     task_url = 'https://www.globus.org/app/activity/{}/overview'
     if request.user.is_authenticated:
         try:
-            ep, path = parse_globus_url(unquote(subject))
+            # Hacky, we need to formalize remote file manifests
+            parsed = urlparse(context['remote_file_manifest'][0]['url'])
+            ep, path = parsed.netloc, parsed.path
+            # Remove line in version 4 after issue #29 is resolved
+            ep = ep.replace(':', '')
             check_exists(request.user, ep, path, raises=True)
             if request.method == 'POST':
                 task = helper_page_transfer(request, ep, path,
@@ -174,11 +178,11 @@ def detail_transfer(request, index, subject):
             context['helper_page_link'] = get_helper_page_url(
                 full_url, full_url, folder_limit=1, file_limit=0)
         except globus_sdk.TransferAPIError as tapie:
+            context['detail_error'] = tapie
             if tapie.code == 'AuthenticationFailed' \
                     and tapie.message == 'Token is not active':
                 raise ExpiredGlobusToken()
-            else:
-                context['detail_error'] = tapie
+            if tapie.code not in ['EndpointPermissionDenied']:
                 log.error('Unexpected Error found during transfer request',
                           tapie)
     return render(request,
