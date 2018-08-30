@@ -100,8 +100,8 @@ def get_index(index):
     :param index:
     :return: all data about the index or raises
     """
-    data = settings.SEARCH_INDEXES.get(index)
-    if not data:
+    data = settings.SEARCH_INDEXES.get(index, None)
+    if data is None:
         raise IndexNotFound(index)
     return data
 
