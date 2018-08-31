@@ -48,14 +48,6 @@ class SearchViewsTest(TestCase):
         r = self.c.get(url)
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_sdk.SearchClient.get_subject')
-    @override_settings(SEARCH_MAPPER=test_gsearch.DEFAULT_MAPPER)
-    def test_detail_metadata(self, get_subject):
-        get_subject.return_value = MockSearchGetSubject()
-        url = reverse('detail-metadata', args=[self.index, 'mysubject'])
-        r = self.c.get(url)
-        self.assertEqual(r.status_code, 200)
-
     @mock.patch('globus_portal_framework.views.get_helper_page_url',
                 mock.Mock())
     @mock.patch('globus_sdk.SearchClient.get_subject')

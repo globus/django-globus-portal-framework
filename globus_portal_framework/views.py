@@ -146,16 +146,6 @@ def detail(request, index, subject):
                   get_subject(index, subject, request.user))
 
 
-def detail_metadata(request, index, subject):
-    """
-    Render a metadata page for a result. This is functionally the same as the
-    'detail' page except it renders a detail-metadata.html instead for
-    displaying tabular data about an object.
-    """
-    return render(request, get_template(index, 'detail-metadata.html'),
-                  get_subject(index, subject, request.user))
-
-
 @csrf_exempt
 def detail_transfer(request, index, subject):
     context = get_subject(index, subject, request.user)

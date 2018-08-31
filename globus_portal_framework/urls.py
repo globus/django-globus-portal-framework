@@ -17,13 +17,11 @@ from django.contrib import admin
 from django.urls import path, include
 from globus_portal_framework.views import (
     search, index_selection, search_debug, search_debug_detail,
-    detail, detail_metadata, detail_transfer, detail_preview
+    detail, detail_transfer, detail_preview
 )
 
 # search detail for viewing info about a single search result
 detail_urlpatterns = [
-    path('<index>/detail-metadata/<subject>', detail_metadata,
-         name='detail-metadata'),
     path('<index>/detail-preview/<subject>/',
          detail_preview, name='detail-preview'),
     path('<index>/detail-preview/<subject>/<endpoint>/<path:url_path>/',
