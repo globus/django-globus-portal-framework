@@ -29,6 +29,8 @@
         <h5 class="mb-0">MD5: </h5><p>{{man.md5}}</p>
         <h5 class="mb-0">SHA256: </h5><p>{{man.sha256}}</p>
         <br>
+        {% empty %}
+        <h5>No files have been listed for this search entry.</h5>
         {% endfor %}
       </div>
 
@@ -40,10 +42,12 @@
         {% elif detail_error.code == 'EndpointPermissionDenied' %}
           {% index_template "components/permission-error.html" as it_pe %}
           {% include it_pe %}
-        {% else %}
+        {% elif detail_error %}
         <div class="alert alert-error" role="alert">
           {{ detail_error.error}}
         </div>
+        {% else %}
+        <button class="btn btn-primary" disabled>Transfer File</button>
         {% endif %}
 
         <div class="mt-3">
