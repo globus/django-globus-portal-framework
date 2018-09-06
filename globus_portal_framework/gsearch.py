@@ -147,7 +147,7 @@ def process_search_data(field_mappers, results):
             field = {}
             if isinstance(mapper, str):
                 field = {mapper: default_content.get(mapper)}
-            if isinstance(mapper, collections.Iterable) and len(mapper) == 2:
+            elif isinstance(mapper, collections.Iterable) and len(mapper) == 2:
                 field_name, map_approach = mapper
                 if isinstance(map_approach, str):
                     field = {field_name: default_content.get(map_approach)}
