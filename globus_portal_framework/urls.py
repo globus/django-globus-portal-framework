@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from globus_portal_framework.views import (
     search, index_selection, search_debug, search_debug_detail,
-    detail, detail_transfer, detail_preview
+    detail, detail_transfer, detail_preview, proxy
 )
 
 # search detail for viewing info about a single search result
@@ -43,6 +43,8 @@ urlpatterns = [
     path('', index_selection, name='index-selection'),
     path('<index>/', search, name='search'),
     path('<index>/search-debug/', search_debug, name='search-debug'),
-    path('', include(detail_urlpatterns))
+    path('', include(detail_urlpatterns)),
 
+    # Proxy remote file requests
+    path('proxy', proxy, name='proxy')
 ]
