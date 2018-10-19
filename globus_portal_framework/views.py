@@ -2,16 +2,12 @@ import logging
 import os
 from urllib.parse import unquote, urlparse, urlencode
 from json import dumps
-import requests
 import globus_sdk
-from django.http import StreamingHttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from django.core.exceptions import SuspiciousOperation
-from .gclients import load_globus_access_token
 
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
@@ -201,19 +197,3 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
         context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
     return render(request, get_template(index, 'detail-preview.html'), context)
-
-
-def proxy(request):
-    url = request.GET.get('url')
-    resource_server = request.GET.get('resource_server')
-    if not url:
-        raise SuspiciousOperation
-    headers = {}
-    if request.user.is_authenticated and resource_server:
-        try:
-            token = load_globus_access_token(request.user, resource_server)
-            headers['Authorization'] = 'Bearer {}'.format(token)
-        except ValueError:
-            raise SuspiciousOperation
-    r = requests.get(url, headers=headers, stream=True)
-    return StreamingHttpResponse(streaming_content=r)
