@@ -41,7 +41,7 @@ urlpatterns = [
     path('', include('django.contrib.auth.urls')),
 
     # Proxy remote file requests
-    path('api/proxy', restricted_endpoint_proxy_stream, name='restricted_endpoint_proxy_stream'),
+    path('api/proxy/', restricted_endpoint_proxy_stream, name='restricted_endpoint_proxy_stream'),
 
     # Globus search portal. Provides default url '/'.
     path('', index_selection, name='index-selection'),
