@@ -209,12 +209,11 @@ def proxy(request):
     if not url:
         raise SuspiciousOperation
     headers = {}
-    if resource_server:
+    if request.user.is_authenticated and resource_server:
         try:
             token = load_globus_access_token(request.user, resource_server)
             headers['Authorization'] = 'Bearer {}'.format(token)
         except ValueError:
             raise SuspiciousOperation
-    print(token)
     r = requests.get(url, headers=headers, stream=True)
     return StreamingHttpResponse(streaming_content=r)
