@@ -1,0 +1,17 @@
+{
+    "@datatype": "GMetaResult",
+    "@version": "2017-09-01",
+    "content": [
+        {
+            "globus_group": "b1208858-fc85-11e7-aca1-0ed2d3184bea",
+            "remote_file_manifest": [{
+                "filename": "iozone_log_ccs_dtn36_atlas1_50G_default.txt",
+                "length": 26716,
+                "md5": "48261c5f5f9d677a9ae6e4bed22a9f39",
+                "sha256": "b2e88ea7587409e5ba92a323d7a1c44736fd587bbe00128a95df9cbcd4bcc957",
+                "url": "globus://cf619dbb-623b-41fa-8988-1f3d26ebd887/ORNL/iozone/iozone_log_ccs_dtn36_atlas1_50G_default.txt"
+            }]
+        }
+    ],
+    "subject": "globus://cf619dbb-623b-41fa-8988-1f3d26ebd887/ORNL/iozone/iozone_log_ccs_dtn36_atlas1_50G_default.txt"
+}

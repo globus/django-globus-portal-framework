@@ -1,6 +1,5 @@
 from __future__ import division
 import os
-import json
 import logging
 import collections
 from urllib.parse import quote_plus, unquote
@@ -12,15 +11,6 @@ from globus_portal_framework import load_search_client, IndexNotFound
 
 
 log = logging.getLogger(__name__)
-
-
-# def load_json_file(filename):
-#     with open(filename) as f:
-#         raw_data = f.read()
-#         return json.loads(raw_data)
-#
-#
-# SEARCH_SCHEMA = load_json_file(settings.SEARCH_SCHEMA)
 
 
 def post_search(index, query, filters, user=None, page=1):
@@ -114,7 +104,7 @@ def get_subject(index, subject, user=None):
     try:
         idata = get_index(index)
         result = client.get_subject(idata['uuid'], unquote(subject))
-        return process_search_data(idata['fields'], [result.data])[0]
+        return process_search_data(idata.get('fields', {}), [result.data])[0]
     except globus_sdk.exc.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
 
@@ -140,6 +130,9 @@ def process_search_data(field_mappers, results):
         }
 
         if len(content) == 0:
+            log.warning('Subject {} contained no content, skipping...'.format(
+                entry['subject']
+            ))
             continue
         default_content = content[0]
 
@@ -234,7 +227,8 @@ def get_facets(search_result, portal_defined_facets, filters):
     are removed and any filters the user checked are tracked.
 
     :param search_result: A raw search result from Globus Search
-    :param search_schema: SEARCH_SCHEMA in settings.py
+    :param portal_defined_facets: 'facets' defined for a search index in
+        settings.py
     :param filters: A dict of user-selected filters, an example like this:
         {'searchdata.contributors.value': ['Cobb, Jane', 'Reynolds, Malcolm']}
 
@@ -271,8 +265,8 @@ def get_facets(search_result, portal_defined_facets, filters):
                     'count': bucket['count'],
                     'value': bucket['value'],
                     'field_name': f['field_name'],
-                    'checked': bucket['value'] in
-                    filters.get(f['field_name'], [])
+                    'checked': bucket['value'] in filters.get(f['field_name'],
+                                                              [])
                 })
             cleaned_facets.append(facet)
     return cleaned_facets

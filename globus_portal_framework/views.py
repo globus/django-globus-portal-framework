@@ -1,6 +1,7 @@
 import logging
 import os
 from urllib.parse import unquote, urlparse, urlencode
+from collections import OrderedDict
 from json import dumps
 import globus_sdk
 from django.shortcuts import render
@@ -112,7 +113,6 @@ def search_debug(request, index):
 def search_debug_detail(request, index, subject):
     sub = get_subject(index, subject, request.user)
     debug_fields = {name: dumps(data, indent=2) for name, data in sub.items()}
-    from collections import OrderedDict
     dfields = OrderedDict(debug_fields)
     dfields.move_to_end('all')
     sub['django_portal_framework_debug_fields'] = dfields
@@ -153,6 +153,14 @@ def detail_transfer(request, index, subject):
     if request.user.is_authenticated:
         try:
             # Hacky, we need to formalize remote file manifests
+            if 'remote_file_manifest' not in context.keys():
+                raise ValueError('Please add "remote_file_manifest" to '
+                                 '"fields" for {} in order to use transfer.'
+                                 ''.format(index))
+            elif not context.get('remote_file_manifest'):
+                raise ValueError('"remote_file_manifest" not found in search '
+                                 'metadata for index {}. Cannot start '
+                                 'Transfer.'.format(index))
             parsed = urlparse(context['remote_file_manifest'][0]['url'])
             ep, path = parsed.netloc, parsed.path
             # Remove line in version 4 after issue #29 is resolved
@@ -175,6 +183,8 @@ def detail_transfer(request, index, subject):
             if tapie.code not in ['EndpointPermissionDenied']:
                 log.error('Unexpected Error found during transfer request',
                           tapie)
+        except ValueError as ve:
+            log.error(ve)
     return render(request,
                   get_template(index, 'detail-transfer.html'), context)
 
