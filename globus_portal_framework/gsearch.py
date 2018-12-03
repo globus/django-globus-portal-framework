@@ -7,6 +7,7 @@ import globus_sdk
 from django import template
 from django.conf import settings
 
+from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound
 
 
@@ -51,8 +52,8 @@ def post_search(index, query, filters, user=None, page=1):
             'q': query,
             'facets': index_data['facets'],
             'filters': gfilters,
-            'offset': (int(page) - 1) * settings.SEARCH_RESULTS_PER_PAGE,
-            'limit': settings.SEARCH_RESULTS_PER_PAGE
+            'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
+            'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
         })
     return {'search_results': process_search_data(index_data['fields'],
                                                   result.data['gmeta']),
@@ -163,7 +164,7 @@ def process_search_data(field_mappers, results):
 
 
 def get_pagination(total_results, offset,
-                   per_page=settings.SEARCH_RESULTS_PER_PAGE):
+                   per_page=get_setting('SEARCH_RESULTS_PER_PAGE')):
     """
     Prepare pagination according to Globus Search. Since Globus Search handles
     returning paginated results, we calculate the offsets and send along which
@@ -186,8 +187,8 @@ def get_pagination(total_results, offset,
     pages: contains info which is easy for the template engine to render.
     """
 
-    if total_results > per_page * settings.SEARCH_MAX_PAGES:
-        page_count = settings.SEARCH_MAX_PAGES
+    if total_results > per_page * get_setting('SEARCH_MAX_PAGES'):
+        page_count = get_setting('SEARCH_MAX_PAGES')
     else:
         page_count = total_results // per_page or 1
     pagination = [{'number': p + 1} for p in range(page_count)]

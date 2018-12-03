@@ -8,8 +8,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
 
+from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 
 def index_selection(request):
-    context = {'search_indexes': settings.SEARCH_INDEXES}
+    context = {'search_indexes': get_setting('SEARCH_INDEXES')}
     return render(request, 'index-selection.html', context)
 
 
@@ -84,7 +84,7 @@ def search(request, index):
     """
     context = {}
     query = request.GET.get('q') or request.session.get('query') or \
-        settings.DEFAULT_QUERY
+        get_setting('DEFAULT_QUERY')
     if query:
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}
@@ -200,7 +200,7 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
         url = 'https://{}/{}'.format(endpoint, url_path)
         log.debug('Previewing with url: {}'.format(url))
         context['preview_data'] = \
-            preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)
+            preview(request.user, url, scope, get_setting('PREVIEW_DATA_SIZE'))
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
             log.exception(pe)
