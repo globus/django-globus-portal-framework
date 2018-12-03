@@ -1,17 +1,15 @@
 import logging
-import os
-from urllib.parse import unquote, urlparse, urlencode
+from urllib.parse import urlparse
 from collections import OrderedDict
 from json import dumps
 import globus_sdk
 from django.shortcuts import render
 from django.urls import reverse
-from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
-    preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
+    preview, helper_page_transfer, get_helper_page_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
     ExpiredGlobusToken, check_exists, get_template
 )

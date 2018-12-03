@@ -15,11 +15,11 @@ def globals(request):
     except IndexNotFound:
         index_data = {}
     return {'globus_portal_framework': {
-            'project_title': getattr(settings, 'PROJECT_TITLE',
-                                     'Globus Portal Framework'),
-            'auth_enabled': auth_enabled,
-            'transfer_enabled': auth_enabled and transfer_scope_set,
-            'index_data': index_data,
-            'index': index,
-        }
-    }
+                'project_title': getattr(settings, 'PROJECT_TITLE',
+                                         'Globus Portal Framework'),
+                'auth_enabled': auth_enabled,
+                'transfer_enabled': auth_enabled and transfer_scope_set,
+                'index_data': index_data,
+                'index': index,
+                }
+            }
