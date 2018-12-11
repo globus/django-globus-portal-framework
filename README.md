@@ -27,8 +27,6 @@ Integrate it into your app in `myproject/settings.py`
         ...
         # This contains general Globus portal tools
         'globus_portal_framework',
-        # This contains a search portal we will use for this demo
-        'globus_portal_framework.search',
     ]
 ```
 
@@ -73,7 +71,6 @@ After you create your app, add these to `myproject/settings.py`
     INSTALLED_APPS = [
         ...
         'django-globus-portal-framework',
-        'django-globus-portal-framework.search',
         'social_django',
     ]
 
