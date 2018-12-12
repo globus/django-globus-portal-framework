@@ -25,7 +25,6 @@ Integrate it into your app in `myproject/settings.py`
 ```
     INSTALLED_APPS = [
         ...
-        # This contains general Globus portal tools
         'globus_portal_framework',
     ]
 ```
