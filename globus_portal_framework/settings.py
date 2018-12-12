@@ -19,13 +19,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Globus Portal Framework Settings
 ###############################################################################
 
+def get_rfm(search_result):
+    if search_result[0].get('remote_file_manifest'):
+        return [search_result[0]['remote_file_manifest']]
+    else:
+        return []
+
 SEARCH_INDEXES = {
     'perfdata': {
         'name': 'Performance Data',
         'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
         'fields': [
             'perfdata',
-            'remote_file_manifest',
+            ('remote_file_manifest', get_rfm),
             'globus_group',
             'globus_http_endpoint',
             'globus_http_scope'
