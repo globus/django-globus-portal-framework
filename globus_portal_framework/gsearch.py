@@ -6,12 +6,18 @@ from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
 from django.conf import settings
+from django.apps import apps
 
 from globus_portal_framework.apps import get_setting
-from globus_portal_framework import load_search_client, IndexNotFound
+from globus_portal_framework import IndexNotFound
 
 
 log = logging.getLogger(__name__)
+
+
+def get_search_client(user):
+    sap_model = apps.get_model('globus_portal_framework.SearchAuthProxy')
+    return sap_model.get_client_for_user(user)
 
 
 def post_search(index, query, filters, user=None, page=1):
@@ -43,7 +49,7 @@ def post_search(index, query, filters, user=None, page=1):
     if not index or not query:
         return {'search_results': [], 'facets': []}
 
-    client = load_search_client(user)
+    client = get_search_client(user)
     gfilters = get_filters(filters)
     index_data = get_index(index)
     result = client.post_search(
@@ -101,7 +107,7 @@ def get_subject(index, subject, user=None):
     """Get a subject and run the result through the SEARCH_MAPPER defined
     in settings.py. If no subject exists, return context with the 'subject'
     and an 'error' message."""
-    client = load_search_client(user)
+    client = get_search_client(user)
     try:
         idata = get_index(index)
         result = client.get_subject(idata['uuid'], unquote(subject))

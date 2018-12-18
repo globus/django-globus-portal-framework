@@ -19,11 +19,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Globus Portal Framework Settings
 ###############################################################################
 
+
 def get_rfm(search_result):
     if search_result[0].get('remote_file_manifest'):
         return [search_result[0]['remote_file_manifest']]
     else:
         return []
+
 
 SEARCH_INDEXES = {
     'perfdata': {
@@ -207,3 +209,15 @@ try:
     from globus_portal_framework.local_settings import *  # noqa
 except ImportError:
     pass
+
+# Perform searches on search.api.globus.org using server credentials instead
+# of user credentials. This is useful if you want to hide search records from
+# users, but still allow them to access data about them through the portal.
+# Securing search records requires setting the 'visible_to' field on records:
+# https://docs.globus.org/api/search/ingest/
+# The social auth key/secret have automatically been added to this list.
+# CONFIDENTIAL_CLIENTS = [
+#     {'name': 'My Globus Proxy App',
+#      'client_id': 'My Client ID',
+#      'client_secret': 'My Client Secret'},
+# ]

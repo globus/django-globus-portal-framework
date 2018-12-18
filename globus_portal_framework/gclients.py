@@ -1,7 +1,8 @@
 from datetime import timedelta
 from django.utils import timezone
+from django.conf import settings
 import globus_sdk
-from globus_portal_framework.apps import get_setting
+
 from globus_portal_framework import ExpiredGlobusToken
 
 
@@ -9,11 +10,8 @@ def validate_token(tok):
     """Validate if the given token is active.
 
     Returns true if active, raises ExpiredGlobusToken exception if not"""
-    ac = globus_sdk.ConfidentialAppAuthClient(
-        get_setting('SOCIAL_AUTH_GLOBUS_KEY'),
-        get_setting('SOCIAL_AUTH_GLOBUS_SECRET')
-    )
-    return ac.oauth2_validate_token(tok).get('active', False)
+    auth_client = load_globus_confidential_client()
+    return auth_client.oauth2_validate_token(tok).get('active', False)
 
 
 def load_globus_access_token(user, token_name):
@@ -37,6 +35,32 @@ def load_globus_access_token(user, token_name):
                                  'tokens existed with the name {}, only {}'
                                  ''.format(token_name, user, token_name,
                                            list(service_tokens.keys())))
+
+
+def load_globus_confidential_client(client_id=None):
+    """Load a confidential client. With no parameters, this returns a client
+    based on the built-in Globus Client/Secret used for the portal. If more
+    clients are configured in settings.CONFIDENTIAL_CLIENTS, passing in a
+    client_id for one of those will yield a Globus client for that id/secret.
+    Returns: globus_sdk.ConfidentialAppAuthClient
+    Raises: ValueError, if the client_id is not in CONFIDENTIAL_CLIENTS
+    """
+    if client_id is None or client_id == settings.SOCIAL_AUTH_GLOBUS_KEY:
+        return globus_sdk.ConfidentialAppAuthClient(
+            client_id=settings.SOCIAL_AUTH_GLOBUS_KEY,
+            client_secret=settings.SOCIAL_AUTH_GLOBUS_SECRET
+        )
+    try:
+        clients = {c['client_id']: c
+                   for c in getattr(settings, 'CONFIDENTIAL_CLIENTS')}
+        return globus_sdk.ConfidentialAppAuthClient(
+            client_id=clients[client_id]['client_id'],
+            client_secret=clients[client_id]['client_secret']
+        )
+    except (KeyError, AttributeError):
+        raise ValueError('The Globus App Client ID "{}" has not been '
+                         'configured in settings.CONFIDENTIAL_CLIENTS'
+                         ''.format(client_id)) from None
 
 
 def load_globus_client(user, client, token_name, require_authorized=False):
