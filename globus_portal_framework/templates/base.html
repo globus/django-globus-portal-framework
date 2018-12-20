@@ -34,16 +34,17 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto"></ul>
           <ul class="navbar-nav my-lg-0">
-            {%if globus_portal_framework.auth_enabled and request.user.is_authenticated %}
+
+            {%if backends.backends and request.user.is_authenticated %}
             <li>
-              <a class="nav-link" href="{% url 'logout' %}?next=/">Logout</a>
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
             <li>
               <a class="nav-link" href="/">{{request.user.username }}</a>
             </li>
-            {% elif globus_portal_framework.auth_enabled %}
+            {% elif 'globus' in backends.backends and not request.user.is_authenticated %}
             <li>
-              <a class="nav-link" href="{% url 'login' %}globus?next=/">Login</a>
+              <a class="nav-link" href="{% url 'social:begin' 'globus' %}?next={{ request.get_full_path|urlencode }}">Login</a>
             </li>
             {% endif %}
           </ul>
