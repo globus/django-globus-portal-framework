@@ -14,6 +14,8 @@ from globus_portal_framework import (
     ExpiredGlobusToken
 )
 
+from globus_portal_framework.gclients import revoke_globus_tokens
+
 from globus_portal_framework.tests.mocks import (
     MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer
 )
@@ -83,3 +85,14 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
         user = mock_user('alice', ['search.api.globus.org'])
         with self.assertRaises(ValueError):
             load_transfer_client(user)
+
+    @mock.patch('globus_portal_framework.gclients.log')
+    @mock.patch('globus_sdk.ConfidentialAppAuthClient')
+    def test_logout_revokes_tokens(self, patched_cc_client, log):
+        cc_instance = mock.Mock()
+        patched_cc_client.return_value = cc_instance
+        user = mock_user('alice', ['auth.globus.org', 'search.api.globus.org'
+                                   'transfer.api.globus.org'])
+        revoke_globus_tokens(user)
+        # Twice for each service access_token, and refresh_token
+        self.assertEqual(cc_instance.oauth2_revoke_token.call_count, 6)

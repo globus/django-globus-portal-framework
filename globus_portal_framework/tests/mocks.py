@@ -52,10 +52,13 @@ def mock_user(username, tokens):
     extra_data = {
         'user': user,
         'provider': 'globus',
-        'extra_data': {'other_tokens': [
-            {'resource_server': token,
-             'access_token': 'foo', 'expires_in': TOKEN_EXPIRE_TIME}
-            for token in tokens]
+        'extra_data': {
+            'other_tokens': [{
+                'resource_server': token,
+                'access_token': 'foo', 'expires_in': TOKEN_EXPIRE_TIME
+            } for token in tokens],
+            'access_token': 'auth_access_token',
+            'refresh_token': 'auth_refresh_token'
         }
     }
     user.last_login = datetime.now(pytz.utc)
