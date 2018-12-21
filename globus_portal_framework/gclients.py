@@ -34,8 +34,8 @@ def revoke_globus_tokens(user):
         settings.SOCIAL_AUTH_GLOBUS_KEY,
         settings.SOCIAL_AUTH_GLOBUS_SECRET
     )
-    tok_list = [(tokens['access_token'], tokens['refresh_token'])]
-    tok_list.extend([(t['access_token'], t['refresh_token'])
+    tok_list = [(tokens['access_token'], tokens.get('refresh_token'))]
+    tok_list.extend([(t['access_token'], t.get('refresh_token'))
                     for t in tokens['other_tokens']])
 
     for at, rt in tok_list:
