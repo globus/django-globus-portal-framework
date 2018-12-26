@@ -18,8 +18,17 @@
 <div class="row">
   <div class="col"></div>
   <div class="col-10">
+
+    {% if index_data.test_index %}
+    <div class="alert alert-secondary" role="alert">
+      <h3 class="text-center">Globus Portal Framework has been installed!</h3>
+
+      <p class="text-center">You can checkout our demo index, or continue setting up your own from the README</p>
+    </div>
+    {% endif %}
+
     <h2 class="text-center card card-body">
-      <a href="{% url 'search' index %}?q=*">{{index_data.name}}</a>
+      <a href="{% url 'search' index %}?q=*">{{index_data.name|default:index}}</a>
     </h2>
   </div>
   <div class="col"></div>

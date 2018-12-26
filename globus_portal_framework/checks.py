@@ -51,19 +51,6 @@ def check_old_apps(app_configs, **kwargs):
 
 
 @register()
-def check_search_indexes_exists(app_configs, **kwargs):
-    if getattr(settings, 'SEARCH_INDEXES', None) is None:
-        return [(Error('Please define SEARCH_INDEXES in your settings.py',
-                       obj=settings,
-                       hint='Check the README for an example.',
-                       id='globus_portal_framework.settings.E002'
-                       )
-                 )]
-    else:
-        return []
-
-
-@register()
 def check_search_indexes(app_configs, **kwargs):
     errors = []
     search_indexes = getattr(settings, 'SEARCH_INDEXES', {})

@@ -5,7 +5,6 @@ import collections
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
-from django.conf import settings
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound
@@ -50,17 +49,30 @@ def post_search(index, query, filters, user=None, page=1):
         index_data['uuid'],
         {
             'q': query,
-            'facets': index_data['facets'],
+            'facets': prepare_search_facets(index_data.get('facets', [])),
             'filters': gfilters,
             'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
             'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
         })
-    return {'search_results': process_search_data(index_data['fields'],
+    return {'search_results': process_search_data(index_data.get('fields', []),
                                                   result.data['gmeta']),
-            'facets': get_facets(result, index_data['facets'], filters),
+            'facets': get_facets(result, index_data.get('facets', []),
+                                 filters),
             'pagination': get_pagination(result.data['total'],
                                          result.data['offset'])
             }
+
+
+def prepare_search_facets(facets):
+    for facet in facets:
+        if not isinstance(facet, dict):
+            raise ValueError('Each facet must be of type "dict"')
+        if not facet.get('field_name'):
+            raise ValueError('Each facet must define at minimum "field_name"')
+        facet['name'] = facet.get('name', facet['field_name'])
+        facet['type'] = facet.get('type', 'terms')
+        facet['size'] = facet.get('size', 10)
+    return facets
 
 
 def get_template(index, base_template):
@@ -91,7 +103,8 @@ def get_index(index):
     :param index:
     :return: all data about the index or raises
     """
-    data = settings.SEARCH_INDEXES.get(index, None)
+    indexes = get_setting('SEARCH_INDEXES') or {}
+    data = indexes.get(index, None)
     if data is None:
         raise IndexNotFound(index)
     return data
