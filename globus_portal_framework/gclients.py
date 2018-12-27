@@ -1,7 +1,7 @@
 from datetime import timedelta
 from django.utils import timezone
 import globus_sdk
-from globus_portal_framework.apps import get_setting
+from django.conf import settings
 from globus_portal_framework import ExpiredGlobusToken
 
 
@@ -10,8 +10,8 @@ def validate_token(tok):
 
     Returns true if active, raises ExpiredGlobusToken exception if not"""
     ac = globus_sdk.ConfidentialAppAuthClient(
-        get_setting('SOCIAL_AUTH_GLOBUS_KEY'),
-        get_setting('SOCIAL_AUTH_GLOBUS_SECRET')
+        settings.SOCIAL_AUTH_GLOBUS_KEY,
+        settings.SOCIAL_AUTH_GLOBUS_SECRET
     )
     return ac.oauth2_validate_token(tok).get('active', False)
 
