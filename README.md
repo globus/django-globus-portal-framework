@@ -246,11 +246,15 @@ to records from the `detail-transfer/` page.
 The following fields are built-in:
 
 * `remote_file_manifest` -- Transfer data in a search record. See [here](https://github.com/fair-research/bdbag/blob/master/doc/config.md#remote-file-manifest)
- for how to format in your search records
+ for how to format in your search records. Only supports Globus URLs (Example globus://ddb59aef-6d04-11e5-ba46-22000b92c6ec/share/godata/file1.txt)
 * `globus_http_endpoint` -- Endpoint to use for detail-preview page
+    * Example: `b4eab318-fc86-11e7-a5a9-0a448319c2f8.petrel.host`
 * `globus_http_scope` -- Resource server to use for detail-preview page
+    * Example: `petrel_https_server`
 * `globus_http_path` -- Path on remote endpoint to use for fetching data on detail-preview page
-
+    * Example: `/ORNL/iozone/iozone_log_ccs_dtn01_atlas1_10G_default.txt`
+* `globus_group` -- Typically a Search Records restricted `visible_to` group on Globus Search. List the group here so users can be directed to join to request access when using preview/transfer/etc.
+    * Example: `50b6a29c-63ac-11e4-8062-22000ab68755`
 
 ### Custom Fields
 
@@ -268,7 +272,6 @@ SEARCH_INDEXES = {
             ('organization', 'field_name_which_lists_organization_and_is_not_politely_named_in_search_records'),
             ('creation_date', lambda x: x[0]['my_record_data']['foo']['bar']['creation_date'])
         ],
-
     }
 }
 ```
@@ -327,37 +330,83 @@ myproject/
             my-custom-page.html
 ```
 
-### Example: Customizing templates
-
-In this example, dates are static. Let's customize them so they look better.
+### Example: Tying it all together -- Improving our Dates
 
 
+In this example, dates are static. Let's make them into python datetimes for more
+flexibility.
 
-An example for needing a custom SEARCH_MAPPER would be to parse dates before
-they are used within the templates. An example would look like this:
+Start with ensuring the basics in `settings.py`:
 
-`myproject/utils.py`
 ```
-    from datetime import datetime
-    from globus_portal_framework import default_search_mapper
+SEARCH_INDEXES = {
+    'perfdata': {
+        'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
+        'fields': [
+            'perfdata',
+        ]
+    }
+}
 
-
-    def my_mapper(entry, schema):
-        # Automap fields in settings.SEARCH_SCHEMA
-        fields = default_search_mapper(entry, schema)
-        # Dates from my search index are formatted: '2018-12-30'. Format them into
-        # datetimes for Django templates. Disregard other info in ['dates']['data']
-        if fields.get('dates'):
-            fields['dates']['data'] = [
-                {'value': datetime.strptime(d['value'], '%Y-%m-%d')}
-                for d in fields['dates']['data'] if d.get('value')
-            ]
-        return fields
+# This enables extended search debugging
+DEBUG = True
+INTERNAL_IPS = (
+    '127.0.0.1',
+)
 ```
 
-We can edit directly how data is displayed by overriding the Django template
-for displaying search results.
+Run the server and login. Basic dates should show up for you.
 
+Now lets add the code for turning dates in `perfdata` into django datetimes. Add
+the following code to your settings.py:
+
+```
+from datetime import datetime
+def perfdata_mapper(search_result):
+    dates = search_result[0]['perfdata'].get('dates')
+    if dates:
+        formatted = [datetime.strptime(d['value'], '%Y-%m-%d') for d in dates]
+        search_result[0]['perfdata']['dates'] = formatted
+    return search_result[0]
+```
+
+And enable it by changing `perfdata` to a tuple:
+```
+SEARCH_INDEXES = {
+    'perfdata': {
+        'name': 'Performance Data Portal',
+        'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
+        'fields': [
+            ('perfdata', perfdata_mapper),
+        ]
+    }
+}
+```
+
+Now we can edit the template to display our new date. Ensure you have templates
+setup:
+
+
+```
+SEARCH_INDEXES = {
+    'perfdata': {
+        'name': 'Performance Data Portal',
+        'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
+        'fields': [
+            ('perfdata', perfdata_mapper),
+        ],
+        'template_override_dir': 'perfdata',
+    }
+}
+
+TEMPLATES = [
+    {
+        'DIRS': [
+            os.path.join(BASE_DIR, 'myproject', 'templates'),
+        ],
+        ...
+    }
+]
 ```
 
 `myproject/templates/perfdata/components/search-results.html`
@@ -366,24 +415,24 @@ for displaying search results.
 <div id="search-result" class="search-result">
   {% for result in search.search_results %}
   <div class="result-item">
+
     <h3 class="search-title mt-3">
-      <a href="{% url 'detail' result.subject %}" title="{{result.fields.title}}">{{result.fields.title.value}}</a>
+      <a href="{% url 'detail' globus_portal_framework.index result.subject %}" title="{{result.title|default:'Result'}}">{{result.title|default:'Result'}}</a>
     </h3>
+
     <div class="result-fields">
-      Contributors: {%for contributor in result.fields.contributors.data%}
-                {{contributor.contributor_name}}{% if not forloop.last %},{%endif%}
-                {%endfor%}<br>
-      <strong>Date: {% for date in result.fields.dates.data %}
+      <strong>Date:
+      {% for date in result.perfdata.perfdata.dates %}
+        {{date}}
       {{date.value}}<br>
       {% endfor %}
       </strong>
     </div>
+
   </div>
   {% endfor %}
 </div>
 ```
-
-
 
 ## Developer Install
 
