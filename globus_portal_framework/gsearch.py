@@ -159,11 +159,14 @@ def process_search_data(field_mappers, results):
                 if isinstance(map_approach, str):
                     field = {field_name: default_content.get(map_approach)}
                 elif callable(map_approach):
-                    field = {field_name: map_approach(content)}
-
-            if not field:
-                log.error('Unable to process mapper "{}"'.format(mapper))
-                continue
+                    try:
+                        field = {field_name: map_approach(content)}
+                    except Exception as e:
+                        log.exception(e)
+                        log.error('Error rendering content for "{}"'.format(
+                            field_name
+                        ))
+                        field = {field_name: None}
 
             overwrites = [name for name in field.keys()
                           if name in result.keys()]
