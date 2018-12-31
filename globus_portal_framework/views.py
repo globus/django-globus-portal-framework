@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from globus_portal_framework.apps import get_setting
+from globus_portal_framework.gsearch import (get_search_query,
+                                             get_search_filters)
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
@@ -81,11 +83,9 @@ def search(request, index):
     http://myhost/?q=foo*&page=2&filter.my.special.filter=goodresults
     """
     context = {}
-    query = request.GET.get('q') or request.session.get('query') or \
-        get_setting('DEFAULT_QUERY')
+    query = get_search_query(request)
     if query:
-        filters = {k.replace('filter.', ''): request.GET.getlist(k)
-                   for k in request.GET.keys() if k.startswith('filter.')}
+        filters = get_search_filters(request)
         context['search'] = post_search(index, query, filters, request.user,
                                         request.GET.get('page', 1))
         request.session['search'] = {
@@ -98,13 +98,13 @@ def search(request, index):
 
 
 def search_debug(request, index):
-    context = {}
-    query = request.GET.get('q') or '*'
-    filters = {k.replace('filter.', ''): request.GET.getlist(k)
-               for k in request.GET.keys() if k.startswith('filter.')}
+    query = get_search_query(request)
+    filters = get_search_filters(request)
     results = post_search(index, query, filters, request.user, 1)
-    context['search'] = results
-    context['facets'] = dumps(results['facets'], indent=2)
+    context = {
+        'search': results,
+        'facets': dumps(results['facets'], indent=2)
+    }
     return render(request, get_template(index, 'search-debug.html'), context)
 
 

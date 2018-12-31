@@ -4,8 +4,10 @@
     <div class="fieldset-container mb-4">
         {% for field in facet.buckets %}
         <div class="facet-field mr-3">
-            <input type="checkbox" name="filter.{{field.field_name}}"
-                    value="{{field.value}}" class="facet-checkbox mr-1"
+            <input type="checkbox" class="facet-checkbox mr-1"
+                    {% if
+                    name="{{field.filter_prefix|default:'filter.'}}{{field.field_name}}"
+                    value="{{field.value}}"
                     {# Reset page to 1 if user facets on a paginated search #}
                     onchange="customSearch(1);" autocomplete="off"
                     {% if field.checked %}
