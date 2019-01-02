@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from collections import OrderedDict
 from json import dumps
 import globus_sdk
+from django.contrib import messages
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -94,6 +95,9 @@ def search(request, index):
             'filters': filters,
             'index': index,
         }
+        error = context['search'].get('error')
+        if error:
+            messages.error(request, error)
     return render(request, get_template(index, 'search.html'), context)
 
 

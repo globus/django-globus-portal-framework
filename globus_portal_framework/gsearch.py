@@ -1,6 +1,7 @@
 from __future__ import division
 import os
 import re
+import json
 import logging
 import collections
 from urllib.parse import quote_plus, unquote
@@ -49,22 +50,40 @@ def post_search(index, query, filters, user=None, page=1):
 
     client = load_search_client(user)
     index_data = get_index(index)
-    result = client.post_search(
-        index_data['uuid'],
-        {
-            'q': query,
-            'facets': prepare_search_facets(index_data.get('facets', [])),
-            'filters': filters,
-            'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
-            'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
-        })
-    return {'search_results': process_search_data(index_data.get('fields', []),
+    search_data = {
+        'q': query,
+        'facets': prepare_search_facets(index_data.get('facets', [])),
+        'filters': filters,
+        'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
+        'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
+    }
+    try:
+        result = client.post_search(index_data['uuid'], search_data)
+        return {
+            'search_results': process_search_data(index_data.get('fields', []),
                                                   result.data['gmeta']),
             'facets': get_facets(result, index_data.get('facets', []),
                                  filters),
             'pagination': get_pagination(result.data['total'],
                                          result.data['offset'])
             }
+    except globus_sdk.exc.SearchAPIError as sapie:
+        log.exception(sapie)
+        etext = ('There was an error in {}, you can file '
+                 'an issue here:\n{}\nWith the following data: \n\n')
+        gs = 'https://github.com/globusonline/globus-search/issues'
+        dgpf = 'https://github.com/globusonline/django-globus-portal-framework'
+        if str(sapie.http_status).startswith('5'):
+            error = etext.format('Globus Search', gs)
+        else:
+            error = etext.format('Globus Portal Framework', dgpf)
+        full_error = '{}Index ID: {}\nAuthenticated? {}\nParams: \n{}'.format(
+            error, index_data['uuid'], user.is_authenticated,
+            json.dumps(search_data, indent=2)
+        )
+        log.error(full_error)
+    return {'error': 'There was an error in your search, please try a '
+            'different query or contact your administrator.'}
 
 
 def get_search_query(request):
