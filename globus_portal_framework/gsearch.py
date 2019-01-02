@@ -9,20 +9,13 @@ from django import template
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound
+from globus_portal_framework.constants import (
+    FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE
+)
 
 
 log = logging.getLogger(__name__)
-
-
-# Types of filtering supported by Globus Search. Keys are accepted values in
-# Globus Portal Framework, which show up in the URL. The corresponding values
-# are accepted by Globus Search.
-FILTER_MATCH_ALL = 'match-all'
-FILTER_MATCH_ANY = 'match-any'
-FILTER_RANGE = 'range'
-FILTER_TYPES = {FILTER_MATCH_ALL: 'match_all',
-                FILTER_MATCH_ANY: 'match_any',
-                FILTER_RANGE: 'range'}
+filter_query_matcher = re.compile(FILTER_QUERY_PATTERN)
 
 
 def post_search(index, query, filters, user=None, page=1):
@@ -75,16 +68,31 @@ def post_search(index, query, filters, user=None, page=1):
 
 
 def get_search_query(request):
+    """Get the search query from the request, or fall back on the user's last
+    search. If neither of those exist, settings.DEFAULT_QUERY is used instead.
+    """
     return (request.GET.get('q') or request.session.get('query') or
             get_setting('DEFAULT_QUERY'))
 
 
-def get_search_filters(request, filter_type_default=FILTER_MATCH_ALL):
+def get_search_filters(request,
+                       filter_match_default=get_setting('DEFAULT_FILTER_MATCH')
+                       ):
+    """Given a request, fetch all query params for filters and return a list
+    that can be sent to Globus Search. Filter types are
+    parsed from the following keys:
+        * filter.<field_name>
+        * filter-match-all.<field_name>
+        * filter-match-any.<field_name>
+        * filter-range.<field_name>
+
+    `filter.` will fall back on a match default defined in settings.
+    `filter_match_default` can be "match-any" or "match-all"
+
+    """
     filters = []
-    pattern = '^filter(-(?P<filter_type>{}))?\\..*' \
-              ''.format('|'.join(FILTER_TYPES.keys()))
     for key in request.GET.keys():
-        match = re.match(pattern, key)
+        match = filter_query_matcher.match(key)
         if match:
             filter_type = match.groupdict().get('filter_type')
             # Prefix was used to determine type and can be discarded. If we got
@@ -92,7 +100,7 @@ def get_search_filters(request, filter_type_default=FILTER_MATCH_ALL):
             _, filter_name = key.split('.', maxsplit=1)
             filter = {
                 'field_name': filter_name,
-                'type': filter_type or FILTER_TYPES[filter_type_default],
+                'type': filter_type or FILTER_TYPES[filter_match_default],
                 'values': request.GET.getlist(key)
             }
 
@@ -293,17 +301,15 @@ def serialize_gsearch_range(gsearch_range):
 def deserialize_gsearch_range(serialized_filter_range):
     grange = {}
     low, high = serialized_filter_range.split('--')
-    try:
-        # Numbers always seem to come back as floats, but checking seems
-        # sensible in case this changes in the future.
-        grange['from'] = float(low) if '.' in low else int(low)
-    except:
+    if low == '*':
         grange['from'] = '*'
+    else:
+        grange['from'] = float(low) if '.' in low else int(low)
 
-    try:
-        grange['to'] = float(low) if '.' in low else int(low)
-    except:
+    if high == '*':
         grange['to'] = '*'
+    else:
+        grange['to'] = float(high) if '.' in high else int(high)
     return grange
 
 

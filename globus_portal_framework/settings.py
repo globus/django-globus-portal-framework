@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from globus_portal_framework.constants import FILTER_MATCH_ALL
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,17 +45,27 @@ SEARCH_INDEXES = {
         ],
         'facets': [
             {
-                'name': 'Subjects',
-                'type': 'terms',
+                'name': 'Subject',
                 'field_name': 'perfdata.subjects.value',
-                'size': 10
+                'size': 10,
+                'type': 'terms'
             },
             {
-                'field_name': 'perfdata.publication_year.value'
+                'name': 'Publication Year',
+                'field_name': 'perfdata.publication_year.value',
+            },
+            {
+                'name': 'File Size',
+                'type': 'numeric_histogram',
+                'field_name': 'remote_file_manifest.length',
+                'size': 1000,
+                'histogram_range': {'low': 1000, 'high': 100000}
             }
         ],
+        'filter_match': FILTER_MATCH_ALL,
         'template_override_dir': 'perfdata',
-        'test_index': True
+        'test_index': True,
+
     }
 }
 
@@ -64,6 +76,7 @@ SEARCH_MAX_PAGES = 10
 # session. "*" will automatically search everything, but may not be desirable
 # if there is a lot of search data in the index, as searches will take a while
 DEFAULT_QUERY = '*'
+DEFAULT_FILTER_MATCH = FILTER_MATCH_ALL
 
 PREVIEW_DATA_SIZE = 2048
 
