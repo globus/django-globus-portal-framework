@@ -1,7 +1,7 @@
 from unittest import mock
 from urllib.parse import quote_plus
 
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
 
 from globus_portal_framework.tests import get_mock_data
@@ -10,6 +10,8 @@ from globus_portal_framework import (
     get_index, IndexNotFound, get_pagination, get_filters,
     process_search_data, get_facets
 )
+from globus_portal_framework.gsearch import get_search_filters
+from globus_portal_framework.constants import FILTER_MATCH_ALL
 
 MOCK_RESULTS = 'globus_portal_framework/tests/data/search.json'
 
@@ -55,6 +57,9 @@ class SearchUtilsTest(TestCase):
         # Randomly generated and not real
         'uuid': '1e0be00f-8156-499e-980d-f7fb26157c02'
     }}
+
+    def setUp(self):
+        self.factory = RequestFactory()
 
     @override_settings(SEARCH_INDEXES={'foo': {}})
     def test_get_index(self):
@@ -115,13 +120,52 @@ class SearchUtilsTest(TestCase):
         self.assertEqual(get_pagination(1000, 20)['current_page'], 3)
         self.assertEqual(len(get_pagination(1000, 0)['pages']), 10)
 
-    def test_get_filters(self):
+    @mock.patch('globus_portal_framework.gsearch.log.warning')
+    @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL)
+    def test_get_filters(self, warning):
         r = get_filters({'titles': ['foo']})
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]['type'], 'match_all')
 
         r = get_filters({'titles': ['foo', 'bar']})
         self.assertEqual(len(r), 1)
+        self.assertTrue(warning.called)
+
+    @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL,
+                       SEARCH_INDEX={'foo': {'uuid': 'bar'}})
+    def test_get_search_filters(self):
+        # list of tests urls and expected outputdicts
+        filter_tests = [
+            ('/?q=*&filter.foo=bar', [{
+                'field_name': 'foo',
+                'type': 'match_all',
+                'values': ['bar']}]
+             ),
+            ('/?q=*&filter-match-any.foo=bar', [{
+                'field_name': 'foo',
+                'type': 'match_any',
+                'values': ['bar']}]
+             ),
+            ('/?q=*&filter-match-all.foo=bar', [{
+                'field_name': 'foo',
+                'type': 'match_all',
+                'values': ['bar']}]
+             ),
+            ('/?q=*&filter-range.foo=1--2', [{
+                'field_name': 'foo',
+                'type': 'range',
+                'values': [{'from': 1, 'to': 2}]}]
+             ),
+            ('/?q=*&page=1&filter-range.foo=100--*', [{
+                'field_name': 'foo',
+                'type': 'range',
+                'values': [{'from': 100, 'to': '*'}]}]
+             ),
+        ]
+        for query, expected_result in filter_tests:
+            r = self.factory.get(query)
+            filters = get_search_filters(r)
+            self.assertEqual(filters, expected_result)
 
     def test_get_facets(self):
         search_response = MockGlobusResponse()
@@ -132,13 +176,16 @@ class SearchUtilsTest(TestCase):
         self.assertEqual(set(facet.keys()), {'name', 'buckets'})
         bucket = facet['buckets'][0]
         self.assertEqual(set(bucket.keys()), {'count', 'value', 'field_name',
-                                              'checked'})
+                                              'checked', 'filter_type',
+                                              'search_filter_query_key'})
         # No filters defined in third argument, this should not be 'checked'
         self.assertFalse(bucket['checked'])
 
+    @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL)
     def test_checked_facet_shows_up(self):
         search_response = MockGlobusResponse()
         search_response.data = MOCK_FACETS
-        r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS,
-                       {'things.i.got': ['Problems']})
+        request = self.factory.get('/?filter.things.i.got=Problems')
+        filters = get_search_filters(request)
+        r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, filters)
         self.assertTrue(r[0]['buckets'][0]['checked'])

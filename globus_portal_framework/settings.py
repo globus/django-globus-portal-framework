@@ -55,14 +55,14 @@ SEARCH_INDEXES = {
                 'field_name': 'perfdata.publication_year.value',
             },
             {
-                'name': 'File Size',
+                'name': 'File Size (Bytes)',
                 'type': 'numeric_histogram',
                 'field_name': 'remote_file_manifest.length',
-                'size': 1000,
-                'histogram_range': {'low': 1000, 'high': 100000}
+                'size': 10,
+                'histogram_range': {'low': 15000, 'high': 30000},
             }
         ],
-        'filter_match': FILTER_MATCH_ALL,
+        'filter_match': 'match-all',
         'template_override_dir': 'perfdata',
         'test_index': True,
 
