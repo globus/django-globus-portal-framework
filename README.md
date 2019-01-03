@@ -212,11 +212,32 @@ SEARCH_INDEXES = {
                 'field_name': 'perfdata.publication_year.value',
                 'type': 'terms',  # Category of facet. Default "terms".
                 'size': 10  # Number of Facets, default 10.
+            },
+            {
+                'name': 'File Size (Bytes)',
+                'type': 'numeric_histogram',
+                'field_name': 'remote_file_manifest.length',
+                'size': 10,
+                'histogram_range': {'low': 15000, 'high': 30000},
             }
         ],
+        'filter_match': 'match-all',
     }
 }
 ```
+
+* `facets.name` -- The title for this category of facet
+* `facets.field_name` -- Field in your Globus Search results to facet
+* `facets.type` -- must be one of 'terms', 'numeric_histogram' or 'date_histogram'
+* `facets.size` -- configure behavior of returned facets
+    * `terms` -- limits the number of buckets returned by Globus Search
+    * `histogram` -- number of intervals to create between 'low' and 'high'
+* `facets.histogram_range` -- The low and high bounds to set for this facet
+* `filter_match` -- Configure match filtering on this index, can be 'match-all' or 'match-any'
+    * This setting corresponds to facets that use 'terms'. Facets that use histograms require
+        the filter type of 'range'
+    * You can also set this globally in settings.py with `DEFAULT_FILTER_MATCH = 'match-all'`
+
 
 See more options at the [Globus Search Documentation](https://docs.globus.org/api/search/schemas/GFacet/)
 
