@@ -1,7 +1,5 @@
 from unittest import mock
-import json
-from django.test import TestCase, Client, RequestFactory
-from django.test.utils import override_settings
+from django.test import TestCase, RequestFactory
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
@@ -10,12 +8,11 @@ import globus_sdk
 
 
 from globus_portal_framework.tests.mocks import (
-    MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer,
-    MockTransferClient, MockTransferAPIError
+    mock_user, MockTransferClient, MockTransferAPIError
 )
 
-from globus_portal_framework.transfer.utils import (
-    load_transfer_client, transfer_file, parse_globus_url, preview,
+from globus_portal_framework import (
+    transfer_file, parse_globus_url,
     helper_page_transfer, get_helper_page_url, check_exists, is_file
 )
 
@@ -40,25 +37,8 @@ class TransferUtilsTest(TestCase):
         request.user = self.user
         return request
 
-    @mock.patch('globus_sdk.TransferClient', MockGlobusClient)
-    def test_load_search_client_with_anonymous_user(self):
-        c = load_transfer_client(AnonymousUser())
-        self.assertFalse(globus_client_is_loaded_with_authorizer(c))
-
-    @mock.patch('globus_sdk.TransferClient', MockGlobusClient)
-    def test_load_search_client_with_real_user(self):
-        user = mock_user('bob', ['transfer.api.globus.org'])
-        c = load_transfer_client(user)
-        self.assertTrue(globus_client_is_loaded_with_authorizer(c))
-
-    @mock.patch('globus_sdk.TransferClient', MockGlobusClient)
-    def test_load_transfer_client_with_bad_token(self):
-        user = mock_user('alice', ['search.api.globus.org'])
-        with self.assertRaises(ValueError):
-            load_transfer_client(user)
-
     @mock.patch('globus_sdk.TransferAPIError', MockTransferAPIError)
-    @mock.patch('globus_portal_framework.transfer.utils.is_file')
+    @mock.patch('globus_portal_framework.gtransfer.is_file')
     def test_check_exists(self, is_file):
         check_exists(self.user, self.foo_endpoint, 'path')
         self.assertTrue(is_file.called)
@@ -118,7 +98,7 @@ class TransferUtilsTest(TestCase):
             get_helper_page_url('http://example.com/transfer_callback',
                                 cancel_url='you_shall_not_go_back.edu')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_transfer(self, transfer_file):
         request = self.globus_helper_page_request()
         helper_page_transfer(request, self.foo_endpoint, '/path',
@@ -132,7 +112,7 @@ class TransferUtilsTest(TestCase):
         self.assertEqual(dest_path, '/helper_page_path')
         self.assertEqual(label, 'my transfer')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_transfer_helper_page_as_source(self, transfer_file):
         request = self.globus_helper_page_request()
         helper_page_transfer(request, self.foo_endpoint, '/path',
@@ -145,14 +125,14 @@ class TransferUtilsTest(TestCase):
         self.assertEqual(dest_ep, self.bar_endpoint)
         self.assertEqual(dest_path, '/helper_page_path')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_raises_error_for_gets(self, transfer_file):
         request = self.factory.get('/transfer_stuff')
         request.user = self.user
         with self.assertRaises(ValueError):
             helper_page_transfer(request, self.foo_endpoint, '/path')
 
-    @mock.patch('globus_portal_framework.transfer.utils.transfer_file')
+    @mock.patch('globus_portal_framework.gtransfer.transfer_file')
     def test_helper_page_raises_error_for_anonymous_user(self, transfer_file):
         request = self.globus_helper_page_request()
         request.user = AnonymousUser
@@ -161,12 +141,13 @@ class TransferUtilsTest(TestCase):
 
     @mock.patch('globus_sdk.TransferClient')
     @mock.patch('globus_sdk.TransferData')
+    @mock.patch('globus_portal_framework.gtransfer.log', mock.Mock())
     def test_transfer_file(self, tdata, tclient):
         user = mock_user('bob', ['transfer.api.globus.org'])
-        task = transfer_file(user,
-                             self.foo_endpoint, 'mydir/file1.txt',
-                             self.bar_endpoint, 'mybardir/file1.txt',
-                             'My foo-bar file transfer')
+        transfer_file(user,
+                      self.foo_endpoint, 'mydir/file1.txt',
+                      self.bar_endpoint, 'mybardir/file1.txt',
+                      'My foo-bar file transfer')
         args, kwargs = tdata.call_args
         self.assertEqual(args[1:], (self.foo_endpoint, self.bar_endpoint))
         self.assertEqual(kwargs['label'], 'My foo-bar file transfer')

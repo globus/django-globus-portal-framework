@@ -2,7 +2,7 @@ from datetime import timedelta
 from django.utils import timezone
 import globus_sdk
 from django.conf import settings
-from globus_portal_framework.exc import ExpiredGlobusToken
+from globus_portal_framework import ExpiredGlobusToken
 
 
 def validate_token(tok):
@@ -17,6 +17,8 @@ def validate_token(tok):
 
 
 def load_globus_access_token(user, token_name):
+    if not user:
+        return None
     if user.is_authenticated:
         tok_list = user.social_auth.get(provider='globus').extra_data
         if token_name == 'auth.globus.org':
@@ -67,3 +69,15 @@ def load_globus_client(user, client, token_name, require_authorized=False):
 def load_auth_client(user):
     return load_globus_client(user, globus_sdk.AuthClient,
                               'auth.globus.org', require_authorized=True)
+
+
+def load_search_client(user=None):
+    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
+    logged in or a generic one otherwise."""
+    return load_globus_client(user, globus_sdk.SearchClient,
+                              'search.api.globus.org')
+
+
+def load_transfer_client(user):
+    return load_globus_client(user, globus_sdk.TransferClient,
+                              'transfer.api.globus.org')

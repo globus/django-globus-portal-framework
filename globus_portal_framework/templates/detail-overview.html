@@ -1,0 +1,35 @@
+{%extends "detail-base.html"%}
+{% load static %}
+
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-overview.css' %}" />
+{%endblock%}
+
+{% block detail_body %}
+
+<div class="row">
+  <div class="col-md-12">
+
+    <div class="card mt-4">
+      <div class="card-header">{{title|default:'Result'}}</div>
+      <div class="card-body">
+        <h3 class="text-center mb-5">General Info</h3>
+        <div class="column-content">
+          {% for field_dict in all %}
+            {% for name, data in field_dict.items %}
+            <h5>{{name}}</h5>
+            <p>{{data}}</p>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+{% endblock %}

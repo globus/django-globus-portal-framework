@@ -15,9 +15,46 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+###############################################################################
+# Globus Portal Framework Settings
+###############################################################################
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
+SEARCH_INDEXES = {
+    'perfdata': {
+        'name': 'Performance Data',
+        'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
+        'fields': [
+            'perfdata',
+            'remote_file_manifest',
+            'globus_group',
+            'globus_http_endpoint',
+            'globus_http_scope'
+        ],
+        'facets': [
+            {
+                'name': 'Subjects',
+                'type': 'terms',
+                'field_name': 'perfdata.subjects.value',
+                'size': 10
+            }
+        ],
+        'template_override_dir': 'perfdata'
+    }
+}
+
+SEARCH_RESULTS_PER_PAGE = 10
+SEARCH_MAX_PAGES = 10
+# This will be the automatic search query when the user loads the page, if
+# they have not submitted their own query or there is no query loaded in the
+# session. "*" will automatically search everything, but may not be desirable
+# if there is a lot of search data in the index, as searches will take a while
+DEFAULT_QUERY = '*'
+
+PREVIEW_DATA_SIZE = 2048
+
+###############################################################################
+# General Settings
+###############################################################################
 
 # Create 'local_settings.py' and put your below values there to avoid
 # accidentally committing them.
@@ -28,6 +65,9 @@ DEBUG = False
 SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
 SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
 ALLOWED_HOSTS = []
+INTERNAL_IPS = (
+    '127.0.0.1',
+)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,8 +78,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'social_django',
     'globus_portal_framework',
-    'globus_portal_framework.search',
-    'globus_portal_framework.transfer'
 ]
 
 MIDDLEWARE = [
@@ -66,11 +104,6 @@ SOCIAL_AUTH_SANITIZE_REDIRECTS = False
 SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
     'access_type': 'offline',
 }
-
-# Additional extras
-GLOBUS_HTTP_ENDPOINT = 'https://b4eab318-fc86-11e7-a5a9-0a448319c2f8' \
-                       '.petrel.host'
-PREVIEW_TOKEN_NAME = 'petrel_https_server'
 
 SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:search',
@@ -165,6 +198,6 @@ STATIC_URL = '/static/'
 
 # Override any settings here if a local_settings.py file exists
 try:
-    from globus_portal_framework.local_settings import *
+    from globus_portal_framework.local_settings import *  # noqa
 except ImportError:
     pass

@@ -1,0 +1,22 @@
+<h2>Search Results</h2>
+<div id="search-result" class="search-result">
+  {% for result in search.search_results %}
+  <div class="result-item">
+
+    <h3 class="search-title mt-3">
+      <a href="{% url 'detail' globus_portal_framework.index result.subject %}" title="{{result.title|default:'Result'}}">{{result.title|default:'Result'}}</a>
+    </h3>
+
+    <div class="result-fields">
+      {% for field_dict in result.all|slice:"0:2" %}
+        {% for name, data in field_dict.items|slice:"0:2" %}
+          {{name}}: Present<br>
+        {% endfor %}
+      {% endfor %}
+      Create a file called templates/your_template_override_dir/components/search-results.html to change this layout.
+      <br>
+    </div>
+
+  </div>
+  {% endfor %}
+</div>

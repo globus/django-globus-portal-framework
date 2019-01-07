@@ -3,33 +3,27 @@ import globus_sdk
 import logging
 import os
 from django.core.validators import URLValidator
+from django.conf import settings
 
 
-from globus_portal_framework.utils import (load_globus_client,
-                                           load_globus_access_token,
-                                           validate_token)
-from globus_portal_framework import (PreviewPermissionDenied,
-                                     PreviewServerError, PreviewException,
-                                     PreviewBinaryData, PreviewNotFound,
-                                     ExpiredGlobusToken)
-from globus_portal_framework.transfer import settings as transfer_settings
+from globus_portal_framework import (
+    PreviewPermissionDenied, PreviewServerError, PreviewException,
+    PreviewBinaryData, PreviewNotFound, ExpiredGlobusToken,
+
+    load_transfer_client, load_globus_access_token, validate_token
+)
 
 log = logging.getLogger(__name__)
 
 
-def load_transfer_client(user):
-    return load_globus_client(user, globus_sdk.TransferClient,
-                              'transfer.api.globus.org')
-
-
-def check_exists(user, src_ep, src_path):
+def check_exists(user, src_ep, src_path, raises=False):
     """Check if a file exists on a Globus Endpoint
 
     If the file exists, Returns True
 
     Raises globus_sdk.TransferAPIError if the file does not exist,
     the endpoint is not active, or the user does not have permission."""
-    is_file(user, src_ep, src_path)
+    is_file(user, src_ep, src_path, raises=raises)
     return True
 
 
@@ -204,8 +198,7 @@ def preview(user, url, scope, chunk_size=512):
                 return '\n'.join(chunk.split('\n')[:-1])
             elif r.status_code == 401:
                 if not validate_token(token):
-                    raise ExpiredGlobusToken(
-                        token_name=transfer_settings.PREVIEW_TOKEN_NAME)
+                    raise ExpiredGlobusToken(token_name=scope)
                 raise PreviewPermissionDenied()
             elif r.status_code == 403:
                 raise PreviewPermissionDenied()

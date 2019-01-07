@@ -1,6 +1,13 @@
+import logging
+from urllib.parse import urlencode
 from django.http.response import HttpResponseRedirect
-from globus_portal_framework.exc import ExpiredGlobusToken
 from django.utils.deprecation import MiddlewareMixin
+from django.urls import reverse
+from django.contrib import auth
+
+from globus_portal_framework.exc import ExpiredGlobusToken
+
+log = logging.getLogger(__name__)
 
 
 class ExpiredTokenMiddleware(MiddlewareMixin):
@@ -13,9 +20,15 @@ class ExpiredTokenMiddleware(MiddlewareMixin):
     tokens then does the work the user originally intended.
     """
 
-    REDIRECT_TEMPLATE = '/login/globus/?next={}'
+    PROVIDER = 'globus'
 
     def process_exception(self, request, exception):
         if isinstance(exception, ExpiredGlobusToken):
-            return HttpResponseRedirect(self.REDIRECT_TEMPLATE.format(
-                                        request.path))
+            log.info('Tokens expired for user {}, redirecting to login.'
+                     ''.format(request.user))
+            auth.logout(request)
+            # build /login/globus/?next=/my-intended-url/'
+            url = '{}{}/?{}'.format(reverse('login'),
+                                    self.PROVIDER,
+                                    urlencode({'next': request.path}))
+            return HttpResponseRedirect(url)

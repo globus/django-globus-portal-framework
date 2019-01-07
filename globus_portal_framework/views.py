@@ -1,29 +1,34 @@
 import logging
-from os.path import basename
-from urllib.parse import unquote
+import os
+from urllib.parse import unquote, urlparse, urlencode
+from json import dumps
 import globus_sdk
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from globus_portal_framework.search import settings
-from globus_portal_framework.transfer import settings as t_settings
-from globus_portal_framework import (preview, helper_page_transfer,
-                                     get_helper_page_url, parse_globus_url,
-                                     get_subject, post_search,
-                                     PreviewException, PreviewURLNotFound,
-                                     ExpiredGlobusToken,
-                                     check_exists)
+from django.conf import settings
+
+from globus_portal_framework import (
+    preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
+    get_subject, post_search, PreviewException, PreviewURLNotFound,
+    ExpiredGlobusToken, check_exists, get_template
+)
 
 log = logging.getLogger(__name__)
 
 
-def index(request):
+def index_selection(request):
+    context = {'search_indexes': settings.SEARCH_INDEXES}
+    return render(request, 'index-selection.html', context)
+
+
+def search(request, index):
     """
-    Search the index configured in settings.SEARCH_INDEX with the queryparams
-    'q' for query, 'filter.<filter>' for facet-filtering, 'page' for pagination
-    If the user visits this page again without a search query, we auto search
-    for them again using their last query. If the user is logged in, they will
+    Search the 'index' with the queryparams 'q' for query, 'filter.<filter>'
+    for facet-filtering, 'page' for pagination If the user visits this
+    page again without a search query, we auto search for them
+    again using their last query. If the user is logged in, they will
     automatically do a credentialed search for Globus Search to return
     confidential results. If more results than settings.SEARCH_RESULTS_PER_PAGE
     are returned, they are paginated (Globus Search does the pagination, we
@@ -82,18 +87,40 @@ def index(request):
     if query:
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}
-        context['search'] = post_search(settings.SEARCH_INDEX, query, filters,
-                                        request.user,
+        context['search'] = post_search(index, query, filters, request.user,
                                         request.GET.get('page', 1))
         request.session['search'] = {
-            'full_query': request.get_full_path(),
+            'full_query': urlparse(request.get_full_path()).query,
             'query': query,
             'filters': filters,
+            'index': index,
         }
-    return render(request, 'search.html', context)
+    return render(request, get_template(index, 'search.html'), context)
 
 
-def detail(request, subject):
+def search_debug(request, index):
+    context = {}
+    query = request.GET.get('q') or '*'
+    filters = {k.replace('filter.', ''): request.GET.getlist(k)
+               for k in request.GET.keys() if k.startswith('filter.')}
+    results = post_search(index, query, filters, request.user, 1)
+    context['search'] = results
+    context['facets'] = dumps(results['facets'], indent=2)
+    return render(request, get_template(index, 'search-debug.html'), context)
+
+
+def search_debug_detail(request, index, subject):
+    sub = get_subject(index, subject, request.user)
+    debug_fields = {name: dumps(data, indent=2) for name, data in sub.items()}
+    from collections import OrderedDict
+    dfields = OrderedDict(debug_fields)
+    dfields.move_to_end('all')
+    sub['django_portal_framework_debug_fields'] = dfields
+    return render(request,
+                  get_template(index, 'search-debug-detail.html'), sub)
+
+
+def detail(request, index, subject):
     """
     Load a page for showing details for a single search result. The data is
     exactly the same as the entries loaded by the index page in the
@@ -115,82 +142,58 @@ def detail(request, subject):
                 }
     }
     """
-    return render(request, 'detail-overview.html',
-                  get_subject(subject, request.user))
-
-
-def detail_metadata(request, subject):
-    """
-    Render a metadata page for a result. This is functionally the same as the
-    'detail' page except it renders a detail-metadata.html instead for
-    displaying tabular data about an object.
-    """
-    return render(request, 'detail-metadata.html',
-                  get_subject(subject, request.user))
+    return render(request, get_template(index, 'detail-overview.html'),
+                  get_subject(index, subject, request.user))
 
 
 @csrf_exempt
-def detail_transfer(request, subject):
-    context = get_subject(subject, request.user)
+def detail_transfer(request, index, subject):
+    context = get_subject(index, subject, request.user)
     task_url = 'https://www.globus.org/app/activity/{}/overview'
     if request.user.is_authenticated:
         try:
-            ep, path = parse_globus_url(unquote(subject))
-            check_exists(request.user, ep, path)
+            # Hacky, we need to formalize remote file manifests
+            parsed = urlparse(context['remote_file_manifest'][0]['url'])
+            ep, path = parsed.netloc, parsed.path
+            # Remove line in version 4 after issue #29 is resolved
+            ep = ep.replace(':', '')
+            check_exists(request.user, ep, path, raises=True)
             if request.method == 'POST':
                 task = helper_page_transfer(request, ep, path,
                                             helper_page_is_dest=True)
                 context['transfer_link'] = task_url.format(task['task_id'])
-            this_url = reverse('detail-transfer', args=[subject])
+            this_url = reverse('detail-transfer', args=[index, subject])
             full_url = request.build_absolute_uri(this_url)
             # This url will serve as both the POST destination and Cancel URL
             context['helper_page_link'] = get_helper_page_url(
                 full_url, full_url, folder_limit=1, file_limit=0)
         except globus_sdk.TransferAPIError as tapie:
-            if tapie.code == 'EndpointPermissionDenied':
-                messages.error(request, 'You do not have permission to '
-                                        'transfer files from this endpoint.')
-            elif tapie.code == 'ClientError.NotFound':
-                messages.error(request, tapie.message.replace('Directory',
-                                                              'File'))
-            elif tapie.code == 'AuthenticationFailed' \
+            context['detail_error'] = tapie
+            if tapie.code == 'AuthenticationFailed' \
                     and tapie.message == 'Token is not active':
                 raise ExpiredGlobusToken()
-            else:
+            if tapie.code not in ['EndpointPermissionDenied']:
                 log.error('Unexpected Error found during transfer request',
                           tapie)
-                messages.error(request, tapie.message)
-    return render(request, 'detail-transfer.html', context)
+    return render(request,
+                  get_template(index, 'detail-transfer.html'), context)
 
 
-def detail_preview(request, subject):
-    context = get_subject(subject, request.user)
+def detail_preview(request, index, subject, endpoint=None, url_path=None):
+    context = get_subject(index, subject, request.user)
     try:
-        url, scope = context['service'].get('globus_http_link'), \
-                     context['service'].get('globus_http_scope')
-        # TODO: DEPRECATED -- Remove this "elif" block at version 0.3.0
-        if (not url or not scope) and (t_settings.GLOBUS_HTTP_ENDPOINT and
-                                       t_settings.PREVIEW_TOKEN_NAME):
-            _, path = parse_globus_url(unquote(subject))
-            context['subject_title'] = basename(path)
-            url = '{}{}'.format(t_settings.GLOBUS_HTTP_ENDPOINT, path)
-            scope = t_settings.PREVIEW_TOKEN_NAME
-            log.warning(
-                'settings.GLOBUS_HTTP_ENDPOINT and settings.PREVIEW_TOKEN_NAME'
-                ' are deprecated and will be removed in a future version. '
-                'Please instead retrieve the URL from the search result under '
-                'the key defined by "globus_http_link" and "globus_http_scope"'
-                ' in settings.ENTRY_SERVICE_VARS')
-        if not url or not scope:
-            log.debug('Preview URL or Scope not found. Searched '
-                      'entry {} using settings.ENTRY_SERVICE_VARS, result: {}'
-                      ''.format(url, scope, subject, context['service']))
+        scope = request.GET.get('scope')
+        if not any((endpoint, url_path, scope)):
+            log.error('Preview Error: Endpoint, Path, or Scope not given. '
+                      '(Got: {}, {}, {})'.format(endpoint, url_path, scope))
             raise PreviewURLNotFound(subject)
+        url = 'https://{}/{}'.format(endpoint, url_path)
+        log.debug('Previewing with url: {}'.format(url))
         context['preview_data'] = \
-            preview(request.user, url, scope, t_settings.PREVIEW_DATA_SIZE)
+            preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
-            log.error(pe)
+            log.exception(pe)
+        context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
-        messages.error(request, pe.message)
-    return render(request, 'detail-preview.html', context)
+    return render(request, get_template(index, 'detail-preview.html'), context)

@@ -15,13 +15,34 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from globus_portal_framework.views import (
+    search, index_selection, search_debug, search_debug_detail,
+    detail, detail_transfer, detail_preview
+)
+
+# search detail for viewing info about a single search result
+detail_urlpatterns = [
+    path('<index>/detail-preview/<subject>/',
+         detail_preview, name='detail-preview'),
+    path('<index>/detail-preview/<subject>/<endpoint>/<path:url_path>/',
+         detail_preview, name='detail-preview'),
+    path('<index>/detail-transfer/<subject>', detail_transfer,
+         name='detail-transfer'),
+    path('<index>/detail/<subject>/', detail, name='detail'),
+    path('<index>/search-debug-detail/<subject>/', search_debug_detail,
+         name='search-debug-detail'),
+]
 
 urlpatterns = [
-    # We will likely use this at some point
     path('admin/', admin.site.urls),
     # Social auth provides /login /logout. Provides no default urls
     path('', include('social_django.urls')),
     path('', include('django.contrib.auth.urls')),
+
     # Globus search portal. Provides default url '/'.
-    path('', include('globus_portal_framework.search.urls'))
+    path('', index_selection, name='index-selection'),
+    path('<index>/', search, name='search'),
+    path('<index>/search-debug/', search_debug, name='search-debug'),
+    path('', include(detail_urlpatterns))
+
 ]
