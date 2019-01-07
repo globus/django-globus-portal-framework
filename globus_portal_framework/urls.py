@@ -22,7 +22,7 @@ from globus_portal_framework.views import (
     detail, detail_transfer, detail_preview
 )
 from django.contrib.auth import logout
-
+from globus_portal_framework.api import restricted_endpoint_proxy_stream
 
 # search detail for viewing info about a single search result
 detail_urlpatterns = [
@@ -45,13 +45,14 @@ def dgpf_logout(request):
 
 
 urlpatterns = [
+    # Proxy remote file requests
+    path('api/proxy/', restricted_endpoint_proxy_stream, name='restricted_endpoint_proxy_stream'),
     # Globus search portal. Provides default url '/'.
     path('logout/', dgpf_logout, name='logout'),
     path('', index_selection, name='index-selection'),
     path('<index>/', search, name='search'),
     path('<index>/search-debug/', search_debug, name='search-debug'),
     path('', include(detail_urlpatterns)),
-
 ]
 
 
