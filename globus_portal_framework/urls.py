@@ -19,6 +19,7 @@ from globus_portal_framework.views import (
     search, index_selection, search_debug, search_debug_detail,
     detail, detail_transfer, detail_preview
 )
+from globus_portal_framework.api import restricted_endpoint_proxy_stream
 
 # search detail for viewing info about a single search result
 detail_urlpatterns = [
@@ -39,10 +40,12 @@ urlpatterns = [
     path('', include('social_django.urls')),
     path('', include('django.contrib.auth.urls')),
 
+    # Proxy remote file requests
+    path('api/proxy/', restricted_endpoint_proxy_stream, name='restricted_endpoint_proxy_stream'),
+
     # Globus search portal. Provides default url '/'.
     path('', index_selection, name='index-selection'),
     path('<index>/', search, name='search'),
     path('<index>/search-debug/', search_debug, name='search-debug'),
     path('', include(detail_urlpatterns))
-
 ]
