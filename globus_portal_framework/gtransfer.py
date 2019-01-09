@@ -3,7 +3,6 @@ import globus_sdk
 import logging
 import os
 from django.core.validators import URLValidator
-from django.conf import settings
 
 
 from globus_portal_framework import (

@@ -1,7 +1,7 @@
 
 
 class GlobusPortalException(Exception):
-    def __init__(self, code='', message=''):
+    def __init__(self, code='', message='', index=''):
         """
         :param code: A short string that can be checked against, such as
             'PermissionDenied'
@@ -11,9 +11,10 @@ class GlobusPortalException(Exception):
         self.code = code or 'UnexpectedError'
         self.message = message or 'There was an unexpected error ' \
                                   'when fetching preview data.'
+        self.index = index or '<Index Not Listed>'
 
     def __str__(self):
-        return '{}: {}'.format(self.code, self.message)
+        return '{} on {}: {}'.format(self.code, self.index, self.message)
 
     def __repr__(self):
         return str(self)
@@ -23,7 +24,8 @@ class IndexNotFound(GlobusPortalException):
     """
     Exception when user tried to access an index not defined by this portal
     """
-    def __init__(self, index):
+    def __init__(self, index, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'IndexNotFound'
         self.index = index
         self.message = ('The index "{}" was not defined for this portal'
@@ -35,20 +37,23 @@ class PreviewException(GlobusPortalException):
     """
     Exceptions when trying to fetch data from Globus Preview
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'UnexpectedError'
         self.message = 'There was an unexpected error ' \
                        'when fetching preview data.'
 
 
 class PreviewPermissionDenied(PreviewException):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'PermissionDenied'
         self.message = 'You do not have access to view this data'
 
 
 class PreviewURLNotFound(PreviewException):
-    def __init__(self, subject):
+    def __init__(self, subject, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'URLNotFound'
         self.message = 'No Globus HTTP URL was provided for this search ' \
                        'entry'
@@ -56,13 +61,15 @@ class PreviewURLNotFound(PreviewException):
 
 
 class PreviewNotFound(PreviewException):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'NotFound'
         self.message = 'Could not find file on the preview server'
 
 
 class PreviewServerError(PreviewException):
-    def __init__(self, http_code, server_error):
+    def __init__(self, http_code, server_error, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'ServerError'
         self.message = 'There was a problem with the Preview Server'
         self.http_code = http_code
@@ -75,13 +82,15 @@ class PreviewServerError(PreviewException):
 
 
 class PreviewBinaryData(PreviewException):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.code = 'BinaryData'
         self.message = 'Preview is unable to display binary data.'
 
 
 class ExpiredGlobusToken(GlobusPortalException):
-    def __init__(self, token_name=''):
+    def __init__(self, token_name='', **kwargs):
+        super().__init__(**kwargs)
         """
         :param token_name: Name of Globus Token
         """

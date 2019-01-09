@@ -1,16 +1,15 @@
 import logging
-import os
-from urllib.parse import unquote, urlparse, urlencode
+from urllib.parse import urlparse
+from collections import OrderedDict
 from json import dumps
 import globus_sdk
 from django.shortcuts import render
 from django.urls import reverse
-from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
 
+from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
-    preview, helper_page_transfer, get_helper_page_url, parse_globus_url,
+    preview, helper_page_transfer, get_helper_page_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
     ExpiredGlobusToken, check_exists, get_template
 )
@@ -19,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 def index_selection(request):
-    context = {'search_indexes': settings.SEARCH_INDEXES}
+    context = {'search_indexes': get_setting('SEARCH_INDEXES')}
     return render(request, 'index-selection.html', context)
 
 
@@ -83,7 +82,7 @@ def search(request, index):
     """
     context = {}
     query = request.GET.get('q') or request.session.get('query') or \
-        settings.DEFAULT_QUERY
+        get_setting('DEFAULT_QUERY')
     if query:
         filters = {k.replace('filter.', ''): request.GET.getlist(k)
                    for k in request.GET.keys() if k.startswith('filter.')}
@@ -112,7 +111,6 @@ def search_debug(request, index):
 def search_debug_detail(request, index, subject):
     sub = get_subject(index, subject, request.user)
     debug_fields = {name: dumps(data, indent=2) for name, data in sub.items()}
-    from collections import OrderedDict
     dfields = OrderedDict(debug_fields)
     dfields.move_to_end('all')
     sub['django_portal_framework_debug_fields'] = dfields
@@ -153,6 +151,14 @@ def detail_transfer(request, index, subject):
     if request.user.is_authenticated:
         try:
             # Hacky, we need to formalize remote file manifests
+            if 'remote_file_manifest' not in context.keys():
+                raise ValueError('Please add "remote_file_manifest" to '
+                                 '"fields" for {} in order to use transfer.'
+                                 ''.format(index))
+            elif not context.get('remote_file_manifest'):
+                raise ValueError('"remote_file_manifest" not found in search '
+                                 'metadata for index {}. Cannot start '
+                                 'Transfer.'.format(index))
             parsed = urlparse(context['remote_file_manifest'][0]['url'])
             ep, path = parsed.netloc, parsed.path
             # Remove line in version 4 after issue #29 is resolved
@@ -175,6 +181,8 @@ def detail_transfer(request, index, subject):
             if tapie.code not in ['EndpointPermissionDenied']:
                 log.error('Unexpected Error found during transfer request',
                           tapie)
+        except ValueError as ve:
+            log.error(ve)
     return render(request,
                   get_template(index, 'detail-transfer.html'), context)
 
@@ -190,7 +198,7 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
         url = 'https://{}/{}'.format(endpoint, url_path)
         log.debug('Previewing with url: {}'.format(url))
         context['preview_data'] = \
-            preview(request.user, url, scope, settings.PREVIEW_DATA_SIZE)
+            preview(request.user, url, scope, get_setting('PREVIEW_DATA_SIZE'))
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
             log.exception(pe)

@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.shortcuts import redirect
 from globus_portal_framework.views import (
     search, index_selection, search_debug, search_debug_detail,
     detail, detail_transfer, detail_preview
 )
+from django.contrib.auth import logout
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 
 # search detail for viewing info about a single search result
@@ -34,18 +37,30 @@ detail_urlpatterns = [
          name='search-debug-detail'),
 ]
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    # Social auth provides /login /logout. Provides no default urls
-    path('', include('social_django.urls')),
-    path('', include('django.contrib.auth.urls')),
 
+# FIXME: Temporary, remove after #55
+def dgpf_logout(request):
+    logout(request)
+    return redirect('/')
+
+
+urlpatterns = [
     # Proxy remote file requests
     path('api/proxy/', restricted_endpoint_proxy_stream, name='restricted_endpoint_proxy_stream'),
-
     # Globus search portal. Provides default url '/'.
+    path('logout/', dgpf_logout, name='logout'),
     path('', index_selection, name='index-selection'),
     path('<index>/', search, name='search'),
     path('<index>/search-debug/', search_debug, name='search-debug'),
-    path('', include(detail_urlpatterns))
+    path('', include(detail_urlpatterns)),
 ]
+
+
+# Only include non-globus-portal-framework core URLs in development
+if getattr(settings, 'GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP', False):
+    urlpatterns.extend([
+        path('admin', admin.site.urls),
+        path('', include('social_django.urls', namespace='social')),
+        # FIXME Remove after merging #55 python-social-auth-upgrade
+        path('', include('django.contrib.auth.urls'))
+    ])

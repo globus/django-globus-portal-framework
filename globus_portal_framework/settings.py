@@ -19,16 +19,27 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Globus Portal Framework Settings
 ###############################################################################
 
+
+def get_rfm(search_result):
+    if search_result[0].get('remote_file_manifest'):
+        return [search_result[0]['remote_file_manifest']]
+    else:
+        return []
+
+
 SEARCH_INDEXES = {
     'perfdata': {
         'name': 'Performance Data',
         'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
         'fields': [
             'perfdata',
-            'remote_file_manifest',
-            'globus_group',
-            'globus_http_endpoint',
-            'globus_http_scope'
+            ('remote_file_manifest', get_rfm),
+            ('globus_http_endpoint',
+             lambda x: 'b4eab318-fc86-11e7-a5a9-0a448319c2f8.petrel.host'),
+            ('globus_http_scope', lambda x: 'petrel_https_server'),
+            ('globus_http_path',
+             lambda x: x[0]['remote_file_manifest']['url'].split(':')[2]),
+
         ],
         'facets': [
             {
@@ -36,9 +47,13 @@ SEARCH_INDEXES = {
                 'type': 'terms',
                 'field_name': 'perfdata.subjects.value',
                 'size': 10
+            },
+            {
+                'field_name': 'perfdata.publication_year.value'
             }
         ],
-        'template_override_dir': 'perfdata'
+        'template_override_dir': 'perfdata',
+        'test_index': True
     }
 }
 
@@ -201,3 +216,6 @@ try:
     from globus_portal_framework.local_settings import *  # noqa
 except ImportError:
     pass
+
+# Used to check if this app is running
+GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP = True

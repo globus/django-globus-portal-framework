@@ -1,0 +1,54 @@
+{
+    "@datatype": "GSearchResult",
+    "@version": "2017-09-01",
+    "count": 1,
+    "gmeta": [
+        {
+            "@datatype": "GMetaResult",
+            "@version": "2017-09-01",
+            "content": [
+                {
+                    "globus_group": "ce3ef838-44c1-473e-aecb-c3ecfe6698db",
+                    "remote_file_manifest": [
+                        {
+                            "url":"globus://ddb59aef-6d04-11e5-ba46-22000b92c6ec/share/godata/file1.txt",
+                            "length":5,
+                            "filename":"file1.txt",
+                            "md5":"5bbf5a52328e7439ae6e719dfe712200"
+                        },
+                        {
+                            "url":"globus://ddb59aef-6d04-11e5-ba46-22000b92c6ec/share/godata/file2.txt",
+                            "length":5,
+                            "filename":"file2.txt",
+                            "md5":"c193497a1a06b2c72230e6146ff47080"
+                        },
+                        {
+                            "url":"globus://ddb59aef-6d04-11e5-ba46-22000b92c6ec/share/godata/file3.txt",
+                            "length":5,
+                            "filename":"file3.txt",
+                            "md5":"febe6995bad457991331348f7b9c85fa"
+                        }
+                    ]
+                }
+            ],
+            "subject": "globus://ddb59aef-6d04-11e5-ba46-22000b92c6ec:/share/godata/"
+        }
+    ],
+    "facet_results": [
+        {
+            "@datatype": "GFacetResult",
+            "@version": "2017-09-01",
+            "buckets": [
+                {
+                    "@datatype": "GBucket",
+                    "@version": "2017-09-01",
+                    "count": 35,
+                    "value": "IOZone"
+                }
+            ],
+            "name": "Subjects"
+        }
+    ],
+    "offset": 0,
+    "total": 1
+}
