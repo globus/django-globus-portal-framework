@@ -57,6 +57,8 @@ SEARCH_INDEXES = {
     }
 }
 
+GLOBUS_CLIENT_LOADER = 'globus_portal_framework.gclients.load_globus_client'
+
 SEARCH_RESULTS_PER_PAGE = 10
 SEARCH_MAX_PAGES = 10
 # This will be the automatic search query when the user loads the page, if

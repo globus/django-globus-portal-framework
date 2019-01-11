@@ -1,8 +1,11 @@
 from datetime import timedelta
 from django.utils import timezone
-import globus_sdk
 from django.conf import settings
+from django.utils.module_loading import import_string
+import globus_sdk
+
 from globus_portal_framework import ExpiredGlobusToken
+from globus_portal_framework.apps import get_setting
 
 
 def validate_token(tok):
@@ -66,18 +69,24 @@ def load_globus_client(user, client, token_name, require_authorized=False):
             'User {} has not been authorized for {}'.format(user, client))
 
 
+def get_default_client_loader():
+    return import_string(get_setting('GLOBUS_CLIENT_LOADER'))
+
+
 def load_auth_client(user):
-    return load_globus_client(user, globus_sdk.AuthClient,
-                              'auth.globus.org', require_authorized=True)
+    load_client = get_default_client_loader()
+    return load_client(user, globus_sdk.AuthClient, 'auth.globus.org',
+                       require_authorized=True)
 
 
 def load_search_client(user=None):
     """Load a globus_sdk.SearchClient, with a token authorizer if the user is
     logged in or a generic one otherwise."""
-    return load_globus_client(user, globus_sdk.SearchClient,
-                              'search.api.globus.org')
+    load_client = get_default_client_loader()
+    return load_client(user, globus_sdk.SearchClient, 'search.api.globus.org')
 
 
 def load_transfer_client(user):
-    return load_globus_client(user, globus_sdk.TransferClient,
-                              'transfer.api.globus.org')
+    load_client = get_default_client_loader()
+    return load_client(user, globus_sdk.TransferClient,
+                       'transfer.api.globus.org')
