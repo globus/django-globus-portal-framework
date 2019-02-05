@@ -46,7 +46,8 @@ def dgpf_logout(request):
 
 urlpatterns = [
     # Proxy remote file requests
-    path('api/proxy/', restricted_endpoint_proxy_stream, name='restricted_endpoint_proxy_stream'),
+    path('api/proxy/', restricted_endpoint_proxy_stream,
+         name='restricted_endpoint_proxy_stream'),
     # Globus search portal. Provides default url '/'.
     path('logout/', dgpf_logout, name='logout'),
     path('', index_selection, name='index-selection'),

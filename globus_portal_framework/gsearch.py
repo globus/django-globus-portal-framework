@@ -1,5 +1,7 @@
 from __future__ import division
 import os
+import re
+import json
 import logging
 import collections
 from urllib.parse import quote_plus, unquote
@@ -8,9 +10,13 @@ from django import template
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound
+from globus_portal_framework.constants import (
+    FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE
+)
 
 
 log = logging.getLogger(__name__)
+filter_query_matcher = re.compile(FILTER_QUERY_PATTERN)
 
 
 def post_search(index, query, filters, user=None, page=1):
@@ -43,24 +49,101 @@ def post_search(index, query, filters, user=None, page=1):
         return {'search_results': [], 'facets': []}
 
     client = load_search_client(user)
-    gfilters = get_filters(filters)
     index_data = get_index(index)
-    result = client.post_search(
-        index_data['uuid'],
-        {
-            'q': query,
-            'facets': prepare_search_facets(index_data.get('facets', [])),
-            'filters': gfilters,
-            'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
-            'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
-        })
-    return {'search_results': process_search_data(index_data.get('fields', []),
+    search_data = {
+        'q': query,
+        'facets': prepare_search_facets(index_data.get('facets', [])),
+        'filters': filters,
+        'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
+        'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
+    }
+    try:
+        result = client.post_search(index_data['uuid'], search_data)
+        return {
+            'search_results': process_search_data(index_data.get('fields', []),
                                                   result.data['gmeta']),
             'facets': get_facets(result, index_data.get('facets', []),
-                                 filters),
+                                 filters, index_data.get('filter_match')),
             'pagination': get_pagination(result.data['total'],
                                          result.data['offset'])
             }
+    except globus_sdk.exc.SearchAPIError as sapie:
+        log.exception(sapie)
+        etext = ('There was an error in {}, you can file '
+                 'an issue here:\n{}\nWith the following data: \n\n')
+        gs = 'https://github.com/globusonline/globus-search/issues'
+        dgpf = 'https://github.com/globusonline/django-globus-portal-framework'
+        if str(sapie.http_status).startswith('5'):
+            error = etext.format('Globus Search', gs)
+        else:
+            error = etext.format('Globus Portal Framework', dgpf)
+        full_error = '{}Index ID: {}\nAuthenticated? {}\nParams: \n{}'.format(
+            error, index_data['uuid'], user.is_authenticated,
+            json.dumps(search_data, indent=2)
+        )
+        log.error(full_error)
+    return {'error': 'There was an error in your search, please try a '
+            'different query or contact your administrator.'}
+
+
+def get_search_query(request):
+    """Get the search query from the request, or fall back on the user's last
+    search. If neither of those exist, settings.DEFAULT_QUERY is used instead.
+    """
+    return (request.GET.get('q') or request.session.get('query') or
+            get_setting('DEFAULT_QUERY'))
+
+
+def get_search_filters(request,
+                       filter_match_default=get_setting('DEFAULT_FILTER_MATCH')
+                       ):
+    """Given a request, fetch all query params for filters and return a list
+    that can be sent to Globus Search. Filter types are
+    parsed from the following keys:
+        * filter.<field_name>
+        * filter-match-all.<field_name>
+        * filter-match-any.<field_name>
+        * filter-range.<field_name>
+
+    `filter.` will fall back on a match default defined in settings.
+    `filter_match_default` can be "match-any" or "match-all"
+
+    """
+    filters = []
+    for key in request.GET.keys():
+        match = filter_query_matcher.match(key)
+        if match:
+            filter_type = match.groupdict().get('filter_type')
+            # Prefix was used to determine type and can be discarded. If we got
+            # here, a format match was detected and we can split on first '.'
+            _, filter_name = key.split('.', maxsplit=1)
+            filter = {
+                'field_name': filter_name,
+                'type': (FILTER_TYPES.get(filter_type, ) or
+                         FILTER_TYPES[filter_match_default]),
+                'values': request.GET.getlist(key)
+            }
+
+            if filter_type == FILTER_RANGE:
+                filter['values'] = [deserialize_gsearch_range(v) for v in
+                                    filter['values']]
+            filters.append(filter)
+    return filters
+
+
+def get_search_filter_query_key(field_name,
+                                filter_type=get_setting('DEFAULT_FILTER_MATCH')
+                                ):
+    """Create the key for a query parameter that will be recognized by
+    Globus Portal Framework.
+    `field_name` is the field in Globus Search to filter against.
+    `filter_type` is the filter to apply. range filter MUST be 'range'. Match
+    filter can be either be match-all or match-any, with DEFAULT_FILTER_MATCH
+    being used if not specified."""
+    if filter_type not in FILTER_TYPES:
+        log.warning('{} got {}, must be one of {}. Using default...'.format(
+            field_name, filter_type, list(FILTER_TYPES.keys())))
+    return 'filter-{}.{}'.format(filter_type, field_name)
 
 
 def prepare_search_facets(facets):
@@ -217,20 +300,11 @@ def get_pagination(total_results, offset,
 
 def get_filters(filters):
     """
-    Get Globus Search filters for each facet. Currently only supports
-    "match_all".
-
-    :param filters: A dict where the keys are filters and the values are a
-    list of elements to filter on.
-    :return: a list of formatted filters ready to send off to Globus Search
-
-    Example:
-        {'elements': ['O', 'H'], 'publication_year': ['2017', '2018']}
-    Returns:
-        List of GFilters, suitable for Globus Search:
-        https://docs.globus.org/api/search/schemas/GFilter/
-
+    Only used for backwards compatibility. Please see get_search_filters
+    instead.
     """
+    log.warning('"get_filters" is deprecated and will be removed in v0.4, '
+                'please use "get_search_filters" instead.')
     return [{
         'type': 'match_all',
         'field_name': name,
@@ -238,7 +312,39 @@ def get_filters(filters):
     } for name, values in filters.items()]
 
 
-def get_facets(search_result, portal_defined_facets, filters):
+def serialize_gsearch_range(gsearch_range):
+    """
+    Takes a range from Globus Search, and returns a string which can be used
+    in a URL.
+    :param gsearch_range: A dict: {'from': (number or *), 'to': (number or *)}
+    :return: The same range turned into a string.
+    """
+    return '{}--{}'.format(gsearch_range['from'], gsearch_range['to'])
+
+
+def deserialize_gsearch_range(serialized_filter_range):
+    """
+    Returns the value of a query parameter for the range type filter.
+    :param serialized_filter_range: The value of the range query param
+    :return: A dict resembling a result from Globus Search. Example:
+    {'from': 10, 'to': 100}
+    """
+    grange = {}
+    low, high = serialized_filter_range.split('--')
+    if low == '*':
+        grange['from'] = '*'
+    else:
+        grange['from'] = float(low) if '.' in low else int(low)
+
+    if high == '*':
+        grange['to'] = '*'
+    else:
+        grange['to'] = float(high) if '.' in high else int(high)
+    return grange
+
+
+def get_facets(search_result, portal_defined_facets, filters,
+               filter_match=None):
     """Prepare facets for display. Globus Search data is removed from results
     and the results are ordered according to the facet map. Empty categories
     are removed and any filters the user checked are tracked.
@@ -246,8 +352,13 @@ def get_facets(search_result, portal_defined_facets, filters):
     :param search_result: A raw search result from Globus Search
     :param portal_defined_facets: 'facets' defined for a search index in
         settings.py
-    :param filters: A dict of user-selected filters, an example like this:
-        {'searchdata.contributors.value': ['Cobb, Jane', 'Reynolds, Malcolm']}
+    :param filters: A list of user selected filters from get_search_filters()
+    This is used to determine if the filter a user chose matches one of the
+    portal's defined facets. Since a search has already happened by this point,
+    `filters` only determines the look of the page (which box is checked) and
+    generates the query-params for the user's next possible search.
+    :param filter_match: Filtering behavior for next query. 'match-all', or
+    'match-any'.
 
     :return: A list of facets. An example is here:
         [
@@ -269,6 +380,7 @@ def get_facets(search_result, portal_defined_facets, filters):
         ]
 
       """
+    filter_map = {filter['field_name']: filter for filter in filters}
     facets = search_result.data.get('facet_results', [])
     # Remove facets without buckets so we don't display empty fields
     pruned_facets = {f['name']: f['buckets'] for f in facets if f['buckets']}
@@ -277,13 +389,25 @@ def get_facets(search_result, portal_defined_facets, filters):
         buckets = pruned_facets.get(f['name'])
         if buckets:
             facet = {'name': f['name'], 'buckets': []}
+            filter = filter_map.get(f['field_name'], {})
             for bucket in buckets:
-                facet['buckets'].append({
+                buck = {
                     'count': bucket['count'],
-                    'value': bucket['value'],
                     'field_name': f['field_name'],
-                    'checked': bucket['value'] in filters.get(f['field_name'],
-                                                              [])
-                })
+                    'checked': bucket['value'] in filter.get('values', []),
+                }
+                if isinstance(bucket['value'], dict):
+                    buck['filter_type'] = FILTER_RANGE
+                    buck['value'] = serialize_gsearch_range(bucket['value'])
+                    qk = get_search_filter_query_key(f['field_name'],
+                                                     FILTER_RANGE)
+                    buck['search_filter_query_key'] = qk
+                else:
+                    buck['value'] = bucket['value']
+                    fm = filter_match or get_setting('DEFAULT_FILTER_MATCH')
+                    buck['filter_type'] = fm
+                    qk = get_search_filter_query_key(f['field_name'], fm)
+                    buck['search_filter_query_key'] = qk
+                facet['buckets'].append(buck)
             cleaned_facets.append(facet)
     return cleaned_facets

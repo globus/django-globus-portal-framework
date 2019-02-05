@@ -3,6 +3,8 @@ from django.core.checks import Error, Warning, register
 from django.conf import settings
 import globus_sdk
 
+from globus_portal_framework.constants import FILTER_TYPES
+
 log = logging.getLogger(__name__)
 log.debug('Debugging is active.')
 
@@ -70,4 +72,13 @@ def check_search_indexes(app_configs, **kwargs):
                 id='globus_portal_framework.settings.E001'
                 )
             )
+        fm = idata.get('filter_match', None)
+        if fm is not None and fm not in FILTER_TYPES.keys():
+            errors.append(
+                Warning('SEARCH_INDEXES.{}.filter_match is invalid.'
+                        ''.format(index_name),
+                        obj=settings,
+                        hint='Must be one of {}'.format(
+                            tuple(FILTER_TYPES.keys()))
+                        ))
     return errors
