@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from django.conf import settings
 from django.shortcuts import redirect
 from globus_portal_framework.views import (
@@ -24,16 +24,30 @@ from globus_portal_framework.views import (
 from django.contrib.auth import logout
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 
+
+class IndexConverter:
+
+    regex = '({})'.format('|'.join(settings.SEARCH_INDEXES.keys()))
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
+
+
+register_converter(IndexConverter, 'index')
+
 # search detail for viewing info about a single search result
 detail_urlpatterns = [
-    path('<index>/detail-preview/<subject>/',
+    path('<index:index>/detail-preview/<subject>/',
          detail_preview, name='detail-preview'),
-    path('<index>/detail-preview/<subject>/<endpoint>/<path:url_path>/',
+    path('<index:index>/detail-preview/<subject>/<endpoint>/<path:url_path>/',
          detail_preview, name='detail-preview'),
-    path('<index>/detail-transfer/<subject>', detail_transfer,
+    path('<index:index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
-    path('<index>/detail/<subject>/', detail, name='detail'),
-    path('<index>/search-debug-detail/<subject>/', search_debug_detail,
+    path('<index:index>/detail/<subject>/', detail, name='detail'),
+    path('<index:index>/search-debug-detail/<subject>/', search_debug_detail,
          name='search-debug-detail'),
 ]
 
@@ -51,8 +65,8 @@ urlpatterns = [
     # Globus search portal. Provides default url '/'.
     path('logout/', dgpf_logout, name='logout'),
     path('', index_selection, name='index-selection'),
-    path('<index>/', search, name='search'),
-    path('<index>/search-debug/', search_debug, name='search-debug'),
+    path('<index:index>/', search, name='search'),
+    path('<index:index>/search-debug/', search_debug, name='search-debug'),
     path('', include(detail_urlpatterns)),
 ]
 
