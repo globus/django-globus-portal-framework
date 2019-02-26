@@ -69,3 +69,7 @@ if getattr(settings, 'GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP', False):
         path('', include('social_django.urls', namespace='social')),
         path('', include('globus_portal_framework.urls_debugging'))
     ])
+
+
+handler404 = 'globus_portal_framework.views.handler404'
+handler500 = 'globus_portal_framework.views.handler500'
