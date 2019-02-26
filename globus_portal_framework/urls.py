@@ -24,7 +24,11 @@ from globus_portal_framework.api import restricted_endpoint_proxy_stream
 
 class IndexConverter:
 
-    regex = '({})'.format('|'.join(settings.SEARCH_INDEXES.keys()))
+    @property
+    def regex(self):
+        """Allowing the regex to be a property makes it more flexible in
+        testing, allowing urlpatterns to be rebuilt for test indexes."""
+        return '({})'.format('|'.join(settings.SEARCH_INDEXES.keys()))
 
     def to_python(self, value):
         return value

@@ -2,6 +2,7 @@ from datetime import datetime
 import pytz
 from django.contrib.auth.models import User
 from django.test import Client
+from django.urls import path, include
 from social_django.models import UserSocialAuth
 import globus_sdk
 
@@ -80,3 +81,31 @@ def get_logged_in_client(username, tokens):
 def globus_client_is_loaded_with_authorizer(client):
     return isinstance(client.kwargs.get('authorizer'),
                       globus_sdk.AccessTokenAuthorizer)
+
+
+def rebuild_index_urlpatterns(old_urlpatterns):
+    """
+    This fixes pre-complied paths not matching new test paths. Since paths
+    are compiled at import time, if you override settings with new
+    SEARCH_INDEXES, your new search indexes won't have urls that match due to
+    the regexes already being compiled. The problem stems from IndexConverter
+    containing explicit names of the SEARCH_INDEXES which don't handle change
+    well. Use this function to rebuild the names to pick up on your test index
+    names.
+    :param old_urlpatterns: patterns you want to rebuild
+    :return: urlpatterns
+    """
+    urlpatterns = [
+        path('', include('social_django.urls', namespace='social')),
+        # FIXME Remove after merging #55 python-social-auth-upgrade
+        path('', include('django.contrib.auth.urls'))
+    ]
+
+    for url in old_urlpatterns:
+        if '<index:index>' in str(url.pattern):
+            urlpatterns.append(path(str(url.pattern), url.callback,
+                                    name=url.name))
+        else:
+            urlpatterns.append(url)
+
+    return urlpatterns
