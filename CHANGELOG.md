@@ -4,8 +4,13 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.1 - 2019-03-07
 
-## 0.3.0
+- Fixed bug in logout when no scopes were requested
+- Changed debugging urls to be optional
+- Fixed some things in the README
+
+## 0.3.0 - 2019-03-07
 
 - Consolidated search settings into a single object called SEARCH_INDEXES
 - Removed the following settings (no longer used)
