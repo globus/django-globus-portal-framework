@@ -95,7 +95,6 @@ After you create your app, add these to `myproject/settings.py`
     ]
 
     AUTHENTICATION_BACKENDS = [
-        # FIXME This will change in pull #55
         'globus_portal_framework.auth.GlobusOAuth2',
         'django.contrib.auth.backends.ModelBackend',
     ]
@@ -122,8 +121,6 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('globus_portal_framework.urls')),
     path('', include('social_django.urls', namespace='social')),
-    # FIXME 'django.contrib.auth.urls' Not needed after PR #55
-    path('', include('django.contrib.auth.urls'))
 ]
 ```
 

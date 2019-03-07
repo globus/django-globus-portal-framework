@@ -4,9 +4,12 @@ from collections import OrderedDict
 from json import dumps
 import globus_sdk
 from django.contrib import messages
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import logout as django_logout
+
+from globus_portal_framework.gclients import revoke_globus_tokens
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework.gsearch import (get_search_query,
@@ -209,3 +212,10 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
         context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
     return render(request, get_template(index, 'detail-preview.html'), context)
+
+
+def logout(request, next='/'):
+    if request.user.is_authenticated:
+        revoke_globus_tokens(request.user)
+        django_logout(request)
+    return redirect(next)

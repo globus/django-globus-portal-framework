@@ -168,3 +168,13 @@ class SearchViewsTest(TestCase):
         url = reverse('search-debug-detail', args=[self.index, 'mysubject'])
         r = self.c.get(url)
         self.assertEqual(r.status_code, 200)
+
+    @mock.patch('globus_portal_framework.views.revoke_globus_tokens')
+    def test_logout(self, revoke_globus_tokens):
+        client, user = get_logged_in_client('mal', ['search.api.globus.org',
+                                                    'transfer.api.globus.org'])
+        self.assertTrue(user.is_authenticated)
+        url = reverse('logout')
+        r = client.get(url)
+        self.assertEqual(r.status_code, 302)
+        self.assertTrue(revoke_globus_tokens.called)

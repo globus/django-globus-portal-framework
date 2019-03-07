@@ -94,6 +94,11 @@ DEBUG = False
 # Get your keys at 'developers.globus.org'
 SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
 SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
+
+# Set if using POSTGRES
+# https://python-social-auth.readthedocs.io/en/latest/configuration/django.html#database  # noqa
+# SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+
 ALLOWED_HOSTS = []
 INTERNAL_IPS = (
     '127.0.0.1',
