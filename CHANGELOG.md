@@ -4,7 +4,7 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
-## 0.3.1 - 2019-03-07
+## 0.3.2 - 2019-03-07
 
 - Fixed bug in logout when no scopes were requested
 - Changed debugging urls to be optional
