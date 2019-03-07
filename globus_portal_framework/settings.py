@@ -128,7 +128,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'globus_portal_framework.auth.GlobusOAuth2',
+    'globus_portal_framework.auth.GlobusOpenIdConnect',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
