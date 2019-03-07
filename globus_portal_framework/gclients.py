@@ -36,7 +36,7 @@ def revoke_globus_tokens(user):
     )
     tok_list = [(tokens['access_token'], tokens.get('refresh_token'))]
     tok_list.extend([(t['access_token'], t.get('refresh_token'))
-                    for t in tokens['other_tokens']])
+                    for t in tokens.get('other_tokens', [])])
 
     for at, rt in tok_list:
         ac.oauth2_revoke_token(at)
