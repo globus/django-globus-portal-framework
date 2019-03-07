@@ -17,6 +17,22 @@ see the list of commits from the last version or use `git log`.
 - The extended apps in INSTALLED_APPS are now built-in
     - globus_portal_framework.search
     - globus_portal_framework.transfer
+- Added extended-filter-facet-features
+- Added range facets/filters
+- Added settings for filtering behavior, added tests
+- Added better error checking for search queries
+- Search filters can now be configured in settings.py
+- Custom client loading is now possible for Globus Clients
+- portal now catches errors resulting from user defined fields
+- Fixed possible error when upgrading from an older version
+- Fixed 'setting not defined' error when creating a new project
+- Can now proxy HTTP requests for files on Globus endpoint that require authorization
+- Removed old Django checks, added checks for Index UUID + tests
+- Fixed occational bug generating preview https link
+- Added modular templates, so indexes can specify their own set of templates
+- Added config based multi index support
+- Changed name of 'gauth.py' to 'gclients.py' and moved clients
+- Project overhaul: consolidated components into a single app
 
 ## 0.2.0
 
