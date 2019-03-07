@@ -17,13 +17,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from globus_portal_framework.views import (
-    search, index_selection, search_debug, search_debug_detail,
-    detail, detail_transfer, detail_preview, logout
+    search, index_selection, detail, detail_transfer, detail_preview, logout
 )
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 
 # search detail for viewing info about a single search result
-detail_urlpatterns = [
+search_urlpatterns = [
+    path('<index>/', search, name='search'),
     path('<index>/detail-preview/<subject>/',
          detail_preview, name='detail-preview'),
     path('<index>/detail-preview/<subject>/<endpoint>/<path:url_path>/',
@@ -31,8 +31,6 @@ detail_urlpatterns = [
     path('<index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
     path('<index>/detail/<subject>/', detail, name='detail'),
-    path('<index>/search-debug-detail/<subject>/', search_debug_detail,
-         name='search-debug-detail'),
 ]
 
 urlpatterns = [
@@ -42,9 +40,7 @@ urlpatterns = [
     # Globus search portal. Provides default url '/'.
     path('logout/', logout, name='logout'),
     path('', index_selection, name='index-selection'),
-    path('<index>/', search, name='search'),
-    path('<index>/search-debug/', search_debug, name='search-debug'),
-    path('', include(detail_urlpatterns)),
+    path('', include(search_urlpatterns)),
 ]
 
 
@@ -53,4 +49,5 @@ if getattr(settings, 'GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP', False):
     urlpatterns.extend([
         path('admin', admin.site.urls),
         path('', include('social_django.urls', namespace='social')),
+        path('', include('globus_portal_framework.urls_debugging'))
     ])
