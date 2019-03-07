@@ -18,6 +18,7 @@ Let's get started with a simple Globus Search portal.
     $ pip install django-admin
     $ pip install -e git+https://github.com/globusonline/django-globus-portal-framework#egg=django-globus-portal-framework
     $ django-admin startproject myproject
+    $ cd myproject
 ```
 
 Integrate it into your app in `myproject/settings.py`
@@ -85,17 +86,20 @@ After you create your app, add these to `myproject/settings.py`
 
     INSTALLED_APPS = [
         ...
-        'globus-portal-framework',
+        'globus_portal_framework',
         'social_django',
     ]
 
     MIDDLEWARE = [
         ...
         'social_django.middleware.SocialAuthExceptionMiddleware',
+        'globus_portal_framework.middleware.ExpiredTokenMiddleware',
+        'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware',
+
     ]
 
     AUTHENTICATION_BACKENDS = [
-        'globus_portal_framework.auth.GlobusOAuth2',
+        'globus_portal_framework.auth.GlobusOpenIdConnect',
         'django.contrib.auth.backends.ModelBackend',
     ]
 
@@ -461,10 +465,27 @@ Clone and run the App locally:
     $ cd django-globus-portal-framework
     $ virtualenv venv
     $ source venv/bin/activate
-    $ pip install requirements.txt
-    $ echo 'DEBUG = True' > globus_portal_framework/local_settings.py
-    $ python manage.py migrate
-    $ python manage.py runserver
+    $ pip install -r requirements.txt
 ```
 
+Remember to add your Globus credentials. You can put them in
+`django_globus_portal_framework/local_settings.py` to avoid accidentally committing them.
+
+```
+    SOCIAL_AUTH_GLOBUS_KEY = '<YOUR APP CLIENT ID>'
+    SOCIAL_AUTH_GLOBUS_SECRET = '<YOUR APP SECRET>'
+    DEBUG = True
+```
+
+Migrate and run with:
+
+    $ python manage.py migrate
+    $ python manage.py runserver
+
 The app will be running locally at `http://localhost:8000`
+
+## Deployment
+
+It's a good idea to run through the
+[Django Deployment Checklist](https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/)
+when deploying.
