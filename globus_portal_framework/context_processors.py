@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import resolve
+from django.urls import resolve, reverse, NoReverseMatch
 from globus_portal_framework import get_index, IndexNotFound
 
 
@@ -14,6 +14,13 @@ def globals(request):
         index_data = get_index(index)
     except IndexNotFound:
         index_data = {}
+
+    try:
+        reverse('search-debug', args=[index])
+        search_debugging_enabled = True
+    except NoReverseMatch:
+        search_debugging_enabled = False
+
     return {'globus_portal_framework': {
                 'project_title': getattr(settings, 'PROJECT_TITLE',
                                          'Globus Portal Framework'),
@@ -21,5 +28,6 @@ def globals(request):
                 'transfer_enabled': auth_enabled and transfer_scope_set,
                 'index_data': index_data,
                 'index': index,
+                'search_debugging_enabled': search_debugging_enabled,
                 }
             }

@@ -37,6 +37,7 @@ Then wire up the search portal in your `myproject/urls.py`
 
     urlpatterns = [
         path('', include('globus_portal_framework.urls')),
+        path('', include('globus_portal_framework.urls_debugging')),
     ]
 ```
 
