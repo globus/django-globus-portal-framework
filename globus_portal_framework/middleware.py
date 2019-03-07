@@ -77,8 +77,8 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
             return HttpResponseRedirect(reverse('social:begin', kwargs={'backend': 'globus'}))
 
         """
-        Redirect a user to Globus App to join a group that members of can
-        gain to the portal. If you would like to show an error message,e.g.
+        Redirect a user to Globus App to join a group whose members have
+        access to the portal. If you would like to show an error message,e.g.
         "You have to be a member of the {group_name} group to be able to access
         the portal. <a href="{group_join_url}">Join</a> the {group_name} group.",
         change the group_join_url in the redirect below to one of you app paths
