@@ -71,12 +71,12 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
 
     def get_user_id(self, details, response):
         if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnectBase, self).get_user_id(details, response)
+            return super(GlobusOpenIdConnect, self).get_user_id(details, response)
         return details.get('idp_id') + '_' + details.get('identity_id')
 
     def auth_allowed(self, response, details):
         if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnectBase, self).auth_allowed(response, details)
+            return super(GlobusOpenIdConnect, self).auth_allowed(response, details)
 
         allowed_group = self.setting('ALLOWED_GROUP')
         if not allowed_group:
