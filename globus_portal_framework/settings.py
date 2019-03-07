@@ -120,13 +120,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Social Django needed for Globus Auth
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    # The middleware handles all globus related authentication exceptions.
+    # Uncomment if using Globus sessions or/and Globus groups.
+    # 'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware',
     # Redirect to auth page if expired tokens, then back to original page
     'globus_portal_framework.middleware.ExpiredTokenMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = [
-   'globus_portal_framework.auth.GlobusOAuth2',
-   'django.contrib.auth.backends.ModelBackend',
+    'globus_portal_framework.auth.GlobusOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 SOCIAL_AUTH_SANITIZE_REDIRECTS = False
@@ -138,8 +141,21 @@ SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
 SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:search',
     'urn:globus:auth:scope:transfer.api.globus.org:all',
-    'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all'
+    'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all',
+    # Add the group scope to be able to verify if a user is a member of a Globus
+    # group. To use the group scope, your Globus Auth Clien ID has to be
+    # whitelisted. Please contact support@globus.org to whitelist your Client ID.
+    # 'urn:globus:auth:scope:nexus.api.globus.org:groups',
 ]
+
+# Set to True to retrieve information about a user identity from the Globus
+# sessions instead of relying on a Globus OIDC userinfo endpoint.
+# SOCIAL_AUTH_GLOBUS_SESSIONS = False
+
+# Set to a UUID of a Globus group if you want to restrict access to the portal
+# to members of the Globus group. You will also have to add the group scope
+# urn:globus:auth:scope:nexus.api.globus.org:groups to SOCIAL_AUTH_GLOBUS_SCOPE.
+# GLOBUS_AUTH_GLOBUS_ALLOWED_GROUP = '<Globus_group_UUID>'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_USE_SESSIONS = True
@@ -194,11 +210,11 @@ LOGGING = {
 
     'loggers': {
         'django.db.backends': {
-                    'handlers': ['stream'],
-                    # 'handlers': ['null'],  # Quiet by default!
-                    # 'propagate': False,
-                    'level': 'WARNING',
-                    },
+            'handlers': ['stream'],
+            # 'handlers': ['null'],  # Quiet by default!
+            # 'propagate': False,
+            'level': 'WARNING',
+        },
         'globus_portal_framework': {
             'handlers': ['stream'],
             'level': 'DEBUG',
