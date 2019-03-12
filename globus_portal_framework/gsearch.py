@@ -65,7 +65,10 @@ def post_search(index, query, filters, user=None, page=1):
             'facets': get_facets(result, index_data.get('facets', []),
                                  filters, index_data.get('filter_match')),
             'pagination': get_pagination(result.data['total'],
-                                         result.data['offset'])
+                                         result.data['offset']),
+            'count': result.data['count'],
+            'offset': result.data['offset'],
+            'total': result.data['total'],
             }
     except globus_sdk.exc.SearchAPIError as sapie:
         log.exception(sapie)
