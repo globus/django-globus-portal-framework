@@ -8,10 +8,10 @@ workflow.
 
 ## Requirements
 
-* Python 3
+* Python 3.5 or higher
 * Django 2.0
 
-## 5 Minute Quick-Start
+## Quick-Start Guide
 
 Let's get started with a simple Globus Search portal.
 
@@ -31,7 +31,8 @@ For your portal, ensure your Globus App has these settings:
 * **Native App**--Unchecked
 
 
-In your myproject/settings.py file, add the following settings:
+In your myproject/settings.py file, add the following settings to your
+project's `settings.py` file. Existing Django settings are hidden by `...`.
 ```
 SOCIAL_AUTH_GLOBUS_KEY = 'Put your Client ID here'
 SOCIAL_AUTH_GLOBUS_SECRET = 'Put your Client Secret Here'
