@@ -85,7 +85,10 @@ TEMPLATES = [
 ]
 ```
 
-Now, setup your URLs in your myproject/url.py file:
+Now, add your URLs in your `myproject/urls.py` file. These will provide
+`/login` and `/logout` URLs in addition to index urls at `/myindex/`. Index
+URLs are created automatically by the keys in your `SEARCH_INDEXES` variable
+in your `settings.py` file. 
 
 ```
 from django.urls import path, include
@@ -100,7 +103,9 @@ urlpatterns = [
 ]
 ```
 
-Do your initial database migration and run your local server:
+Do your initial database migration and run your local server. The `manage.py`
+script was created by `django-admin startproject` and should be in the top
+level of your project directory.
 
 ```
     $ python manage.py migrate
@@ -114,15 +119,14 @@ will likely want to request a search index to setup your custom portal. Send an
 email to support@globus.org with a brief description of what you want. Once you have
 a search index, See the resources below for customizing it to your needs:
 
-* [Configuring Fields and Facets](https://github.com/NickolausDS/django-globus-portal-framework/wiki/Configuring-Your-Index) -- Configure the basics for your index
-* [Customzing Templates](https://github.com/NickolausDS/django-globus-portal-framework/wiki/Customizing-Templates) -- Show users your custom search data
-* [Adding Transfer and Preview](https://github.com/NickolausDS/django-globus-portal-framework/wiki/Adding-Transfer-and-Preview) -- Enrich your search results
+* [Configuring Your Index](https://github.com/globusonline/django-globus-portal-framework/wiki/Configuring-Your-Index) -- Configure the basics for your index
+* [Customzing Templates](https://github.com/globusonline/django-globus-portal-framework/wiki/Customizing-Templates) -- Show users your custom search data
+* [Adding Transfer and Preview](https://github.com/globusonline/django-globus-portal-framework/wiki/Adding-Transfer-and-Preview) -- Enrich your search results
 
-See a minimal complete project here for reference: [DGPF Example App](https://github.com/globusonline/dgpf-example-app)
+See a minimal complete project here for reference (Requires Permission): [DGPF Example App](https://github.com/globusonline/dgpf-example-app)
 
 Extended Features
 
-* [Globus Sessions](https://github.com/globusonline/django-globus-portal-framework/wiki/Globus-Sessions-with-Globus-Groups) -- Secure who can login to your portal
-* [DGPF Confidential Client](https://github.com/globusonline/dgpf-confidential-client) -- Secure your raw search record data from user access
+* [DGPF Confidential Client](https://github.com/globusonline/dgpf-confidential-client) (Requires Permission) -- Secure your raw search record data from user access
 
 
