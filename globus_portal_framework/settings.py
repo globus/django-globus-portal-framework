@@ -89,7 +89,7 @@ PREVIEW_DATA_SIZE = 2048
 # Create 'local_settings.py' and put your below values there to avoid
 # accidentally committing them.
 # Secret key can be generated with 'openssl rand -hex 32'
-SECRET_KEY = ''
+SECRET_KEY = '<Add Your Secret Key Here>'
 DEBUG = False
 # Get your keys at 'developers.globus.org'
 SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
