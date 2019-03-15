@@ -120,7 +120,7 @@ email to support@globus.org with a brief description of what you want. Once you 
 a search index, See the resources below for customizing it to your needs:
 
 * [Configuring Your Index](https://github.com/globusonline/django-globus-portal-framework/wiki/Configuring-Your-Index) -- Configure the basics for your index
-* [Configuring Facets](https://github.com/globusonline/django-globus-portal-framework/wiki/Configuring-Facets)
+* [Configuring Facets](https://github.com/globusonline/django-globus-portal-framework/wiki/Configuring-Facets) -- Configure facets for filtering search results
 * [Customzing Fields and Templates](https://github.com/globusonline/django-globus-portal-framework/wiki/Customizing-Fields-and-Templates) -- Show users your custom search data
 * [Adding Transfer and Preview](https://github.com/globusonline/django-globus-portal-framework/wiki/Adding-Transfer-and-Preview) -- Enrich your search results
 
