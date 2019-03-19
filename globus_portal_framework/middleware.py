@@ -21,17 +21,14 @@ class ExpiredTokenMiddleware(MiddlewareMixin):
     tokens then does the work the user originally intended.
     """
 
-    PROVIDER = 'globus'
-
     def process_exception(self, request, exception):
         if isinstance(exception, ExpiredGlobusToken):
             log.info('Tokens expired for user {}, redirecting to login.'
                      ''.format(request.user))
             auth.logout(request)
-            # build /login/globus/?next=/my-intended-url/'
-            url = '{}{}/?{}'.format(reverse('login'),
-                                    self.PROVIDER,
-                                    urlencode({'next': request.path}))
+            base_url = reverse('social:begin', kwargs={'backend': 'globus'})
+            params = urlencode({'next': request.get_full_path()})
+            url = '{}?{}'.format(base_url, params)
             return HttpResponseRedirect(url)
 
 
@@ -74,15 +71,16 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
             )
             strategy.session_set('session_required_identities',
                                  session_required_identities)
-            return HttpResponseRedirect(reverse('social:begin', kwargs={'backend': 'globus'}))
+            return HttpResponseRedirect(reverse('social:begin',
+                                                kwargs={'backend': 'globus'}))
 
         """
         Redirect a user to Globus App to join a group whose members have
         access to the portal. If you would like to show an error message,e.g.
         "You have to be a member of the {group_name} group to be able to access
-        the portal. <a href="{group_join_url}">Join</a> the {group_name} group.",
-        change the group_join_url in the redirect below to one of you app paths
-        that will show such an appropriate error message.
+        the portal. <a href="{group_join_url}">Join</a> the {group_name}
+        group.", change the group_join_url in the redirect below to one of you
+        app paths that will show such an appropriate error message.
         """
 
         group_join_url = kwargs.get('group_join_url')
