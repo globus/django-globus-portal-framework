@@ -4,6 +4,11 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.3 - 2019-05-30
+
+- Fixed bug for login redirects when user tokens expired
+- Updated README docs
+
 ## 0.3.2 - 2019-03-07
 
 - Fixed bug in logout when no scopes were requested
