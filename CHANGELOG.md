@@ -4,6 +4,11 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.4 - 2019-07-15
+
+- Fixed possible error for users navigating to custom dgpf template views after logout
+- Fixed logout 'next' query param, custom logout redirects can now be specified in templates
+
 ## 0.3.3 - 2019-05-30
 
 - Fixed bug for login redirects when user tokens expired
