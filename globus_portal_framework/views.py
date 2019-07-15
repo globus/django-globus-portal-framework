@@ -215,7 +215,13 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
 
 
 def logout(request, next='/'):
+    """
+    Revoke the users tokens and pop their Django session. Users will be
+    redirected to the query parameter 'next' if it is present. If the 'next'
+    query parameter 'next' is not present, the parameter next will be used
+    instead.
+    """
     if request.user.is_authenticated:
         revoke_globus_tokens(request.user)
         django_logout(request)
-    return redirect(next)
+    return redirect(request.GET.get('next', next))
