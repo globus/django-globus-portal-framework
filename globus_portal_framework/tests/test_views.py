@@ -15,7 +15,7 @@ from globus_portal_framework import (
     PreviewException, PreviewPermissionDenied, PreviewNotFound,
     PreviewServerError, PreviewBinaryData)
 
-from globus_portal_framework.urls import (detail_urlpatterns,
+from globus_portal_framework.urls import (search_urlpatterns,
                                           urlpatterns as dgpf_urlpatterns)
 
 
@@ -24,7 +24,7 @@ SEARCH_INDEXES = {'myindex': {
     'uuid': '1e0be00f-8156-499e-980d-f7fb26157c02'
 }}
 
-urlpatterns = rebuild_index_urlpatterns(detail_urlpatterns + dgpf_urlpatterns)
+urlpatterns = rebuild_index_urlpatterns(search_urlpatterns + dgpf_urlpatterns)
 
 
 MOCK_RFM = [

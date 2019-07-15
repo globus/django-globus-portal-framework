@@ -6,6 +6,8 @@ from django.urls import path, include
 from social_django.models import UserSocialAuth
 import globus_sdk
 
+from globus_portal_framework.views import logout
+
 # Two days in seconds
 TOKEN_EXPIRE_TIME = 48 * 60 * 60
 
@@ -96,6 +98,7 @@ def rebuild_index_urlpatterns(old_urlpatterns):
     :return: urlpatterns
     """
     urlpatterns = [
+        path('logout/', logout, name='logout'),
         path('', include('social_django.urls', namespace='social')),
         # FIXME Remove after merging #55 python-social-auth-upgrade
         path('', include('django.contrib.auth.urls'))
