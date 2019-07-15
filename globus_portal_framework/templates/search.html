@@ -35,7 +35,7 @@
     {% include it_mess %}
   </div>
 
-  <form id="search-form" class="my-4" name="search_form" action="{% url 'search' request.session.search.index %}">
+  <form id="search-form" class="my-4" name="search_form" action="{% url 'search' globus_portal_framework.index %}">
     <input type="text" id="search-input" autocomplete="off"
            data-provide="typeahead" name="q"
            value="{{request.session.search.query}}" placeholder="Start your search here">
@@ -48,7 +48,7 @@
     <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
       <div id="filters">
         <div id="facet-container">
-          <form id="facet-form" action="{% url 'search' request.session.search.index %}">
+          <form id="facet-form" action="{% url 'search' globus_portal_framework.index %}">
             {% index_template "components/search-facets.html" as it_facets %}
             {% include it_facets %}
           </form>
@@ -67,7 +67,7 @@
         </div>
         {% elif globus_portal_framework.search_debugging_enabled %}
         <div class="alert alert-dark" role="alert">
-          See Debugging for fields <a href="{% url 'search-debug' request.session.search.index %}">here</a>.
+          See Debugging for fields <a href="{% url 'search-debug' globus_portal_framework.index %}">here</a>.
         </div>
         {% endif %}
 
