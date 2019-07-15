@@ -50,7 +50,8 @@ class IndexTemplateNode(template.Node):
     def render(self, context):
         template = self.template_name
         try:
-            index = context['globus_portal_framework'].get('index', None)
+            index = context.get('globus_portal_framework', {}).get('index',
+                                                                   None)
             if index is not None:
                 template = get_template(index, self.template_name)
                 if template != self.template_name:
