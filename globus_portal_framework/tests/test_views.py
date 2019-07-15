@@ -5,19 +5,27 @@ from urllib.parse import quote_plus
 from django.test import TestCase, Client
 from django.test.utils import override_settings
 from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 
 from globus_portal_framework.tests import test_gsearch, MOCK_RESULT
 from globus_portal_framework.tests.mocks import (
-    get_logged_in_client, MockTransferClient)
+    get_logged_in_client, MockTransferClient, rebuild_index_urlpatterns)
 
 from globus_portal_framework import (
     PreviewException, PreviewPermissionDenied, PreviewNotFound,
     PreviewServerError, PreviewBinaryData)
 
+from globus_portal_framework.urls import (search_urlpatterns,
+                                          urlpatterns as dgpf_urlpatterns)
+
+
 SEARCH_INDEXES = {'myindex': {
     # Randomly generated and not real
     'uuid': '1e0be00f-8156-499e-980d-f7fb26157c02'
 }}
+
+urlpatterns = rebuild_index_urlpatterns(search_urlpatterns + dgpf_urlpatterns)
+
 
 MOCK_RFM = [
     {
@@ -37,6 +45,7 @@ class MockSearchGetSubject:
         self.data = test_gsearch.get_mock_data(MOCK_RESULT)
 
 
+@override_settings(SEARCH_INDEXES=SEARCH_INDEXES, ROOT_URLCONF=__name__)
 class SearchViewsTest(TestCase):
 
     def setUp(self):
@@ -49,14 +58,18 @@ class SearchViewsTest(TestCase):
         self.index = 'myindex'
 
     @mock.patch('globus_portal_framework.views.post_search')
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_index(self, post_search):
         post_search.return_value = {}
         r = self.c.get(reverse('search', args=[self.index]))
         self.assertEqual(r.status_code, 200)
 
+    @mock.patch('globus_portal_framework.views.post_search')
+    def test_nonexistant_search_index(self, post_search):
+        post_search.return_value = {}
+        with self.assertRaises(NoReverseMatch):
+            self.c.get(reverse('search', args=['index-does-not-exist']))
+
     @mock.patch('globus_sdk.SearchClient.get_subject')
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_detail(self, get_subject):
         get_subject.return_value = MockSearchGetSubject()
         url = reverse('detail', args=[self.index, 'mysubject'])
@@ -68,7 +81,6 @@ class SearchViewsTest(TestCase):
                 mock.Mock())
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_detail_transfer_no_field_rfm(self, get_subject, log):
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])
@@ -114,7 +126,6 @@ class SearchViewsTest(TestCase):
     @mock.patch('globus_portal_framework.views.preview')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_detail_preview(self, get_subject, preview, log):
         preview.return_value = mock.Mock()
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
@@ -133,7 +144,6 @@ class SearchViewsTest(TestCase):
     @mock.patch('globus_portal_framework.views.preview')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_detail_preview_exceptions(self, get_subject, preview, log):
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])
@@ -155,14 +165,12 @@ class SearchViewsTest(TestCase):
         self.assertEqual(log.exception.call_count, 2)
 
     @mock.patch('globus_portal_framework.views.post_search')
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_search_debug(self, post_search):
         post_search.return_value = {'facets': []}
         r = self.c.get(reverse('search-debug', args=[self.index]))
         self.assertEqual(r.status_code, 200)
 
     @mock.patch('globus_sdk.SearchClient.get_subject')
-    @override_settings(SEARCH_INDEXES=SEARCH_INDEXES)
     def test_search_debug_detail(self, get_subject):
         get_subject.return_value = MockSearchGetSubject()
         url = reverse('search-debug-detail', args=[self.index, 'mysubject'])
