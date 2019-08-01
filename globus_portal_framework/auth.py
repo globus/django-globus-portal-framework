@@ -91,12 +91,24 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
             if item.get('scope') == self.NEXUS_SCOPE:
                 nexus_token = item.get('access_token')
 
+        if nexus_token is None:
+            raise ValueError(
+                'You must set the {} scope on {} in order to set an allowed '
+                'group'.format(
+                    'urn:globus:auth:scope:nexus.api.globus.org:groups',
+                    'settings.SOCIAL_AUTH_GLOBUS_SCOPE',
+                )
+            )
+
         # Get the allowed group
-        resp = self.get_json(
-            self.NEXUS_ENDPOINT + '/groups/' + allowed_group,
-            method='GET',
-            headers={'Authorization': 'Bearer ' + nexus_token}
-        )
+        try:
+            resp = self.get_json(
+                self.NEXUS_ENDPOINT + '/groups/' + allowed_group,
+                method='GET',
+                headers={'Authorization': 'Bearer ' + nexus_token}
+            )
+        except requests.exceptions.HTTPError:
+            raise AuthForbidden(self, {})
         identity_set_properties = resp.get('identity_set_properties')
         group_name = resp.get('name')
         group_join_url = self.GLOBUS_APP_URL + resp.get('join').get('url')

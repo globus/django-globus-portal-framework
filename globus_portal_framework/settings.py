@@ -159,8 +159,14 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
 
 # Set to a UUID of a Globus group if you want to restrict access to the portal
 # to members of the Globus group. You will also have to add the group scope
-# urn:globus:auth:scope:nexus.api.globus.org:groups to SOCIAL_AUTH_GLOBUS_SCOPE.
-# GLOBUS_AUTH_GLOBUS_ALLOWED_GROUP = '<Globus_group_UUID>'
+# urn:globus:auth:scope:nexus.api.globus.org:groups to SOCIAL_AUTH_GLOBUS_SCOPE
+# SOCIAL_AUTH_GLOBUS_ALLOWED_GROUP = '<Globus_group_UUID>'
+
+# If the user is not a member of the above group, you can redirect them to the
+# URL listed below. Leaving this blank will redirect users to the Globus App
+# Group join page. If this is black and the group is not visible to the public,
+# an AuthForbidden error will be raised instead.
+# SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL = ''
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_USE_SESSIONS = True
