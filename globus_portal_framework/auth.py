@@ -2,8 +2,10 @@
 Globus Auth OpenID Connect backend, docs at:
     https://docs.globus.org/api/auth
 """
-
-from social_core.backends.globus import GlobusOpenIdConnect as GlobusOpenIdConnectBase
+import requests
+from social_core.backends.globus import (
+    GlobusOpenIdConnect as GlobusOpenIdConnectBase
+)
 from social_core.exceptions import AuthForbidden
 
 
@@ -15,16 +17,19 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
     def get_user_details(self, response):
         # If SOCIAL_AUTH_GLOBUS_SESSIONS is not set, fall back to default
         if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnectBase, self).get_user_details(response)
+            return super(GlobusOpenIdConnectBase, self).get_user_details(
+                response)
 
         key, secret = self.get_key_and_secret()
         auth_token = response.get('access_token')
 
-        # Introspect the access_token with session_info and identities_set included
+        # Introspect the access_token with session_info and identities_set
+        # included
         resp = self.get_json(
             self.OIDC_ENDPOINT + '/v2/oauth2/token/introspect',
             method='POST',
-            data={"token": auth_token, "include": "session_info,identities_set"},
+            data={"token": auth_token,
+                  "include": "session_info,identities_set"},
             auth=(key, secret)
         )
 
@@ -71,12 +76,14 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
 
     def get_user_id(self, details, response):
         if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnect, self).get_user_id(details, response)
+            return super(GlobusOpenIdConnect, self).get_user_id(details,
+                                                                response)
         return details.get('idp_id') + '_' + details.get('identity_id')
 
     def auth_allowed(self, response, details):
         if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnect, self).auth_allowed(response, details)
+            return super(GlobusOpenIdConnect, self).auth_allowed(response,
+                                                                 details)
 
         allowed_group = self.setting('ALLOWED_GROUP')
         if not allowed_group:
@@ -117,7 +124,6 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         identity_property = identity_set_properties.get(identity_id)
         if identity_property.get('status') == 'active':
             return True
-
         # Find first identity id with active group membership status
         for identity_id, identity_property in identity_set_properties.items():
             if identity_property.get('status') == 'active':
@@ -127,14 +133,16 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
                      'session_required_identities': identity_id}
                 )
 
-        # If none of the user identity ids is a member of the group, propose to join the group
+        # If none of the user identity ids is a member of the group, propose
+        # to join the group
         raise AuthForbidden(
             self, {'group_name': group_name, 'group_join_url': group_join_url})
 
     def auth_params(self, state=None):
         params = super(GlobusOpenIdConnect, self).auth_params(state)
 
-        # If Globus sessions are enabled, force Globus login, and specify a required identity if already known
+        # If Globus sessions are enabled, force Globus login, and specify a
+        # required identity if already known
         if not self.setting('SESSIONS'):
             return params
         params['prompt'] = 'login'

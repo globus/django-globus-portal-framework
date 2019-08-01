@@ -147,9 +147,10 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:search',
     'urn:globus:auth:scope:transfer.api.globus.org:all',
     'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all',
-    # Add the group scope to be able to verify if a user is a member of a Globus
-    # group. To use the group scope, your Globus Auth Client ID has to be
-    # whitelisted. Please contact support@globus.org to whitelist your Client ID.
+    # Add the group scope to be able to verify if a user is a member of a
+    # Globus group. To use the group scope, your Globus Auth Client ID has to
+    # be whitelisted. Please contact support@globus.org to whitelist your
+    # Client ID.
     # 'urn:globus:auth:scope:nexus.api.globus.org:groups',
 ]
 
