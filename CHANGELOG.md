@@ -4,6 +4,17 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.5 - 2019-08-02
+
+- Fixed template highlighting for active tab on detail page
+- Fixed detail templates not properly displaying errors
+- Fixed handling of 404 and 500 pages and added builtin templates for each
+- Fixed non-index urls being treated as an index and raising errors
+    - This fixes the "favicon.ico is not an index" exception
+- Fixed a bug if the group set was not set as visible
+    - Added custom setting 'SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL'
+    - Custom setting can be used for private groups or a custom url
+
 ## 0.3.4 - 2019-07-15
 
 - Fixed possible error for users navigating to custom dgpf template views after logout
