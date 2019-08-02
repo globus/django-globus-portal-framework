@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from django.http.response import HttpResponseRedirect
 from django.utils.deprecation import MiddlewareMixin
 from django.urls import reverse
+from django.conf import settings
 from django.contrib import auth
 from social_core.exceptions import AuthForbidden
 
@@ -82,7 +83,14 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
         group.", change the group_join_url in the redirect below to one of you
         app paths that will show such an appropriate error message.
         """
+        jurl = getattr(settings, 'SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL', None)
+        if jurl:
+            return HttpResponseRedirect(jurl)
 
         group_join_url = kwargs.get('group_join_url')
         if group_join_url:
             return HttpResponseRedirect(group_join_url)
+
+        log.warning('Authenticating to a group failed due to group not being '
+                    'visible and settings.SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL '
+                    'not being set. You should reconfigure one of these.')
