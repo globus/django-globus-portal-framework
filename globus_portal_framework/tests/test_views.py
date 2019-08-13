@@ -1,3 +1,4 @@
+import sys
 from copy import deepcopy
 from unittest import mock
 from urllib.parse import quote_plus
@@ -18,13 +19,13 @@ from globus_portal_framework import (
 from globus_portal_framework.urls import (search_urlpatterns,
                                           urlpatterns as dgpf_urlpatterns)
 
+thismodule = sys.modules[__name__]
+
 
 SEARCH_INDEXES = {'myindex': {
     # Randomly generated and not real
     'uuid': '1e0be00f-8156-499e-980d-f7fb26157c02'
 }}
-
-urlpatterns = rebuild_index_urlpatterns(search_urlpatterns + dgpf_urlpatterns)
 
 
 MOCK_RFM = [
@@ -56,6 +57,12 @@ class SearchViewsTest(TestCase):
         self.subject_url = quote_plus('globus://{}/{}'.format(self.foo_ep,
                                                               'foo'))
         self.index = 'myindex'
+        # Setup tests so our urlpatterns contain the indexes in SEARCH_INDEXES
+        # defined above.
+        urlpatterns = rebuild_index_urlpatterns(
+            search_urlpatterns + dgpf_urlpatterns,
+            list(SEARCH_INDEXES.keys()))
+        setattr(thismodule, 'urlpatterns', urlpatterns)
 
     @mock.patch('globus_portal_framework.views.post_search')
     def test_index(self, post_search):

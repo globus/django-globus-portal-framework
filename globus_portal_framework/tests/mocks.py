@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import path, include
 from social_django.models import UserSocialAuth
+from globus_portal_framework.urls import register_custom_index
 import globus_sdk
 
 from globus_portal_framework.views import logout
@@ -85,16 +86,18 @@ def globus_client_is_loaded_with_authorizer(client):
                       globus_sdk.AccessTokenAuthorizer)
 
 
-def rebuild_index_urlpatterns(old_urlpatterns):
+def rebuild_index_urlpatterns(old_urlpatterns, indices):
     """
     This fixes pre-complied paths not matching new test paths. Since paths
     are compiled at import time, if you override settings with new
     SEARCH_INDEXES, your new search indexes won't have urls that match due to
-    the regexes already being compiled. The problem stems from IndexConverter
+    the regexes already being compiled. The problem stems from the UrlConverter
     containing explicit names of the SEARCH_INDEXES which don't handle change
     well. Use this function to rebuild the names to pick up on your test index
     names.
     :param old_urlpatterns: patterns you want to rebuild
+    :param indices: The list of new search indices you're using
+        Example: ['mytestindex', 'myothertestindex']
     :return: urlpatterns
     """
     urlpatterns = [
@@ -104,10 +107,14 @@ def rebuild_index_urlpatterns(old_urlpatterns):
         path('', include('django.contrib.auth.urls'))
     ]
 
+    register_custom_index('custom_index', indices)
+
     for url in old_urlpatterns:
         if '<index:index>' in str(url.pattern):
-            urlpatterns.append(path(str(url.pattern), url.callback,
-                                    name=url.name))
+            new_pattern = str(url.pattern).split('/')
+            new_pattern[0] = '<custom_index:index>'
+            new_pattern = '/'.join(new_pattern)
+            urlpatterns.append(path(new_pattern, url.callback, name=url.name))
         else:
             urlpatterns.append(url)
 
