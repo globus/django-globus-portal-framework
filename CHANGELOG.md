@@ -4,6 +4,11 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.6 - 2019-08-13
+
+- Added register_custom_index function to allow custom developer defined views
+- Fixed 'favicon.ico' being treated as an index in some cases for custom views
+
 ## 0.3.5 - 2019-08-02
 
 - Fixed template highlighting for active tab on detail page
