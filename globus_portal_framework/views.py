@@ -185,9 +185,12 @@ def detail_transfer(request, index, subject):
             if tapie.code == 'AuthenticationFailed' \
                     and tapie.message == 'Token is not active':
                 raise ExpiredGlobusToken()
-            if tapie.code not in ['EndpointPermissionDenied']:
-                log.error('Unexpected Error found during transfer request',
-                          tapie)
+            elif tapie.code == 'ClientError.NotFound':
+                context['detail_error'] = tapie
+                log.error('File not found: {}'.format(tapie.message))
+            elif tapie.code not in ['EndpointPermissionDenied']:
+                log.error('Unexpected Error found during transfer request'
+                          ''.format(tapie))
         except ValueError as ve:
             log.error(ve)
     return render(request,
