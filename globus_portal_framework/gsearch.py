@@ -3,6 +3,7 @@ import os
 import re
 import json
 import logging
+import math
 import collections
 from urllib.parse import quote_plus, unquote
 import globus_sdk
@@ -292,7 +293,7 @@ def get_pagination(total_results, offset,
     if total_results > per_page * get_setting('SEARCH_MAX_PAGES'):
         page_count = get_setting('SEARCH_MAX_PAGES')
     else:
-        page_count = total_results // per_page or 1
+        page_count = math.ceil(total_results / per_page) or 1
     pagination = [{'number': p + 1} for p in range(page_count)]
 
     return {
