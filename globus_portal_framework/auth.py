@@ -116,6 +116,8 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
             )
         except requests.exceptions.HTTPError:
             raise AuthForbidden(self, {})
+        from pprint import pprint
+        pprint(resp)
         identity_set_properties = resp.get('identity_set_properties')
         group_name = resp.get('name')
         group_join_url = self.GLOBUS_APP_URL + resp.get('join').get('url')
