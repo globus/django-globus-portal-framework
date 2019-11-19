@@ -127,7 +127,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
     # The middleware handles all globus related authentication exceptions.
     # Uncomment if using Globus sessions or/and Globus groups.
-    # 'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware',
+    'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware',
     # Redirect to auth page if expired tokens, then back to original page
     'globus_portal_framework.middleware.ExpiredTokenMiddleware',
 ]
@@ -147,21 +147,24 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:search',
     'urn:globus:auth:scope:transfer.api.globus.org:all',
     'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all',
-    # Add the group scope to be able to verify if a user is a member of a
-    # Globus group. To use the group scope, your Globus Auth Client ID has to
-    # be whitelisted. Please contact support@globus.org to whitelist your
-    # Client ID.
-    # 'urn:globus:auth:scope:nexus.api.globus.org:groups',
+    # Optional, only used if you want to restrict users to Globus Groups
+    'urn:globus:auth:scope:groups.api.globus.org:'
+        'view_my_groups_and_memberships'
 ]
 
 # Set to True to retrieve information about a user identity from the Globus
 # sessions instead of relying on a Globus OIDC userinfo endpoint.
-# SOCIAL_AUTH_GLOBUS_SESSIONS = False
+# NOTE! This is required for using SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS
+SOCIAL_AUTH_GLOBUS_SESSIONS = False
 
 # Set to a UUID of a Globus group if you want to restrict access to the portal
-# to members of the Globus group. You will also have to add the group scope
-# urn:globus:auth:scope:nexus.api.globus.org:groups to SOCIAL_AUTH_GLOBUS_SCOPE
-# SOCIAL_AUTH_GLOBUS_ALLOWED_GROUP = '<Globus_group_UUID>'
+# to members of the Globus group.
+# Required: The view_my_groups_and_memberships scope above
+# Recommended: Add to MIDDLEWARE the following:
+#     'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware'
+#     This redirects the user for expected exceptions, you need to handle these
+#     exceptions yourself if you don't add this.
+SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST = []
 
 # If the user is not a member of the above group, you can redirect them to the
 # URL listed below. Leaving this blank will redirect users to the Globus App

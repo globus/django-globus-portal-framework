@@ -38,9 +38,13 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
     Catch the social_core.exception.AuthForbidden exception raised in
     the globus backend. The exception is raised in two cases:
      - a user tried to log in using an identity that is not a member of an
-       allowed group (SOCIAL_AUTH_GLOBUS_ALLOWED_ GROUP) specified in
+       allowed group (SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS) specified in
        settings.py,
      - none of the user linked identities is a member of the group
+     If the user has one or more identities, a redirect is returned with the
+     valid identities and a user will be able to login with one of them. If
+     a user has no identities, a redirect will be returned to request access
+     via app.globus.org.
     """
 
     def process_exception(self, request, exception):
@@ -52,26 +56,24 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
             return
 
         kwargs = exception.args[0]
-        group_name = kwargs.get('group_name')
+        allowed_user_member_groups = kwargs.get('allowed_user_member_groups')
 
-        """
-        Redirect a user back to Glbous Auth if the user tried to log in using
-        an identity that is not a member of a group specified in settings.py
-        but one of the user linked identities is.
-        """
-
-        session_required_identities = kwargs.get('session_required_identities')
-        if session_required_identities:
+        # If the user has a valid linked identity, redirect back to Globus.
+        if allowed_user_member_groups:
+            req_ids = [g['identity_id'] for g in allowed_user_member_groups]
             strategy = exception.backend.strategy
             strategy.session_set(
                 'session_message',
-                '''To gain access you need to authenticate with your identity
-                with an active membership status in the {} group.
-                '''
-                .format(group_name)
+                'Your current account does not have sufficient access to this '
+                'resource, but one of your linked identities does. Please '
+                'login with one of those identities listed below.'
+                    .format([g['username']
+                             for g in allowed_user_member_groups])
             )
-            strategy.session_set('session_required_identities',
-                                 session_required_identities)
+            # strategy does not handle lists well, so we need to encode the
+            # list in a string before setting the variable.
+            req_ids_string = ','.join(req_ids)
+            strategy.session_set('session_required_identities', req_ids_string)
             return HttpResponseRedirect(reverse('social:begin',
                                                 kwargs={'backend': 'globus'}))
 
