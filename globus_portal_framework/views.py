@@ -1,4 +1,5 @@
 import logging
+import copy
 from urllib.parse import urlparse
 from collections import OrderedDict
 from json import dumps
@@ -9,7 +10,8 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout as django_logout
 
-from globus_portal_framework.gclients import revoke_globus_tokens
+from globus_portal_framework.gclients import (revoke_globus_tokens,
+                                              get_user_groups)
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework.gsearch import (get_search_query,
@@ -24,7 +26,10 @@ log = logging.getLogger(__name__)
 
 
 def index_selection(request):
-    context = {'search_indexes': get_setting('SEARCH_INDEXES')}
+    context = {
+        'search_indexes': get_setting('SEARCH_INDEXES'),
+        'groups_whitelist': get_setting('SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST')
+    }
     return render(request, 'index-selection.html', context)
 
 

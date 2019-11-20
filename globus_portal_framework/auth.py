@@ -91,8 +91,8 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
             return super(GlobusOpenIdConnect, self).auth_allowed(response,
                                                                  details)
 
-        groups_whitelist = self.setting('GROUPS_WHITELIST')
-        if not groups_whitelist:
+        whitelist_uuids = [g['uuid'] for g in self.setting('GROUPS_WHITELIST')]
+        if not whitelist_uuids:
             log.info('settings.SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST is not '
                      'set, all users are allowed.')
             return True
@@ -102,13 +102,13 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         user_groups = self.get_user_globus_groups(response.get('other_tokens'))
         # Fetch all groups where the user is a member.
         allowed_user_groups = [group for group in user_groups
-                               if group['id'] in groups_whitelist]
+                               if group['id'] in whitelist_uuids]
         allowed_user_member_groups = []
         for group in allowed_user_groups:
             gname, gid = group.get('name'), group['id']
             for membership in group['my_memberships']:
                 if identity_id == membership['identity_id']:
-                    log.info('User {} ({}) granted access to group {} ({})'
+                    log.info('User {} ({}) granted access via group {} ({})'
                              .format(username, identity_id, gname, gid))
                     return True
                 else:

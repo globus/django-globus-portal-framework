@@ -27,6 +27,17 @@
     </div>
     {% endif %}
 
+    {% if groups_whitelist %}
+    <div class="alert alert-warning border" role="alert">
+      <h3 class="text-center">Resources restricted to select users</h3>
+
+      <p class="text-center">You must be a group member before logging in. You can view groups and request access below.</p>
+      <p class="text-center">
+        <a class="btn btn-primary" href="{% url 'groups-whitelist' %}">View Groups and Request Access</a>
+      </p>
+    </div>
+    {% endif %}
+
     <h2 class="text-center card card-body">
       <a href="{% url 'search' index %}?q=*">{{index_data.name|default:index}}</a>
     </h2>

@@ -18,7 +18,8 @@ from django.contrib import admin
 from django.urls import path, include, register_converter
 from django.conf import settings
 from globus_portal_framework.views import (
-    search, index_selection, detail, detail_transfer, detail_preview, logout
+    search, index_selection, detail, detail_transfer, detail_preview, logout,
+    groups_whitelist
 )
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 from globus_portal_framework.exc import IndexNotFound
@@ -98,6 +99,7 @@ search_urlpatterns = [
     path('<index:index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
     path('<index:index>/detail/<subject>/', detail, name='detail'),
+    path('groups-whitelist/', groups_whitelist, name='groups-whitelist')
 ]
 
 urlpatterns = [

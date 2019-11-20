@@ -164,13 +164,12 @@ SOCIAL_AUTH_GLOBUS_SESSIONS = False
 #     'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware'
 #     This redirects the user for expected exceptions, you need to handle these
 #     exceptions yourself if you don't add this.
-SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST = []
-
-# If the user is not a member of the above group, you can redirect them to the
-# URL listed below. Leaving this blank will redirect users to the Globus App
-# Group join page. If this is black and the group is not visible to the public,
-# an AuthForbidden error will be raised instead.
-# SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL = ''
+SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST = [
+    {
+        'name': 'Portal Users Group',
+        'uuid': 'f63def4d-b472-11e9-af05-0a075bc69d14'
+    }
+]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_USE_SESSIONS = True
