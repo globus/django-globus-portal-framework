@@ -235,6 +235,32 @@ def logout(request, next='/'):
     return redirect(request.GET.get('next', next))
 
 
+def groups_whitelist(request):
+    """
+    The groups view shows a user a list of groups that can be used to request
+    access to the server, if using SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST.
+    SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST prevents access to authenticated
+    resources globally unless a user is within the whitelist.
+
+    Note: This is different than securing the visible_to field on Globus Search
+    records. Users may not even login unless they are in the whitelist. If a
+    user is whitelisted and able to login, they still may not be able to view
+    records in Globus Search if the Globus Search records are configured with
+    a different group on the records' visible_to.
+    """
+
+    context = {
+        'groups_whitelist':
+            copy.deepcopy(get_setting('SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST'))
+    }
+    if request.user.is_authenticated:
+        user_groups = {g['id']: g for g in get_user_groups(request.user)}
+        for group in context['groups_whitelist']:
+            if user_groups.get(group['uuid']):
+                group['is_member'] = True
+    return render(request, 'groups.html', context)
+
+
 def handler404(request, exception=None, template_name='404.html'):
     if exception:
         log.debug(exception)
