@@ -33,9 +33,11 @@
         </li>
       {% endfor %}
       </ul>
+      {% if not request.user.is_authenticated %}
       <p class="small">
-        If you are already a member of a group above, you can <a href="{% url 'social:begin' 'globus' %}">Login Now</a>
+        If you are already a member of a group above, you can <a href="{% url 'social:begin' 'globus' %}?next=/">Login Now</a>
       </p>
+      {% endif %}
     </div>
   </div>
 
