@@ -91,9 +91,9 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
             return super(GlobusOpenIdConnect, self).auth_allowed(response,
                                                                  details)
 
-        whitelist_uuids = [g['uuid'] for g in self.setting('GROUPS_WHITELIST')]
-        if not whitelist_uuids:
-            log.info('settings.SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST is not '
+        allowed_groups = [g['uuid'] for g in self.setting('ALLOWED_GROUPS')]
+        if not allowed_groups:
+            log.info('settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS is not '
                      'set, all users are allowed.')
             return True
 
@@ -102,7 +102,7 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         user_groups = self.get_user_globus_groups(response.get('other_tokens'))
         # Fetch all groups where the user is a member.
         allowed_user_groups = [group for group in user_groups
-                               if group['id'] in whitelist_uuids]
+                               if group['id'] in allowed_groups]
         allowed_user_member_groups = []
         for group in allowed_user_groups:
             gname, gid = group.get('name'), group['id']
@@ -124,7 +124,7 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
     def get_user_globus_groups(self, other_tokens):
         """
         Given the 'other_tokens' key provided by user details, fetch all
-        groups a user belongs. The API is PUBLIC, and no special whitelists
+        groups a user belongs. The API is PUBLIC, and no special allowlists
         are needed to use it.
         """
         groups_token = None

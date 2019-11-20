@@ -149,13 +149,13 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all',
     # Optional, only used if you want to restrict users to Globus Groups
     'urn:globus:auth:scope:groups.api.globus.org:'
-        'view_my_groups_and_memberships'
+    'view_my_groups_and_memberships'
 ]
 
 # Set to True to retrieve information about a user identity from the Globus
 # sessions instead of relying on a Globus OIDC userinfo endpoint.
 # NOTE! This is required for using SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS
-SOCIAL_AUTH_GLOBUS_SESSIONS = False
+SOCIAL_AUTH_GLOBUS_SESSIONS = True
 
 # Set to a UUID of a Globus group if you want to restrict access to the portal
 # to members of the Globus group.
@@ -164,7 +164,7 @@ SOCIAL_AUTH_GLOBUS_SESSIONS = False
 #     'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware'
 #     This redirects the user for expected exceptions, you need to handle these
 #     exceptions yourself if you don't add this.
-SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST = [
+SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
     {
         'name': 'Portal Users Group',
         'uuid': 'f63def4d-b472-11e9-af05-0a075bc69d14'

@@ -28,7 +28,7 @@ log = logging.getLogger(__name__)
 def index_selection(request):
     context = {
         'search_indexes': get_setting('SEARCH_INDEXES'),
-        'groups_whitelist': get_setting('SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST')
+        'allowed_groups': get_setting('SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS')
     }
     return render(request, 'index-selection.html', context)
 
@@ -235,27 +235,27 @@ def logout(request, next='/'):
     return redirect(request.GET.get('next', next))
 
 
-def groups_whitelist(request):
+def allowed_groups(request):
     """
     The groups view shows a user a list of groups that can be used to request
-    access to the server, if using SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST.
-    SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST prevents access to authenticated
-    resources globally unless a user is within the whitelist.
+    access to the server, if using SOCIAL_AUTH_GLOBUS_GROUPS_ALLOWED.
+    SOCIAL_AUTH_GLOBUS_GROUPS_ALLOWED prevents access to authenticated
+    resources globally unless a user is within the groups allowed.
 
     Note: This is different than securing the visible_to field on Globus Search
-    records. Users may not even login unless they are in the whitelist. If a
-    user is whitelisted and able to login, they still may not be able to view
+    records. Users may not even login unless they are in the allowlist. If a
+    user is allowlist and able to login, they still may not be able to view
     records in Globus Search if the Globus Search records are configured with
     a different group on the records' visible_to.
     """
 
     context = {
-        'groups_whitelist':
-            copy.deepcopy(get_setting('SOCIAL_AUTH_GLOBUS_GROUPS_WHITELIST'))
+        'allowed_groups':
+            copy.deepcopy(get_setting('SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS'))
     }
     if request.user.is_authenticated:
         user_groups = {g['id']: g for g in get_user_groups(request.user)}
-        for group in context['groups_whitelist']:
+        for group in context['allowed_groups']:
             if user_groups.get(group['uuid']):
                 group['is_member'] = True
     return render(request, 'groups.html', context)
