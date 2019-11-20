@@ -14,6 +14,7 @@
   </div>
 </div>
 
+{% block list_indexes %}
 {% for index, index_data in search_indexes.items %}
 <div class="row">
   <div class="col"></div>
@@ -27,6 +28,7 @@
     </div>
     {% endif %}
 
+    {% block allowed_groups %}
     {% if forloop.first and allowed_groups %}
     <div class="alert alert-warning border" role="alert">
       <h3 class="text-center">Resources restricted to select users</h3>
@@ -37,13 +39,17 @@
       </p>
     </div>
     {% endif %}
+    {% endblock %}
 
+    {% block index %}
     <h2 class="text-center card card-body">
       <a href="{% url 'search' index %}?q=*">{{index_data.name|default:index}}</a>
     </h2>
+    {% endblock %}
   </div>
   <div class="col"></div>
 </div>
 {% endfor %}
+{% endblock %}
 
 {% endblock %}

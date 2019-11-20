@@ -91,7 +91,8 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
             return super(GlobusOpenIdConnect, self).auth_allowed(response,
                                                                  details)
 
-        allowed_groups = [g['uuid'] for g in self.setting('ALLOWED_GROUPS')]
+        allowed_groups = [g['uuid']
+                          for g in self.setting('ALLOWED_GROUPS', [])]
         if not allowed_groups:
             log.info('settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS is not '
                      'set, all users are allowed.')
