@@ -165,10 +165,10 @@ SOCIAL_AUTH_GLOBUS_SESSIONS = True
 #     This redirects the user for expected exceptions, you need to handle these
 #     exceptions yourself if you don't add this.
 SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
-    {
-        'name': 'Portal Users Group',
-        'uuid': 'f63def4d-b472-11e9-af05-0a075bc69d14'
-    }
+    # {
+    #     'name': 'Portal Users Group',
+    #     'uuid': 'f63def4d-b472-11e9-af05-0a075bc69d14'
+    # }
 ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
