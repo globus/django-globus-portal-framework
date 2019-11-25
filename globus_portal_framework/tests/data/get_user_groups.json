@@ -1,0 +1,32 @@
+[{"enforce_session": false,
+  "group_type": "regular",
+  "id": "875fa6f6-b190-4780-b353-09262488aaab",
+  "my_memberships": [{
+        "group_id": "test-group-2-uuid",
+        "identity_id": "mal-ident-1-uuid",
+        "role": "manager",
+        "username": "mal@globusid.org"
+      }
+  ],
+  "name": "Test Group 1"},
+  {
+    "enforce_session": false,
+    "group_type": "regular",
+    "id": "test-group-2-uuid",
+    "my_memberships": [
+      {
+        "group_id": "test-group-2-uuid",
+        "identity_id": "mal-ident-1-uuid",
+        "role": "manager",
+        "username": "mal@globusid.org"
+      },
+      {
+        "group_id": "test-group-2-uuid",
+        "identity_id": "mal-ident-2-uuid",
+        "role": "member",
+        "username": "mal@anl.gov"
+      }
+    ],
+    "name": "Test Group 2"
+  }
+]

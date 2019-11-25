@@ -1,0 +1,55 @@
+{%extends "base.html"%}
+
+{% load static %}
+{% load index_template %}
+
+{%block title%}Request Groups Access{%endblock%}
+
+{%block body%}
+
+<div class="container">
+
+  <div class="mt-4">
+    {% index_template 'components/messages.html' as it_mess %}
+    {% include it_mess %}
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      You may request access to the following groups
+    </div>
+    <div class="card-body">
+      <ul>
+      {% block allowed_groups_list %}
+      {% for group in allowed_groups|dictsort:'name' %}
+        <li>
+          {{group.name}}
+          {% if group.is_member == True %}
+          {% block is_member_of_group %}
+          <a class="btn btn-success py-0" target="_blank"
+             href="https://app.globus.org/groups/{{group.uuid}}/about">You are a member</a>
+          {% endblock %}
+          {% else %}
+          {% block is_not_member_of_group %}
+          <a class="btn btn-primary py-0" target="_blank"
+             href="https://app.globus.org/groups/{{group.uuid}}/about">Request Access</a>
+          {% endblock %}
+          {% endif %}
+        </li>
+      {% empty %}
+        {% block no_group_configured %}
+        <li>No allowed groups configured, this portal does not restrict which users can login.</li>
+        {% endblock %}
+      {% endfor %}
+      {% endblock %}
+      </ul>
+      {% if not request.user.is_authenticated %}
+      <p class="small">
+        If you are already a member of a group above, you can <a href="{% url 'social:begin' 'globus' %}?next=/">Login Now</a>
+      </p>
+      {% endif %}
+    </div>
+  </div>
+
+  </div>
+{% endblock %}

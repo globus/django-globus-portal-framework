@@ -3,7 +3,6 @@ from urllib.parse import urlencode
 from django.http.response import HttpResponseRedirect
 from django.utils.deprecation import MiddlewareMixin
 from django.urls import reverse
-from django.conf import settings
 from django.contrib import auth
 from social_core.exceptions import AuthForbidden
 
@@ -38,9 +37,13 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
     Catch the social_core.exception.AuthForbidden exception raised in
     the globus backend. The exception is raised in two cases:
      - a user tried to log in using an identity that is not a member of an
-       allowed group (SOCIAL_AUTH_GLOBUS_ALLOWED_ GROUP) specified in
+       allowed group (SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS) specified in
        settings.py,
      - none of the user linked identities is a member of the group
+     If the user has one or more identities, a redirect is returned with the
+     valid identities and a user will be able to login with one of them. If
+     a user has no identities, a redirect will be returned to view a list
+     of groups to request access (groups-whitelist url)
     """
 
     def process_exception(self, request, exception):
@@ -52,45 +55,22 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
             return
 
         kwargs = exception.args[0]
-        group_name = kwargs.get('group_name')
+        allowed_user_member_groups = kwargs.get('allowed_user_member_groups')
+        if not allowed_user_member_groups:
+            return HttpResponseRedirect(reverse('allowed-groups'))
 
-        """
-        Redirect a user back to Glbous Auth if the user tried to log in using
-        an identity that is not a member of a group specified in settings.py
-        but one of the user linked identities is.
-        """
-
-        session_required_identities = kwargs.get('session_required_identities')
-        if session_required_identities:
-            strategy = exception.backend.strategy
-            strategy.session_set(
-                'session_message',
-                '''To gain access you need to authenticate with your identity
-                with an active membership status in the {} group.
-                '''
-                .format(group_name)
-            )
-            strategy.session_set('session_required_identities',
-                                 session_required_identities)
-            return HttpResponseRedirect(reverse('social:begin',
-                                                kwargs={'backend': 'globus'}))
-
-        """
-        Redirect a user to Globus App to join a group whose members have
-        access to the portal. If you would like to show an error message,e.g.
-        "You have to be a member of the {group_name} group to be able to access
-        the portal. <a href="{group_join_url}">Join</a> the {group_name}
-        group.", change the group_join_url in the redirect below to one of you
-        app paths that will show such an appropriate error message.
-        """
-        jurl = getattr(settings, 'SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL', None)
-        if jurl:
-            return HttpResponseRedirect(jurl)
-
-        group_join_url = kwargs.get('group_join_url')
-        if group_join_url:
-            return HttpResponseRedirect(group_join_url)
-
-        log.warning('Authenticating to a group failed due to group not being '
-                    'visible and settings.SOCIAL_AUTH_GLOBUS_GROUP_JOIN_URL '
-                    'not being set. You should reconfigure one of these.')
+        req_ids = [g['identity_id'] for g in allowed_user_member_groups]
+        strategy = exception.backend.strategy
+        strategy.session_set(
+            'session_message',
+            'Your current account does not have sufficient access to this '
+            'resource, but one of your linked identities does. Please '
+            'login with one of those identities listed below.'
+                .format([g['username'] for g in allowed_user_member_groups])
+        )
+        # strategy does not handle lists well, so we need to encode the
+        # list in a string before setting the variable.
+        req_ids_string = ','.join(req_ids)
+        strategy.session_set('session_required_identities', req_ids_string)
+        return HttpResponseRedirect(reverse('social:begin',
+                                            kwargs={'backend': 'globus'}))

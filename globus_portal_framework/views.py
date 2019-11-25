@@ -1,15 +1,18 @@
 import logging
+import copy
 from urllib.parse import urlparse
 from collections import OrderedDict
 from json import dumps
 import globus_sdk
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect, render_to_response
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout as django_logout
 
-from globus_portal_framework.gclients import revoke_globus_tokens
+from globus_portal_framework.gclients import (revoke_globus_tokens,
+                                              get_user_groups)
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework.gsearch import (get_search_query,
@@ -24,7 +27,11 @@ log = logging.getLogger(__name__)
 
 
 def index_selection(request):
-    context = {'search_indexes': get_setting('SEARCH_INDEXES')}
+    context = {
+        'search_indexes': get_setting('SEARCH_INDEXES'),
+        'allowed_groups': getattr(settings,
+                                  'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
+    }
     return render(request, 'index-selection.html', context)
 
 
@@ -228,6 +235,31 @@ def logout(request, next='/'):
         revoke_globus_tokens(request.user)
         django_logout(request)
     return redirect(request.GET.get('next', next))
+
+
+def allowed_groups(request):
+    """
+    The groups view shows a user a list of groups that can be used to request
+    access to the server, if using SOCIAL_AUTH_GLOBUS_GROUPS_ALLOWED.
+    SOCIAL_AUTH_GLOBUS_GROUPS_ALLOWED prevents access to authenticated
+    resources globally unless a user is within the groups allowed.
+
+    Note: This is different than securing the visible_to field on Globus Search
+    records. Users may not even login unless they are in the allowlist. If a
+    user is allowlist and able to login, they still may not be able to view
+    records in Globus Search if the Globus Search records are configured with
+    a different group on the records' visible_to.
+    """
+    # Get the local portal allowlist. If there isn't a setting on the local
+    # portal, don't restrict users. Copy the list so we can modify it.
+    portal_groups = getattr(settings, 'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
+    context = {'allowed_groups': copy.deepcopy(portal_groups)}
+    if request.user.is_authenticated:
+        user_groups = {g['id']: g for g in get_user_groups(request.user)}
+        for group in context['allowed_groups']:
+            if user_groups.get(group['uuid']):
+                group['is_member'] = True
+    return render(request, 'allowed-groups.html', context)
 
 
 def handler404(request, exception=None, template_name='404.html'):

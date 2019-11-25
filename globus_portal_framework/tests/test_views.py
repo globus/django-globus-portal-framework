@@ -193,3 +193,19 @@ class SearchViewsTest(TestCase):
         r = client.get(url)
         self.assertEqual(r.status_code, 302)
         self.assertTrue(revoke_globus_tokens.called)
+
+    @mock.patch('globus_portal_framework.gclients.get_user_groups')
+    def test_allowed_groups(self, get_user_groups):
+        r = self.c.get(reverse('allowed-groups'))
+        self.assertEqual(r.status_code, 200)
+        self.assertFalse(get_user_groups.called)
+
+    @mock.patch('requests.get')
+    def test_allowed_groups_with_user(self, rget):
+        # get user with public groups scope
+        client, user = get_logged_in_client('mal', ['04896e9e-b98e-437e-'
+                                                    'becd-8084b9e234a0'])
+        self.assertTrue(user.is_authenticated)
+        r = client.get(reverse('allowed-groups'))
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(rget.called)

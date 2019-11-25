@@ -43,7 +43,13 @@ class MockTransferClient(MockGlobusClient):
             raise exc
 
 
-def mock_user(username, tokens):
+def mock_tokens(resource_servers):
+    return [{'resource_server': token,
+             'access_token': 'foo', 'expires_in': TOKEN_EXPIRE_TIME
+             } for token in resource_servers]
+
+
+def mock_user(username, resource_servers):
     """
     Give a username and tokens and this will mock out python_social_auth
     with the given globus tokens.
@@ -57,10 +63,7 @@ def mock_user(username, tokens):
         'user': user,
         'provider': 'globus',
         'extra_data': {
-            'other_tokens': [{
-                'resource_server': token,
-                'access_token': 'foo', 'expires_in': TOKEN_EXPIRE_TIME
-            } for token in tokens],
+            'other_tokens': mock_tokens(resource_servers),
             'access_token': 'auth_access_token',
             'refresh_token': 'auth_refresh_token'
         }

@@ -1,3 +1,4 @@
+import requests
 from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
@@ -115,3 +116,12 @@ def load_transfer_client(user):
     load_client = get_default_client_loader()
     return load_client(user, globus_sdk.TransferClient,
                        'transfer.api.globus.org')
+
+
+def get_user_groups(user):
+    MY_GROUPS_URL = 'https://groups.api.globus.org/v2/groups/my_groups'
+    GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
+    token = load_globus_access_token(user, GROUPS_RS)
+    headers = {'Authorization': 'Bearer ' + token}
+    request = requests.get(MY_GROUPS_URL, headers=headers)
+    return request.json()

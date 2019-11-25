@@ -2,16 +2,22 @@
 Globus Auth OpenID Connect backend, docs at:
     https://docs.globus.org/api/auth
 """
-import requests
+import os
+import logging
 from social_core.backends.globus import (
     GlobusOpenIdConnect as GlobusOpenIdConnectBase
 )
 from social_core.exceptions import AuthForbidden
 
+log = logging.getLogger(__name__)
+
 
 class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
-    NEXUS_ENDPOINT = 'https://nexus.api.globusonline.org'
-    NEXUS_SCOPE = 'urn:globus:auth:scope:nexus.api.globus.org:groups'
+    GROUPS_ENDPOINT = 'https://groups.api.globus.org'
+    GROUPS_API_MY_GROUPS = 'v2/groups/my_groups'
+    GROUPS_RESOURCE_SERVER = '04896e9e-b98e-437e-becd-8084b9e234a0'
+    GROUPS_SCOPE = ('urn:globus:auth:scope:groups.api.globus.org:'
+                    'view_my_groups_and_memberships')
     GLOBUS_APP_URL = 'https://app.globus.org'
 
     def get_user_details(self, response):
@@ -85,58 +91,63 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
             return super(GlobusOpenIdConnect, self).auth_allowed(response,
                                                                  details)
 
-        allowed_group = self.setting('ALLOWED_GROUP')
-        if not allowed_group:
+        allowed_groups = [g['uuid']
+                          for g in self.setting('ALLOWED_GROUPS', [])]
+        if not allowed_groups:
+            log.info('settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS is not '
+                     'set, all users are allowed.')
             return True
 
         identity_id = details.get('identity_id')
+        username = details.get('username')
+        user_groups = self.get_user_globus_groups(response.get('other_tokens'))
+        # Fetch all groups where the user is a member.
+        allowed_user_groups = [group for group in user_groups
+                               if group['id'] in allowed_groups]
+        allowed_user_member_groups = []
+        for group in allowed_user_groups:
+            gname, gid = group.get('name'), group['id']
+            for membership in group['my_memberships']:
+                if identity_id == membership['identity_id']:
+                    log.info('User {} ({}) granted access via group {} ({})'
+                             .format(username, identity_id, gname, gid))
+                    return True
+                else:
+                    allowed_user_member_groups.append(membership)
+        log.debug('User {} ({}) is not a member of any allowed groups. '
+                  'However, they may be able to login with {}'.format(
+                      username, identity_id, allowed_user_member_groups)
+                  )
+        raise AuthForbidden(
+            self, {'allowed_user_member_groups': allowed_user_member_groups}
+        )
 
-        # Get a nexus access token
-        other_tokens = response.get('other_tokens')
-        nexus_token = None
+    def get_user_globus_groups(self, other_tokens):
+        """
+        Given the 'other_tokens' key provided by user details, fetch all
+        groups a user belongs. The API is PUBLIC, and no special allowlists
+        are needed to use it.
+        """
+        groups_token = None
         for item in other_tokens:
-            if item.get('scope') == self.NEXUS_SCOPE:
-                nexus_token = item.get('access_token')
+            if item.get('scope') == self.GROUPS_SCOPE:
+                groups_token = item.get('access_token')
 
-        if nexus_token is None:
+        if groups_token is None:
             raise ValueError(
                 'You must set the {} scope on {} in order to set an allowed '
                 'group'.format(
-                    'urn:globus:auth:scope:nexus.api.globus.org:groups',
+                    self.GROUPS_SCOPE,
                     'settings.SOCIAL_AUTH_GLOBUS_SCOPE',
                 )
             )
 
         # Get the allowed group
-        try:
-            resp = self.get_json(
-                self.NEXUS_ENDPOINT + '/groups/' + allowed_group,
-                method='GET',
-                headers={'Authorization': 'Bearer ' + nexus_token}
-            )
-        except requests.exceptions.HTTPError:
-            raise AuthForbidden(self, {})
-        identity_set_properties = resp.get('identity_set_properties')
-        group_name = resp.get('name')
-        group_join_url = self.GLOBUS_APP_URL + resp.get('join').get('url')
-
-        # Check if group membership status for the identity_id is active
-        identity_property = identity_set_properties.get(identity_id)
-        if identity_property.get('status') == 'active':
-            return True
-        # Find first identity id with active group membership status
-        for identity_id, identity_property in identity_set_properties.items():
-            if identity_property.get('status') == 'active':
-                raise AuthForbidden(
-                    self,
-                    {'group_name': group_name,
-                     'session_required_identities': identity_id}
-                )
-
-        # If none of the user identity ids is a member of the group, propose
-        # to join the group
-        raise AuthForbidden(
-            self, {'group_name': group_name, 'group_join_url': group_join_url})
+        return self.get_json(
+            os.path.join(self.GROUPS_ENDPOINT, self.GROUPS_API_MY_GROUPS),
+            method='GET',
+            headers={'Authorization': 'Bearer ' + groups_token}
+        )
 
     def auth_params(self, state=None):
         params = super(GlobusOpenIdConnect, self).auth_params(state)
