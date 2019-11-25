@@ -155,7 +155,7 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
 # Set to True to retrieve information about a user identity from the Globus
 # sessions instead of relying on a Globus OIDC userinfo endpoint.
 # NOTE! This is required for using SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS
-SOCIAL_AUTH_GLOBUS_SESSIONS = True
+# SOCIAL_AUTH_GLOBUS_SESSIONS = True
 
 # Set to a UUID of a Globus group if you want to restrict access to the portal
 # to members of the Globus group.
@@ -164,12 +164,12 @@ SOCIAL_AUTH_GLOBUS_SESSIONS = True
 #     'globus_portal_framework.middleware.GlobusAuthExceptionMiddleware'
 #     This redirects the user for expected exceptions, you need to handle these
 #     exceptions yourself if you don't add this.
-SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
-    # {
-    #     'name': 'Portal Users Group',
-    #     'uuid': 'f63def4d-b472-11e9-af05-0a075bc69d14'
-    # }
-]
+# SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
+#     {
+#         'name': 'Portal Users Group',
+#         'uuid': 'f63def4d-b472-11e9-af05-0a075bc69d14'
+#     }
+# ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 CSRF_USE_SESSIONS = True

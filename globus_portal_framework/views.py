@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from collections import OrderedDict
 from json import dumps
 import globus_sdk
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect, render_to_response
 from django.urls import reverse
@@ -28,7 +29,8 @@ log = logging.getLogger(__name__)
 def index_selection(request):
     context = {
         'search_indexes': get_setting('SEARCH_INDEXES'),
-        'allowed_groups': get_setting('SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS')
+        'allowed_groups': getattr(settings,
+                                  'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     }
     return render(request, 'index-selection.html', context)
 
@@ -248,11 +250,10 @@ def allowed_groups(request):
     records in Globus Search if the Globus Search records are configured with
     a different group on the records' visible_to.
     """
-
-    context = {
-        'allowed_groups':
-            copy.deepcopy(get_setting('SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS'))
-    }
+    # Get the local portal allowlist. If there isn't a setting on the local
+    # portal, don't restrict users. Copy the list so we can modify it.
+    portal_groups = getattr(settings, 'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
+    context = {'allowed_groups': copy.deepcopy(portal_groups)}
     if request.user.is_authenticated:
         user_groups = {g['id']: g for g in get_user_groups(request.user)}
         for group in context['allowed_groups']:
