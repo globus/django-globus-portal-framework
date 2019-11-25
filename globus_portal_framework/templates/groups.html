@@ -20,18 +20,28 @@
     </div>
     <div class="card-body">
       <ul>
+      {% block allowed_groups_list %}
       {% for group in allowed_groups|dictsort:'name' %}
         <li>
           {{group.name}}
           {% if group.is_member == True %}
+          {% block is_member_of_group %}
           <a class="btn btn-success py-0" target="_blank"
              href="https://app.globus.org/groups/{{group.uuid}}/about">You are a member</a>
+          {% endblock %}
           {% else %}
+          {% block is_not_member_of_group %}
           <a class="btn btn-primary py-0" target="_blank"
              href="https://app.globus.org/groups/{{group.uuid}}/about">Request Access</a>
+          {% endblock %}
           {% endif %}
         </li>
+      {% empty %}
+        {% block no_group_configured %}
+        <li>No allowed groups configured, this portal does not restrict which users can login.</li>
+        {% endblock %}
       {% endfor %}
+      {% endblock %}
       </ul>
       {% if not request.user.is_authenticated %}
       <p class="small">
