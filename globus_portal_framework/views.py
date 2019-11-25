@@ -258,7 +258,7 @@ def allowed_groups(request):
         for group in context['allowed_groups']:
             if user_groups.get(group['uuid']):
                 group['is_member'] = True
-    return render(request, 'groups.html', context)
+    return render(request, 'allowed-groups.html', context)
 
 
 def handler404(request, exception=None, template_name='404.html'):
