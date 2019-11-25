@@ -4,6 +4,12 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.7 - 2019-11-25
+
+- Added Globus Groups allowlist based on public Globus Groups API
+- Fixed error message when transfer page is used and file does not exist
+- Fixed last page in pagination getting cut off
+
 ## 0.3.6 - 2019-08-13
 
 - Added register_custom_index function to allow custom developer defined views
