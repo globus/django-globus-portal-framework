@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.urls import resolve, reverse, NoReverseMatch
+from django.urls import resolve, reverse, NoReverseMatch, Resolver404
 from globus_portal_framework import get_index, IndexNotFound
 
 
@@ -8,13 +8,17 @@ def globals(request):
     scopes = getattr(settings, 'SOCIAL_AUTH_GLOBUS_SCOPE', [])
     transfer_scope_set = any(['transfer.api.globus.org' in scope
                               for scope in scopes])
-    index = resolve(request.path).kwargs.get('index')
-    # Don't throw IndexNotFound exceptions here, they are hard to debug
-    try:
-        index_data = get_index(index)
-    except IndexNotFound:
-        index_data = {}
 
+    # Attempt to gather index information on the URL the user is visiting
+    # Suppress errors, in case the index isn't valid or registered
+    index, index_data = None, {}
+    try:
+        index = resolve(request.path).kwargs.get('index')
+        index_data = get_index(index)
+    except (IndexNotFound, Resolver404):
+        pass
+
+    # Report if search debugging is enabled so it can be linked in templates
     try:
         reverse('search-debug', args=[index])
         search_debugging_enabled = True
