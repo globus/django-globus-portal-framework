@@ -223,6 +223,12 @@ LOGGING = {
     },
 
     'loggers': {
+        'django': {
+            'handlers': ['stream'],
+            # 'handlers': ['null'],  # Quiet by default!
+            # 'propagate': False,
+            'level': 'WARNING',
+        },
         'django.db.backends': {
             'handlers': ['stream'],
             # 'handlers': ['null'],  # Quiet by default!
