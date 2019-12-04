@@ -6,7 +6,7 @@ from json import dumps
 import globus_sdk
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render, redirect, render_to_response
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout as django_logout
@@ -260,19 +260,3 @@ def allowed_groups(request):
             if user_groups.get(group['uuid']):
                 group['is_member'] = True
     return render(request, 'allowed-groups.html', context)
-
-
-def handler404(request, exception=None, template_name='404.html'):
-    if exception:
-        log.debug(exception)
-    response = render_to_response(template_name)
-    response.status_code = 404
-    return response
-
-
-def handler500(request, exception=None, template_name='500.html'):
-    if exception:
-        log.exception(exception)
-    response = render_to_response(template_name)
-    response.status_code = 500
-    return response
