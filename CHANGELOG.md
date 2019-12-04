@@ -4,6 +4,13 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.8 - 2019-12-04
+
+- Support Django 3.0, released Dec 2nd
+- Removed 404 and 500 handlers in favor of built-ins
+    - views were not removed from DGPF, but now call Django built-ins instead
+- Fixed bug in context processors with invalid index, resulting in 500s for 404s
+
 ## 0.3.7 - 2019-11-25
 
 - Added Globus Groups allowlist based on public Globus Groups API
