@@ -106,7 +106,7 @@ def helper_page_transfer(request, endpoint, path, helper_page_is_dest=True):
     if request.user.is_anonymous:
         raise ValueError('User must be logged in to transfer data.')
     if request.POST.get('folder[1]') or request.POST.get('file[0]'):
-        raise NotImplemented('Only zero or one folder is supported.')
+        raise NotImplementedError('Only zero or one folder is supported.')
 
     h_ep, h_path = request.POST.get('endpoint_id'), request.POST.get('path')
     os.path.join(h_path, request.POST.get('folder[0]', ''))
