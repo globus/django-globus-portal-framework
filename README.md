@@ -9,7 +9,7 @@ workflow.
 ## Requirements
 
 * Python 3.5 or higher
-* Django 2.0
+* Django 2.2, 3.0
 
 ## Quick-Start Guide
 
