@@ -6,9 +6,10 @@ from json import dumps
 import globus_sdk
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render, redirect, render_to_response
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
 
 from globus_portal_framework.gclients import (revoke_globus_tokens,
@@ -262,17 +263,15 @@ def allowed_groups(request):
     return render(request, 'allowed-groups.html', context)
 
 
-def handler404(request, exception=None, template_name='404.html'):
-    if exception:
-        log.debug(exception)
-    response = render_to_response(template_name)
-    response.status_code = 404
-    return response
+def handler404(*args, **kwargs):
+    log.warning('"globus_portal_framework.views.handler404" is deprecated and '
+                'will be removed in version 0.4.0. Please unset or use '
+                '"django.views.defaults.page_not_found" instead')
+    return page_not_found(*args, **kwargs)
 
 
-def handler500(request, exception=None, template_name='500.html'):
-    if exception:
-        log.exception(exception)
-    response = render_to_response(template_name)
-    response.status_code = 500
-    return response
+def handler500(*args, **kwargs):
+    log.warning('"globus_portal_framework.views.handler500" is deprecated and '
+                'will be removed in version 0.4.0. Please unset or use '
+                '"django.views.defaults.server_error" instead')
+    return server_error(*args, **kwargs)
