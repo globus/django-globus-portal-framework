@@ -14,8 +14,8 @@ from django.conf import settings
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound, exc
 from globus_portal_framework.constants import (
-    FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE, FILTER_MATCH_ALL,
-    FILTER_MATCH_ANY, FILTER_DATE_RANGES, FILTER_DEFAULT_RANGE_SEPARATOR,
+    FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE,
+    FILTER_DATE_RANGES, FILTER_DEFAULT_RANGE_SEPARATOR,
     FILTER_DATE_TYPE_PATTERN, DATETIME_PARTIAL_FORMATS,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
@@ -145,31 +145,70 @@ def get_search_filters(
 
 def parse_filters(filter_values, filter_type):
     """
-    Parse raw filters and return a list of parsed filter values. The resulting
-    parsed list will contain info for:s
+    Parse raw filters and return a list of parsed filter values. If the type
+    is a match type filter (MATCH_ANY or MATCH_ALL), no processing is done and
+    the list is simply returned. If the filter type is of type 'range', the
+    returned value will be a list of dicts with each dict containing 'from' and
+    'to' keys. 'range' type filters may be either date strings, ints or floats.
+    For filter types of a date interval ('year', 'month', 'day', 'hour',
+    'minute', 'second'), the date is parsed and a range is derived according to
+    the date interval passed in. The date filter given may be more exact than
+    the interval, but if the interval doesn't contain enough info for the
+    filter given (for example, searching on the 'month' for 2020), the value is
+    assumed to be the minimum incremental interval (for example, January 2020)
+    :param filter_values: A list of raw filter values. List values can be
+    strings, date strings, number ranges, or date ranges.
+    Valid examples:
+      ['application/x-hdf', 'image/png']
+      ['2019-10-25 16:43:00', '2019-10-25 16:43:00']
+      ['2019-10-25 16:43:00--2019-10-25 16:43:00']
+      ['1--100']
+    :param filter_type:
+      Filter type to match the corresponding filter values. Can be any value
+      in globus_portal_framework.constants.FILTER_TYPES, but must match the
+      type given.
+    Valid examples: FILTER_TYPES.RANGE, FILTER_TYPES.YEAR
+    :return: A list. If filter type is match-all or match-any, the list items
+    will be strings. If the filter type is a range or date interval, the list
+    items will be dicts with 'from' and 'to' keys.
     """
-    if filter_type in [FILTER_MATCH_ANY, FILTER_MATCH_ALL]:
-        return list(filter_values)
     if filter_type in FILTER_DATE_RANGES:
         # TODO: This is a SUPER hacky way to define the date intervals for
         # constructing a search. A better way would be to zero the amount of
         # time. That way we don't run into problems where dates bleed into one
         # another. For example a date facet 2019-12-20 will match yesterday if
         # yesterdays time was 11pm.
-        intervals = {
-            'day': datetime.timedelta(days=1),
-            'month': datetime.timedelta(days=29),
-            'year': datetime.timedelta(days=365)
-        }
-        date_pattern = DATETIME_PARTIAL_FORMATS.get(filter_type)
-        interval_val = intervals[filter_type]
-        return [{
-                'from': (parse_date_filter(dt)['datetime'] - interval_val)
-                .strftime(date_pattern),
-                'to': (parse_date_filter(dt)['datetime'] + interval_val)
-                .strftime(date_pattern)
-                } for dt in filter_values]
-    if filter_type == FILTER_RANGE:
+        dt_format_type = DATETIME_PARTIAL_FORMATS.get('day')
+        date_filters = []
+        for dt_str in filter_values:
+            dt = parse_date_filter(dt_str)['datetime']
+            # If filtering on a month or year, chop off the extra part of the
+            # datetime so we don't accidentally search on the previous month
+            # or next month
+            day = datetime.timedelta(days=1)
+            dt.replace(hour=0, minute=0, second=0)
+            if filter_type == 'day':
+                from_d, to_d = dt - day, dt + day
+            elif filter_type == 'month':
+                from_d = dt.replace(day=1)
+                inc_month = 1 if dt.month == 12 else dt.month + 1
+                inc_year = dt.year + 1 if inc_month == 1 else dt.year
+                to_d = from_d.replace(month=inc_month, year=inc_year) - day
+            elif filter_type == 'year':
+                dt = dt.replace(day=1, month=1)
+                year = datetime.timedelta(days=365)
+                from_d, to_d = dt, dt + year
+            else:
+                raise Exception('Invalid date type')
+
+            log.debug('Filtering from {} to {}'.format(from_d, to_d))
+            date_filters.append({
+                'from': from_d.strftime(dt_format_type),
+                'to': to_d.strftime(dt_format_type)
+            })
+            log.debug(date_filters[-1])
+        return date_filters
+    elif filter_type == FILTER_RANGE:
         parsed_filters = []
         for v in filter_values:
             try:
@@ -183,6 +222,8 @@ def parse_filters(filter_values, filter_type):
                 log.exception(e)
                 continue
         return parsed_filters
+    else:
+        return list(filter_values)
 
 
 def get_search_filter_query_key(field_name,
