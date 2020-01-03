@@ -639,7 +639,7 @@ def get_facets(search_result, portal_defined_facets, filters,
             if filter_type in FILTER_DATE_RANGES:
                 buck_dt = parse_date_filter(bucket['value'])['datetime']
                 checked = any([
-                    buck_dt > afilter['from'] and buck_dt < afilter['to']
+                    buck_dt >= afilter['from'] and buck_dt < afilter['to']
                     for afilter in active_filter_vals
                 ])
             else:
