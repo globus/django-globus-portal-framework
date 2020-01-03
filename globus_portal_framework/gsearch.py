@@ -576,7 +576,7 @@ def get_field_facet_filter_types(facet_definitions, default_terms=None):
 
 
 def get_facets(search_result, portal_defined_facets, filters,
-               filters_types=None):
+               filter_match=None):
     """Prepare facets for display. Globus Search data is removed from results
     and the results are ordered according to the facet map. Empty categories
     are removed and any filters the user checked are tracked.
@@ -589,8 +589,8 @@ def get_facets(search_result, portal_defined_facets, filters,
     portal's defined facets. Since a search has already happened by this point,
     `filters` only determines the look of the page (which box is checked) and
     generates the query-params for the user's next possible search.
-    :param filter_match: Filtering behavior for next query. 'match-all', or
-    'match-any'.
+    :param filter_match: Deprecated. Please set filtering behavior in the
+    facet definition.
 
     :return: A list of facets. An example is here:
         [
@@ -612,6 +612,12 @@ def get_facets(search_result, portal_defined_facets, filters,
         ]
 
       """
+    if filter_match:
+        log.warning('The "filter_match" parameter in '
+                    'globus_portal_framework.gsearch.get_facets is deprecated '
+                    'and will be removed in 0.4. filter_match can now be '
+                    'specified in the facet definition instead.')
+
     filter_types = get_field_facet_filter_types(portal_defined_facets)
     active_filters = {filter['field_name']: filter for filter in filters}
     facets = search_result.data.get('facet_results', [])
