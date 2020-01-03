@@ -17,6 +17,9 @@ from globus_portal_framework.constants import (
     FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE,
     FILTER_DATE_RANGES, FILTER_DEFAULT_RANGE_SEPARATOR,
     FILTER_DATE_TYPE_PATTERN, DATETIME_PARTIAL_FORMATS,
+
+    FILTER_YEAR, FILTER_MONTH, FILTER_DAY, FILTER_HOUR, FILTER_MINUTE,
+    FILTER_SECOND,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -135,12 +138,63 @@ def get_search_filters(
                          FILTER_TYPES.get(filter_match_default)),
                 'values': parse_filters(request.GET.getlist(key), filter_type)
             })
-
-    # Need to do post processing on facets
-    # Filters need to know the resolution of the facet filter
-
-    # Facets need to know the range of filtering being used
     return filters
+
+
+def get_date_range_for_date(date_str, interval):
+    """
+    Given a date string, parse it and derive a range based on the given
+    interval. The interval is inclusive on the lower end, and exclusve on the
+    higher end. For example, given a date str of 2019-03-10 and a 'month'
+    interval, this will return a range of 2019-03-01 -- 2019-03-31.
+    :param date_str: Any ISO date or partial date. 2019, 2019-03,
+    2019-03-01, 2019-12-18 21:00:00
+    :param interval: Any interval defined in
+    globus_portal_framework.constants.FILTER_DATE_RANGES. Examples include:
+    'year', 'month', 'day', 'hour'
+    :return:
+    A date range dict. Example:
+    {
+      'from': '2019-12-18 21:00:00'
+      'to': '2019-12-18 21:00:01'
+    }
+    """
+    dt = parse_date_filter(date_str)['datetime']
+    # If filtering on a month or year, chop off the extra part of the
+    # datetime so we don't accidentally search on the previous month
+    # or next month
+    day = datetime.timedelta(days=1)
+    if interval == FILTER_SECOND:
+        second = datetime.timedelta(seconds=1)
+        from_d, to_d = dt - second, dt + second
+    elif interval == FILTER_MINUTE:
+        from_d = dt.replace(second=0)
+        to_d = from_d + datetime.timedelta(seconds=59)
+    elif interval == FILTER_HOUR:
+        from_d = dt.replace(minute=0, second=0)
+        to_d = from_d + datetime.timedelta(minutes=59)
+    elif interval == FILTER_DAY:
+        dt = dt.replace(hour=0, minute=0, second=0)
+        from_d, to_d = dt - day, dt + day
+    elif interval == FILTER_MONTH:
+        from_d = dt.replace(day=1, hour=0, minute=0, second=0)
+        inc_month = 1 if dt.month == 12 else dt.month + 1
+        inc_year = dt.year + 1 if inc_month == 1 else dt.year
+        to_d = from_d.replace(month=inc_month, year=inc_year) - day
+    elif interval == FILTER_YEAR:
+        dt = dt.replace(day=1, month=1, hour=0, minute=0, second=0)
+        year = datetime.timedelta(days=365)
+        from_d, to_d = dt, dt + year
+    else:
+        raise exc.GlobusPortalException('Invalid date type {}'
+                                        ''.format(interval))
+    # Globus search can handle any time format, so using the most precise will
+    # work every time.
+    dt_format_type = DATETIME_PARTIAL_FORMATS['time']
+    return {
+        'from': from_d.strftime(dt_format_type),
+        'to': to_d.strftime(dt_format_type)
+    }
 
 
 def parse_filters(filter_values, filter_type):
@@ -173,41 +227,8 @@ def parse_filters(filter_values, filter_type):
     items will be dicts with 'from' and 'to' keys.
     """
     if filter_type in FILTER_DATE_RANGES:
-        # TODO: This is a SUPER hacky way to define the date intervals for
-        # constructing a search. A better way would be to zero the amount of
-        # time. That way we don't run into problems where dates bleed into one
-        # another. For example a date facet 2019-12-20 will match yesterday if
-        # yesterdays time was 11pm.
-        dt_format_type = DATETIME_PARTIAL_FORMATS.get('day')
-        date_filters = []
-        for dt_str in filter_values:
-            dt = parse_date_filter(dt_str)['datetime']
-            # If filtering on a month or year, chop off the extra part of the
-            # datetime so we don't accidentally search on the previous month
-            # or next month
-            day = datetime.timedelta(days=1)
-            dt.replace(hour=0, minute=0, second=0)
-            if filter_type == 'day':
-                from_d, to_d = dt - day, dt + day
-            elif filter_type == 'month':
-                from_d = dt.replace(day=1)
-                inc_month = 1 if dt.month == 12 else dt.month + 1
-                inc_year = dt.year + 1 if inc_month == 1 else dt.year
-                to_d = from_d.replace(month=inc_month, year=inc_year) - day
-            elif filter_type == 'year':
-                dt = dt.replace(day=1, month=1)
-                year = datetime.timedelta(days=365)
-                from_d, to_d = dt, dt + year
-            else:
-                raise Exception('Invalid date type')
-
-            log.debug('Filtering from {} to {}'.format(from_d, to_d))
-            date_filters.append({
-                'from': from_d.strftime(dt_format_type),
-                'to': to_d.strftime(dt_format_type)
-            })
-            log.debug(date_filters[-1])
-        return date_filters
+        return [get_date_range_for_date(date_str, filter_type)
+                for date_str in filter_values]
     elif filter_type == FILTER_RANGE:
         parsed_filters = []
         for v in filter_values:

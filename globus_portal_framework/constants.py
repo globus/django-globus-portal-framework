@@ -7,6 +7,9 @@ FILTER_RANGE = 'range'
 FILTER_YEAR = 'year'
 FILTER_MONTH = 'month'
 FILTER_DAY = 'day'
+FILTER_HOUR = 'hour'
+FILTER_MINUTE = 'minute'
+FILTER_SECOND = 'second'
 FILTER_DEFAULT_RANGE_SEPARATOR = '--'
 FILTER_PREFIX = 'filter'
 FILTER_TYPES = {
@@ -16,11 +19,17 @@ FILTER_TYPES = {
     FILTER_YEAR: 'range',
     FILTER_MONTH: 'range',
     FILTER_DAY: 'range',
+    FILTER_HOUR: 'range',
+    FILTER_MINUTE: 'range',
+    FILTER_SECOND: 'range',
 }
 FILTER_DATE_RANGES = [
     FILTER_YEAR,
     FILTER_MONTH,
     FILTER_DAY,
+    FILTER_HOUR,
+    FILTER_MINUTE,
+    FILTER_SECOND,
 ]
 # Precompile the RE for detecting the filter type.
 __f_types = '|'.join(FILTER_TYPES.keys())
