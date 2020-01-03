@@ -582,33 +582,42 @@ def get_facets(search_result, portal_defined_facets, filters,
     cleaned_facets = []
     for f in portal_defined_facets:
         buckets = pruned_facets.get(f['name'])
-        if buckets:
-            facet = {'name': f['name'], 'buckets': []}
-            actv_filter = active_filters.get(f['field_name'], {})
-            for bucket in buckets:
-                filter_type = filter_types[f['field_name']]
-                query_key = get_search_filter_query_key(f['field_name'],
-                                                        filter_type)
-                if filter_type == FILTER_RANGE:
-                    bucket_vals = serialize_gsearch_range(bucket['value'])
-                else:
-                    bucket_vals = bucket['value']
+        if not buckets:
+            continue
 
-                if filter_type in FILTER_DATE_RANGES:
-                    active_date_vals = [
-                        resolve_date_facet_value_from_range(v, filter_type)
-                        for v in actv_filter.get('values', [])
-                    ]
-                    checked = bucket['value'] in active_date_vals
-                else:
-                    checked = bucket['value'] in actv_filter.get('values', [])
-                facet['buckets'].append({
-                    'count': bucket['count'],
-                    'field_name': f['field_name'],
-                    'filter_type': filter_type,
-                    'search_filter_query_key': query_key,
-                    'checked': checked,
-                    'value': bucket_vals,
-                })
-            cleaned_facets.append(facet)
+        filter_type = filter_types[f['field_name']]
+        facet = {'name': f['name'], 'buckets': []}
+        active_filter = active_filters.get(f['field_name'], {})
+        if filter_type in FILTER_DATE_RANGES:
+            active_filter_vals = [{
+                'from': parse_date_filter(d['from'])['datetime'],
+                'to': parse_date_filter(d['to'])['datetime']
+            } for d in active_filter.get('values', [])]
+        else:
+            active_filter_vals = active_filter.get('values', [])
+        for bucket in buckets:
+            query_key = get_search_filter_query_key(f['field_name'],
+                                                    filter_type)
+            if filter_type == FILTER_RANGE:
+                bucket_vals = serialize_gsearch_range(bucket['value'])
+            else:
+                bucket_vals = bucket['value']
+
+            if filter_type in FILTER_DATE_RANGES:
+                buck_dt = parse_date_filter(bucket['value'])['datetime']
+                checked = any([
+                    buck_dt > afilter['from'] and buck_dt < afilter['to']
+                    for afilter in active_filter_vals
+                ])
+            else:
+                checked = bucket['value'] in active_filter_vals
+            facet['buckets'].append({
+                'count': bucket['count'],
+                'field_name': f['field_name'],
+                'filter_type': filter_type,
+                'search_filter_query_key': query_key,
+                'checked': checked,
+                'value': bucket_vals,
+            })
+        cleaned_facets.append(facet)
     return cleaned_facets
