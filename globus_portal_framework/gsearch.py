@@ -521,22 +521,6 @@ def get_field_facet_filter_types(facet_definitions, default_terms=None):
     return field_types
 
 
-def resolve_date_facet_value_from_range(date_range, date_interval):
-    """
-    Resolve a date range into a single string formatted date according to the
-    date_interval.
-
-    :param date_range:
-    :param date_interval:
-    :return:
-    """
-    dt_from = parse_date_filter(date_range['from'])['datetime']
-    dt_to = parse_date_filter(date_range['to'])['datetime']
-    dt_middle = dt_from + (dt_to - dt_from) / 2
-    date_pattern = DATETIME_PARTIAL_FORMATS.get(date_interval)
-    return dt_middle.strftime(date_pattern)
-
-
 def get_facets(search_result, portal_defined_facets, filters,
                filters_types=None):
     """Prepare facets for display. Globus Search data is removed from results
