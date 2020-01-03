@@ -420,6 +420,20 @@ def serialize_gsearch_range(gsearch_range):
 
 
 def get_date_format_type(date_str):
+    """
+    Given a date_str, derive the date information contained within the date_str
+    The return value is based on the following map:
+    'year': 'YYYY'
+    'month': 'YYYY-MM'
+    'day': 'YYYY-MM-DD'
+    'time': 'YYYY-MM-DD hh:mm:ss'
+    and will return 'year', 'month', 'day' or 'time'
+
+    Examples:
+        '2019' will return 'day'
+        '2018-01-20 12:30:34' will return 'time'
+    If you want a parsed datetime object, see 'parse_date_filter()' instead.
+    """
     match = filter_date_matcher.match(date_str)
     if not match:
         return None
@@ -442,6 +456,20 @@ def get_date_format_type(date_str):
 
 
 def parse_date_filter(serialized_date):
+    """
+    Given a serialized_date (ex: '2019-12-02'), return a dict containing
+    the following info:
+    {
+      'value': serialized_date,
+      'type': 'day',
+      'datetime': <datetime.datetime object>
+    }
+    The date string given can match any date string format types handled by
+    get_date_format_type()
+    :param serialized_date: a date string, ex: '2019-12-02'
+    :return: A dict containing the date string given, whether the date is a
+    year, month, day or time type date, and a datetime object.
+    """
     dt_fmt_type = get_date_format_type(serialized_date)
     dt_fmt_str = DATETIME_PARTIAL_FORMATS.get(dt_fmt_type)
     if dt_fmt_str:
