@@ -119,10 +119,15 @@ def get_search_filters(
         * filter-match-all.<field_name>
         * filter-match-any.<field_name>
         * filter-range.<field_name>
+        * filter-year.<field_name>
+        * filter-month.<field_name>
+        * filter-day.<field_name>
+        * filter-hour.<field_name>
+        * filter-minute.<field_name>
+        * filter-second.<field_name>
 
     `filter.` will fall back on a match default defined in settings.
     `filter_match_default` can be "match-any" or "match-all"
-
     """
     filters = []
     for key in request.GET.keys():
