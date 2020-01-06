@@ -113,8 +113,8 @@ def get_search_query(request):
 
 def get_search_filters(
         request,
-        filter_match_default=get_setting('DEFAULT_FILTER_MATCH'),
-        index=None):
+        filter_match_default=get_setting('DEFAULT_FILTER_MATCH')
+        ):
     """Given a request, fetch all query params for filters and return a list
     that can be sent to Globus Search. Filter types are
     parsed from the following keys:
