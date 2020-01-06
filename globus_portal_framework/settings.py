@@ -30,48 +30,37 @@ def get_rfm(search_result):
 
 
 SEARCH_INDEXES = {
-    'xpcs': {
+    'perfdata': {
         'name': 'Performance Data',
-        'uuid': '6871e83e-866b-41bc-8430-e3cf83b43bdc',
+        'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
         'fields': [
-            # 'perfdata',
-            # ('remote_file_manifest', get_rfm),
-            # ('globus_http_endpoint',
-            #  lambda x: 'b4eab318-fc86-11e7-a5a9-0a448319c2f8.petrel.host'),
-            # ('globus_http_scope', lambda x: 'petrel_https_server'),
-            # ('globus_http_path',
-            #  lambda x: x[0]['remote_file_manifest']['url'].split(':')[2]),
+            'perfdata',
+            ('remote_file_manifest', get_rfm),
+            ('globus_http_endpoint',
+             lambda x: 'b4eab318-fc86-11e7-a5a9-0a448319c2f8.petrel.host'),
+            ('globus_http_scope', lambda x: 'petrel_https_server'),
+            ('globus_http_path',
+             lambda x: x[0]['remote_file_manifest']['url'].split(':')[2]),
+
         ],
         'facets': [
             {
                 'name': 'Subject',
-                'field_name': 'dc.publication_year',
+                'field_name': 'perfdata.subjects.value',
                 'size': 10,
-                'type': 'terms',
-                'filter_type': 'match-all'
+                'type': 'terms'
             },
-            # {
-            #     'name': 'Publication Year',
-            #     'field_name': 'perfdata.publication_year.value',
-            # },
-            # {
-            #     'name': 'File Size (Bytes)',
-            #     'type': 'numeric_histogram',
-            #     'field_name': 'remote_file_manifest.length',
-            #     'size': 10,
-            #     'histogram_range': {'low': 15000, 'high': 30000},
-            # },
             {
-                'name': 'Dates',
-                'type': 'date_histogram',
-                'field_name': 'dc.dates.date',
-                'date_interval': 'day',
-                "histogram_range": {
-                    "low": "2000-01-01",
-                    "high": "2020-01-01"
-                },
-                'size': 10,
+                'name': 'Publication Year',
+                'field_name': 'perfdata.publication_year.value',
             },
+            {
+                'name': 'File Size (Bytes)',
+                'type': 'numeric_histogram',
+                'field_name': 'remote_file_manifest.length',
+                'size': 10,
+                'histogram_range': {'low': 15000, 'high': 30000},
+            }
         ],
         'filter_match': 'match-all',
         'template_override_dir': 'perfdata',
@@ -238,7 +227,7 @@ LOGGING = {
             'handlers': ['stream'],
             # 'handlers': ['null'],  # Quiet by default!
             # 'propagate': False,
-            'level': 'INFO',
+            'level': 'WARNING',
         },
         'django.db.backends': {
             'handlers': ['stream'],
