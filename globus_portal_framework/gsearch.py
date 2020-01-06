@@ -20,6 +20,8 @@ from globus_portal_framework.constants import (
 
     FILTER_YEAR, FILTER_MONTH, FILTER_DAY, FILTER_HOUR, FILTER_MINUTE,
     FILTER_SECOND,
+
+    VALID_SEARCH_FACET_KEYS
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -268,15 +270,23 @@ def get_search_filter_query_key(field_name,
 
 
 def prepare_search_facets(facets):
+    """Prepare a list of facets to be sent to Globus Search. Globus Portal
+    Framework defines some settings in the 'facets' section which are not
+    valid search fields. This both strips invalid fields, and adds sensible
+    defaults if required info is missing."""
+    cleaned_facets = []
     for facet in facets:
         if not isinstance(facet, dict):
             raise ValueError('Each facet must be of type "dict"')
-        if not facet.get('field_name'):
+        cfacet = {k: v for k, v in facet.items()
+                  if k in VALID_SEARCH_FACET_KEYS}
+        if not cfacet.get('field_name'):
             raise ValueError('Each facet must define at minimum "field_name"')
-        facet['name'] = facet.get('name', facet['field_name'])
-        facet['type'] = facet.get('type', 'terms')
-        facet['size'] = facet.get('size', 10)
-    return facets
+        cfacet['name'] = cfacet.get('name', cfacet['field_name'])
+        cfacet['type'] = cfacet.get('type', 'terms')
+        cfacet['size'] = cfacet.get('size', 10)
+        cleaned_facets.append(cfacet)
+    return cleaned_facets
 
 
 def get_template(index, base_template):

@@ -49,3 +49,7 @@ DATETIME_PARTIAL_FORMATS = {
     'day': '%Y-%m-%d',
     'time': '%Y-%m-%d %H:%M:%S'
 }
+
+VALID_SEARCH_FACET_KEYS = [
+    'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval'
+]
