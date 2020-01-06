@@ -223,7 +223,7 @@ class SearchUtilsTest(TestCase):
                 'field_name': 'foo',
                 'type': 'range',
                 'values': [{'from': '2018-02-27 23:00:00',
-                            'to': '2018-02-27 23:59:00'}]}]
+                            'to': '2018-02-27 23:59:59'}]}]
              ),
             ('/?q=*&page=1&filter-minute.foo=2018-03-28+23:31:07', [{
                 'field_name': 'foo',
