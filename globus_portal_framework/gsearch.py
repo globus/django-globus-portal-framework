@@ -471,6 +471,7 @@ def get_date_format_type(date_str):
         '2018-01-20 12:30:34' will return 'time'
     If you want a parsed datetime object, see 'parse_date_filter()' instead.
     """
+    date_str = str(date_str)
     match = filter_date_matcher.match(date_str)
     if not match:
         return None
@@ -503,17 +504,19 @@ def parse_date_filter(serialized_date):
     :return: A dict containing the date string given, whether the date is a
     year, month, day or time type date, and a datetime object.
     """
-    dt_fmt_type = get_date_format_type(serialized_date)
+    # coerce date into str, in case the date was pased as a number, eg 2020
+    sdate = str(serialized_date)
+    dt_fmt_type = get_date_format_type(sdate)
     dt_fmt_str = DATETIME_PARTIAL_FORMATS.get(dt_fmt_type)
     if dt_fmt_str:
         return {
             'value': serialized_date,
             'type': dt_fmt_type,
-            'datetime': datetime.datetime.strptime(serialized_date, dt_fmt_str)
+            'datetime': datetime.datetime.strptime(sdate, dt_fmt_str)
         }
     raise exc.InvalidRangeFilter(code='FilterParseError',
                                  message='Unable to parse {}'
-                                         ''.format(serialized_date))
+                                         ''.format(sdate))
 
 
 def parse_range_filter_bounds(range_filter):
