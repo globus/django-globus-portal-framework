@@ -94,7 +94,8 @@ def post_search(index, query, filters, user=None, page=1):
         else:
             error = etext.format('Globus Portal Framework', dgpf)
         full_error = '{}Index ID: {}\nAuthenticated? {}\nParams: \n{}'.format(
-            error, index_data['uuid'], user.is_authenticated,
+            error, index_data['uuid'],
+            user.is_authenticated if user else False,
             json.dumps(search_data, indent=2)
         )
         log.error(full_error)
