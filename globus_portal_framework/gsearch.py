@@ -562,23 +562,25 @@ def deserialize_gsearch_range(serialized_filter_range):
 
 
 def get_field_facet_filter_types(facet_definitions, default_terms=None):
-    cleaned_facets = prepare_search_facets(facet_definitions)
+    """Build a map of a list of facet definitions of 'field_name' mapped
+    to 'filter_type'. """
     field_types = {}
-    for facet in cleaned_facets:
+    for facet in facet_definitions:
+        ftype = facet.get('type', 'terms')
         field = facet['field_name']
-        if facet['type'] == 'terms':
+        if ftype == 'terms':
             field_types[field] = (
                 facet.get('filter_type') or
                 default_terms or
                 get_setting('DEFAULT_FILTER_MATCH')
             )
-        elif facet['type'] == 'numeric_histogram':
+        elif ftype == 'numeric_histogram':
             field_types[field] = FILTER_RANGE
-        elif facet['type'] == 'date_histogram':
+        elif ftype == 'date_histogram':
             field_types[field] = (facet.get('filter_type') or
                                   facet['date_interval'])
         else:
-            raise ValueError('Unknown filter type: {}'.format(facet['type']))
+            raise ValueError('Unknown filter type: {}'.format(ftype))
     return field_types
 
 
