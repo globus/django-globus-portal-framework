@@ -14,7 +14,18 @@
                     checked
                     {% endif %}
             >
-            {{field.value}}<span style="float: right">({{field.count}})</span>
+            {% if field.filter_type == 'year' %}
+            {{field.datetime|date:'Y'}}
+            {% elif field.filter_type == 'month' %}
+            {{field.datetime|date:'F Y'}}
+            {% elif field.filter_type == 'day' %}
+            {{field.datetime|date:'M d Y'}}
+            {% elif field.filter_type in 'hour minute second' %}
+            {{field.datetime|date:'M d Y H:i:s T'}}
+            {% else %}
+            {{field.value}}
+            {% endif %}
+            <span style="float: right">({{field.count}})</span>
         </div>
         {% endfor %}
     </div>
