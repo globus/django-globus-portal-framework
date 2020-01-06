@@ -624,13 +624,8 @@ def get_facets(search_result, portal_defined_facets, filters,
         ]
 
       """
-    if filter_match:
-        log.warning('The "filter_match" parameter in '
-                    'globus_portal_framework.gsearch.get_facets is deprecated '
-                    'and will be removed in 0.4. filter_match can now be '
-                    'specified in the facet definition instead.')
-
-    filter_types = get_field_facet_filter_types(portal_defined_facets)
+    filter_types = get_field_facet_filter_types(portal_defined_facets,
+                                                default_terms=filter_match)
     active_filters = {filter['field_name']: filter for filter in filters}
     facets = search_result.data.get('facet_results', [])
     # Remove facets without buckets so we don't display empty fields
@@ -667,13 +662,17 @@ def get_facets(search_result, portal_defined_facets, filters,
                 ])
             else:
                 checked = bucket['value'] in active_filter_vals
-            facet['buckets'].append({
+                buck_dt = None
+            new_facet = {
                 'count': bucket['count'],
                 'field_name': f['field_name'],
                 'filter_type': filter_type,
                 'search_filter_query_key': query_key,
                 'checked': checked,
                 'value': bucket_vals,
-            })
+            }
+            if buck_dt:
+                new_facet['datetime'] = buck_dt
+            facet['buckets'].append(new_facet)
         cleaned_facets.append(facet)
     return cleaned_facets
