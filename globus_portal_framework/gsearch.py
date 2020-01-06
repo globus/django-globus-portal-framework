@@ -180,7 +180,7 @@ def get_date_range_for_date(date_str, interval):
         to_d = from_d + datetime.timedelta(seconds=59)
     elif interval == FILTER_HOUR:
         from_d = dt.replace(minute=0, second=0)
-        to_d = from_d + datetime.timedelta(minutes=59)
+        to_d = from_d + datetime.timedelta(minutes=59, seconds=59)
     elif interval == FILTER_DAY:
         dt = dt.replace(hour=0, minute=0, second=0)
         from_d, to_d = dt, dt + day
