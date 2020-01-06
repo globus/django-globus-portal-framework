@@ -486,10 +486,6 @@ def get_date_format_type(date_str):
     for name, dft_set in date_format_types:
         if dft_set == date_format_set:
             return name
-    fmt = filter(lambda name, fmt_set:
-                 name if date_format_set == fmt_set else None,
-                 date_format_types)
-    return list(fmt) or None
 
 
 def parse_date_filter(serialized_date):
