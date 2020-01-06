@@ -21,7 +21,7 @@ from globus_portal_framework.constants import (
     FILTER_YEAR, FILTER_MONTH, FILTER_DAY, FILTER_HOUR, FILTER_MINUTE,
     FILTER_SECOND,
 
-    VALID_SEARCH_FACET_KEYS
+    VALID_SEARCH_FACET_KEYS, VALID_SEARCH_KEYS,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -32,44 +32,61 @@ filter_query_matcher = re.compile(FILTER_QUERY_PATTERN)
 filter_date_matcher = re.compile(FILTER_DATE_TYPE_PATTERN)
 
 
-def post_search(index, query, filters, user=None, page=1):
+def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
     """Perform a search and return the relevant data for display to the user.
-    Returns a dict with search info stripped, containing only two relevant
-    fields:
-
+    The search results are processed through fields defined in the index
+    data 'fields' in SEARCH_RESULTS. Facets are processed to determine which
+    sidebar facets should appear 'checked' based on the filters passed in.
+    Pagination is processed to determine which page should be highlighted at
+    the bottom of the page. Other items, such as count, offset, and total, are
+    all returned verbatim from Globus Search.
     {
         'search_results': [{'title': 'My title'...} ...],
-        'facets': [{
-            '@datatype': 'GFacetResult',
-            '@version': '2017-09-01',
-            'buckets': [{'@datatype': 'GBucket',
-               '@version': '2017-09-01',
-               'count': 1310,
-               'field_name': 'mdf.resource_type',
-               'value': 'record'},
-              {'@datatype': 'GBucket',
-               '@version': '2017-09-01',
-               'count': 4,
-               'field_name': 'mdf.resource_type',
-               'value': 'dataset'}],
-            }, ...]
+        'facets: [{'buckets': [{'checked': False,
+                          'count': 35,
+                          'field_name': 'foo',
+                          'filter_type': 'match-all',
+                          'search_filter_query_key': 'filter-match-all.foo',
+                          'value': 'myval'}],
+                    'name': 'Subject'},]',
+        'pagination: {'current_page': 1,
+                      'pages': [{'number': 1},
+                                {'number': 2},
+                                {'number': 3},
+                                {'number': 4}]},',
+        'count: 10',
+        'offset': 0,
+        'total: 35'
     }
 
     See Search docs here:
     https://docs.globus.org/api/search/schemas/GSearchRequest/
+    :param index: index key name defined in settings.SEARCH_INDEXES, eg 'foo'
+    :param query: The query string to search with, eg 'apples' or '*'
+    :param filters: List of search filters. Typically, this is taken from the
+        request: in globus_portal_framework.gsearch.get_search_filters()
+    :param user: The user associated with the request (request.user) or None
+    :param page: The page number to search on. This is calculated with
+        settings.SEARCH_RESULTS_PER_PAGE, and sent along to Globus Search
+    :param search_kwargs: Custom overrides to send along to Globus Search. This
+        can be used to replace existing args, such as 'facets', or specify
+        new or experimental args supported by Globus Search but not DGPF.
     """
     if not index or not query:
         return {'search_results': [], 'facets': []}
 
     client = load_search_client(user)
     index_data = get_index(index)
-    search_data = {
+    search_data = {k: index_data[k] for k in VALID_SEARCH_KEYS
+                   if k in index_data}
+    search_data.update({
         'q': query,
         'facets': prepare_search_facets(index_data.get('facets', [])),
         'filters': filters,
         'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
         'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
-    }
+    })
+    search_data.update(search_kwargs or {})
     try:
         result = client.post_search(index_data['uuid'], search_data)
         return {
