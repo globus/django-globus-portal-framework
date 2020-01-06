@@ -183,7 +183,7 @@ def get_date_range_for_date(date_str, interval):
         to_d = from_d + datetime.timedelta(minutes=59)
     elif interval == FILTER_DAY:
         dt = dt.replace(hour=0, minute=0, second=0)
-        from_d, to_d = dt - day, dt + day
+        from_d, to_d = dt, dt + day
     elif interval == FILTER_MONTH:
         from_d = dt.replace(day=1, hour=0, minute=0, second=0)
         inc_month = 1 if dt.month == 12 else dt.month + 1
