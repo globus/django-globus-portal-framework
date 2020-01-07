@@ -50,6 +50,11 @@ DATETIME_PARTIAL_FORMATS = {
     'time': '%Y-%m-%d %H:%M:%S'
 }
 
+VALID_SEARCH_KEYS = [
+    'q', 'limit', 'offset', 'facets', 'filters', 'boosts', 'sort',
+    'query_template', 'advanced', 'bypass_visible_to', 'result_format_version',
+]
+
 VALID_SEARCH_FACET_KEYS = [
     'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval'
 ]
