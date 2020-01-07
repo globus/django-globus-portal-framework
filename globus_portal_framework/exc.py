@@ -101,3 +101,22 @@ class ExpiredGlobusToken(GlobusPortalException):
                            ''.format(token_name)
         else:
             self.message = 'Your Globus Token has expired.'
+
+
+class InvalidRangeFilter(GlobusPortalException):
+    def __init__(self, code='', message=''):
+        """
+        :param code: A short string that can be checked against, such as
+            'PermissionDenied'
+        :param message: A longer string that describes the problem and action
+            that should be taken.
+        """
+        super().__init__()
+        self.code = code or 'RangeFilterError'
+        self.message = message or 'Invalid Range Encountered'
+
+    def __str__(self):
+        return '{}: {}'.format(self.code, self.message)
+
+    def __repr__(self):
+        return str(self)

@@ -5,19 +5,31 @@ import json
 import logging
 import math
 import collections
+import datetime
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
+from django.conf import settings
 
 from globus_portal_framework.apps import get_setting
-from globus_portal_framework import load_search_client, IndexNotFound
+from globus_portal_framework import load_search_client, IndexNotFound, exc
 from globus_portal_framework.constants import (
-    FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE
+    FILTER_QUERY_PATTERN, FILTER_TYPES, FILTER_RANGE,
+    FILTER_DATE_RANGES, FILTER_DEFAULT_RANGE_SEPARATOR,
+    FILTER_DATE_TYPE_PATTERN, DATETIME_PARTIAL_FORMATS,
+
+    FILTER_YEAR, FILTER_MONTH, FILTER_DAY, FILTER_HOUR, FILTER_MINUTE,
+    FILTER_SECOND,
+
+    VALID_SEARCH_FACET_KEYS
 )
+FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
+                                 FILTER_DEFAULT_RANGE_SEPARATOR)
 
 
 log = logging.getLogger(__name__)
 filter_query_matcher = re.compile(FILTER_QUERY_PATTERN)
+filter_date_matcher = re.compile(FILTER_DATE_TYPE_PATTERN)
 
 
 def post_search(index, query, filters, user=None, page=1):
@@ -82,7 +94,8 @@ def post_search(index, query, filters, user=None, page=1):
         else:
             error = etext.format('Globus Portal Framework', dgpf)
         full_error = '{}Index ID: {}\nAuthenticated? {}\nParams: \n{}'.format(
-            error, index_data['uuid'], user.is_authenticated,
+            error, index_data['uuid'],
+            user.is_authenticated if user else False,
             json.dumps(search_data, indent=2)
         )
         log.error(full_error)
@@ -98,9 +111,10 @@ def get_search_query(request):
             get_setting('DEFAULT_QUERY'))
 
 
-def get_search_filters(request,
-                       filter_match_default=get_setting('DEFAULT_FILTER_MATCH')
-                       ):
+def get_search_filters(
+        request,
+        filter_match_default=get_setting('DEFAULT_FILTER_MATCH')
+        ):
     """Given a request, fetch all query params for filters and return a list
     that can be sent to Globus Search. Filter types are
     parsed from the following keys:
@@ -108,10 +122,15 @@ def get_search_filters(request,
         * filter-match-all.<field_name>
         * filter-match-any.<field_name>
         * filter-range.<field_name>
+        * filter-year.<field_name>
+        * filter-month.<field_name>
+        * filter-day.<field_name>
+        * filter-hour.<field_name>
+        * filter-minute.<field_name>
+        * filter-second.<field_name>
 
     `filter.` will fall back on a match default defined in settings.
     `filter_match_default` can be "match-any" or "match-all"
-
     """
     filters = []
     for key in request.GET.keys():
@@ -121,18 +140,119 @@ def get_search_filters(request,
             # Prefix was used to determine type and can be discarded. If we got
             # here, a format match was detected and we can split on first '.'
             _, filter_name = key.split('.', maxsplit=1)
-            filter = {
+            filters.append({
                 'field_name': filter_name,
-                'type': (FILTER_TYPES.get(filter_type, ) or
-                         FILTER_TYPES[filter_match_default]),
-                'values': request.GET.getlist(key)
-            }
-
-            if filter_type == FILTER_RANGE:
-                filter['values'] = [deserialize_gsearch_range(v) for v in
-                                    filter['values']]
-            filters.append(filter)
+                'type': (FILTER_TYPES.get(filter_type) or
+                         FILTER_TYPES.get(filter_match_default)),
+                'values': parse_filters(request.GET.getlist(key), filter_type)
+            })
     return filters
+
+
+def get_date_range_for_date(date_str, interval):
+    """
+    Given a date string, parse it and derive a range based on the given
+    interval. The interval is inclusive on the lower end, and exclusve on the
+    higher end. For example, given a date str of 2019-03-10 and a 'month'
+    interval, this will return a range of 2019-03-01 -- 2019-03-31.
+    :param date_str: Any ISO date or partial date. 2019, 2019-03,
+    2019-03-01, 2019-12-18 21:00:00
+    :param interval: Any interval defined in
+    globus_portal_framework.constants.FILTER_DATE_RANGES. Examples include:
+    'year', 'month', 'day', 'hour'
+    :return:
+    A date range dict. Example:
+    {
+      'from': '2019-12-18 21:00:00'
+      'to': '2019-12-18 21:00:01'
+    }
+    """
+    dt = parse_date_filter(date_str)['datetime']
+    # If filtering on a month or year, chop off the extra part of the
+    # datetime so we don't accidentally search on the previous month
+    # or next month
+    day = datetime.timedelta(days=1)
+    if interval == FILTER_SECOND:
+        second = datetime.timedelta(seconds=1)
+        from_d, to_d = dt - second, dt + second
+    elif interval == FILTER_MINUTE:
+        from_d = dt.replace(second=0)
+        to_d = from_d + datetime.timedelta(seconds=59)
+    elif interval == FILTER_HOUR:
+        from_d = dt.replace(minute=0, second=0)
+        to_d = from_d + datetime.timedelta(minutes=59, seconds=59)
+    elif interval == FILTER_DAY:
+        dt = dt.replace(hour=0, minute=0, second=0)
+        from_d, to_d = dt, dt + day
+    elif interval == FILTER_MONTH:
+        from_d = dt.replace(day=1, hour=0, minute=0, second=0)
+        inc_month = 1 if dt.month == 12 else dt.month + 1
+        inc_year = dt.year + 1 if inc_month == 1 else dt.year
+        to_d = from_d.replace(month=inc_month, year=inc_year) - day
+    elif interval == FILTER_YEAR:
+        dt = dt.replace(day=1, month=1, hour=0, minute=0, second=0)
+        year = datetime.timedelta(days=365)
+        from_d, to_d = dt, dt + year
+    else:
+        raise exc.GlobusPortalException('Invalid date type {}'
+                                        ''.format(interval))
+    # Globus search can handle any time format, so using the most precise will
+    # work every time.
+    dt_format_type = DATETIME_PARTIAL_FORMATS['time']
+    return {
+        'from': from_d.strftime(dt_format_type),
+        'to': to_d.strftime(dt_format_type)
+    }
+
+
+def parse_filters(filter_values, filter_type):
+    """
+    Parse raw filters and return a list of parsed filter values. If the type
+    is a match type filter (MATCH_ANY or MATCH_ALL), no processing is done and
+    the list is simply returned. If the filter type is of type 'range', the
+    returned value will be a list of dicts with each dict containing 'from' and
+    'to' keys. 'range' type filters may be either date strings, ints or floats.
+    For filter types of a date interval ('year', 'month', 'day', 'hour',
+    'minute', 'second'), the date is parsed and a range is derived according to
+    the date interval passed in. The date filter given may be more exact than
+    the interval, but if the interval doesn't contain enough info for the
+    filter given (for example, searching on the 'month' for 2020), the value is
+    assumed to be the minimum incremental interval (for example, January 2020)
+    :param filter_values: A list of raw filter values. List values can be
+    strings, date strings, number ranges, or date ranges.
+    Valid examples:
+      ['application/x-hdf', 'image/png']
+      ['2019-10-25 16:43:00', '2019-10-25 16:43:00']
+      ['2019-10-25 16:43:00--2019-10-25 16:43:00']
+      ['1--100']
+    :param filter_type:
+      Filter type to match the corresponding filter values. Can be any value
+      in globus_portal_framework.constants.FILTER_TYPES, but must match the
+      type given.
+    Valid examples: FILTER_TYPES.RANGE, FILTER_TYPES.YEAR
+    :return: A list. If filter type is match-all or match-any, the list items
+    will be strings. If the filter type is a range or date interval, the list
+    items will be dicts with 'from' and 'to' keys.
+    """
+    if filter_type in FILTER_DATE_RANGES:
+        return [get_date_range_for_date(date_str, filter_type)
+                for date_str in filter_values]
+    elif filter_type == FILTER_RANGE:
+        parsed_filters = []
+        for v in filter_values:
+            try:
+                new_filter = deserialize_gsearch_range(v)
+                if new_filter:
+                    parsed_filters.append(new_filter)
+            except exc.InvalidRangeFilter as irf:
+                log.debug(irf)
+                continue
+            except Exception as e:
+                log.exception(e)
+                continue
+        return parsed_filters
+    else:
+        return list(filter_values)
 
 
 def get_search_filter_query_key(field_name,
@@ -151,15 +271,23 @@ def get_search_filter_query_key(field_name,
 
 
 def prepare_search_facets(facets):
+    """Prepare a list of facets to be sent to Globus Search. Globus Portal
+    Framework defines some settings in the 'facets' section which are not
+    valid search fields. This both strips invalid fields, and adds sensible
+    defaults if required info is missing."""
+    cleaned_facets = []
     for facet in facets:
         if not isinstance(facet, dict):
             raise ValueError('Each facet must be of type "dict"')
-        if not facet.get('field_name'):
+        cfacet = {k: v for k, v in facet.items()
+                  if k in VALID_SEARCH_FACET_KEYS}
+        if not cfacet.get('field_name'):
             raise ValueError('Each facet must define at minimum "field_name"')
-        facet['name'] = facet.get('name', facet['field_name'])
-        facet['type'] = facet.get('type', 'terms')
-        facet['size'] = facet.get('size', 10)
-    return facets
+        cfacet['name'] = cfacet.get('name', cfacet['field_name'])
+        cfacet['type'] = cfacet.get('type', 'terms')
+        cfacet['size'] = cfacet.get('size', 10)
+        cleaned_facets.append(cfacet)
+    return cleaned_facets
 
 
 def get_template(index, base_template):
@@ -323,28 +451,140 @@ def serialize_gsearch_range(gsearch_range):
     :param gsearch_range: A dict: {'from': (number or *), 'to': (number or *)}
     :return: The same range turned into a string.
     """
-    return '{}--{}'.format(gsearch_range['from'], gsearch_range['to'])
+    return '{}{}{}'.format(gsearch_range['from'],
+                           FILTER_RANGE_SEPARATOR,
+                           gsearch_range['to'])
+
+
+def get_date_format_type(date_str):
+    """
+    Given a date_str, derive the date information contained within the date_str
+    The return value is based on the following map:
+    'year': 'YYYY'
+    'month': 'YYYY-MM'
+    'day': 'YYYY-MM-DD'
+    'time': 'YYYY-MM-DD hh:mm:ss'
+    and will return 'year', 'month', 'day' or 'time'
+
+    Examples:
+        '2019' will return 'day'
+        '2018-01-20 12:30:34' will return 'time'
+    If you want a parsed datetime object, see 'parse_date_filter()' instead.
+    """
+    date_str = str(date_str)
+    match = filter_date_matcher.match(date_str)
+    if not match:
+        return None
+    date_matches = match.groupdict()
+    date_format_set = {dt for dt, value in date_matches.items()
+                       if value is not None}
+    date_format_types = [
+        ('year', {'year'}),
+        ('month', {'year', 'month'}),
+        ('day', {'year', 'month', 'day'}),
+        ('time', {'year', 'month', 'day', 'time'}),
+    ]
+    for name, dft_set in date_format_types:
+        if dft_set == date_format_set:
+            return name
+
+
+def parse_date_filter(serialized_date):
+    """
+    Given a serialized_date (ex: '2019-12-02'), return a dict containing
+    the following info:
+    {
+      'value': serialized_date,
+      'type': 'day',
+      'datetime': <datetime.datetime object>
+    }
+    The date string given can match any date string format types handled by
+    get_date_format_type()
+    :param serialized_date: a date string, ex: '2019-12-02'
+    :return: A dict containing the date string given, whether the date is a
+    year, month, day or time type date, and a datetime object.
+    """
+    # coerce date into str, in case the date was pased as a number, eg 2020
+    sdate = str(serialized_date)
+    dt_fmt_type = get_date_format_type(sdate)
+    dt_fmt_str = DATETIME_PARTIAL_FORMATS.get(dt_fmt_type)
+    if dt_fmt_str:
+        return {
+            'value': serialized_date,
+            'type': dt_fmt_type,
+            'datetime': datetime.datetime.strptime(sdate, dt_fmt_str)
+        }
+    raise exc.InvalidRangeFilter(code='FilterParseError',
+                                 message='Unable to parse {}'
+                                         ''.format(sdate))
+
+
+def parse_range_filter_bounds(range_filter):
+    """
+    Low level utility to parse the lower or upper range of a given range filter
+    The given range filter MUST not be None.
+    :param range_filter: String representation of a range filter.
+    :return: Returns the float or int value of the range filter, or * if the
+    filter is a wildcard '*'
+    """
+    if range_filter == '*':
+        return '*'
+    try:
+        if '.' in range_filter:
+            return float(range_filter)
+        return int(range_filter)
+    except ValueError:
+        pass
+    return parse_date_filter(range_filter)['value']
 
 
 def deserialize_gsearch_range(serialized_filter_range):
     """
     Returns the value of a query parameter for the range type filter.
+    This accepts two different kinds of ranges: ...
+
     :param serialized_filter_range: The value of the range query param
     :return: A dict resembling a result from Globus Search. Example:
     {'from': 10, 'to': 100}
     """
-    grange = {}
-    low, high = serialized_filter_range.split('--')
-    if low == '*':
-        grange['from'] = '*'
-    else:
-        grange['from'] = float(low) if '.' in low else int(low)
+    separator_count = serialized_filter_range.count(FILTER_RANGE_SEPARATOR)
+    if separator_count != 1:
+        raise exc.InvalidRangeFilter(
+            message='Filter {} did not contain separator {}'
+                    ''.format(serialized_filter_range, FILTER_RANGE_SEPARATOR)
+        )
+    low, high = serialized_filter_range.split(FILTER_RANGE_SEPARATOR)
+    if not low or not high:
+        raise exc.InvalidRangeFilter(
+            message='Filter Missing Bounds',
+            code='{}BoundMissing'.format('Lower' if not low else 'Higher'))
+    return {
+        'from': parse_range_filter_bounds(low),
+        'to': parse_range_filter_bounds(high)
+    }
 
-    if high == '*':
-        grange['to'] = '*'
-    else:
-        grange['to'] = float(high) if '.' in high else int(high)
-    return grange
+
+def get_field_facet_filter_types(facet_definitions, default_terms=None):
+    """Build a map of a list of facet definitions of 'field_name' mapped
+    to 'filter_type'. """
+    field_types = {}
+    for facet in facet_definitions:
+        ftype = facet.get('type', 'terms')
+        field = facet['field_name']
+        if ftype == 'terms':
+            field_types[field] = (
+                facet.get('filter_type') or
+                default_terms or
+                get_setting('DEFAULT_FILTER_MATCH')
+            )
+        elif ftype == 'numeric_histogram':
+            field_types[field] = FILTER_RANGE
+        elif ftype == 'date_histogram':
+            field_types[field] = (facet.get('filter_type') or
+                                  facet['date_interval'])
+        else:
+            raise ValueError('Unknown filter type: {}'.format(ftype))
+    return field_types
 
 
 def get_facets(search_result, portal_defined_facets, filters,
@@ -361,8 +601,8 @@ def get_facets(search_result, portal_defined_facets, filters,
     portal's defined facets. Since a search has already happened by this point,
     `filters` only determines the look of the page (which box is checked) and
     generates the query-params for the user's next possible search.
-    :param filter_match: Filtering behavior for next query. 'match-all', or
-    'match-any'.
+    :param filter_match: Deprecated. Please set filtering behavior in the
+    facet definition.
 
     :return: A list of facets. An example is here:
         [
@@ -384,34 +624,55 @@ def get_facets(search_result, portal_defined_facets, filters,
         ]
 
       """
-    filter_map = {filter['field_name']: filter for filter in filters}
+    filter_types = get_field_facet_filter_types(portal_defined_facets,
+                                                default_terms=filter_match)
+    active_filters = {filter['field_name']: filter for filter in filters}
     facets = search_result.data.get('facet_results', [])
     # Remove facets without buckets so we don't display empty fields
     pruned_facets = {f['name']: f['buckets'] for f in facets if f['buckets']}
     cleaned_facets = []
     for f in portal_defined_facets:
         buckets = pruned_facets.get(f['name'])
-        if buckets:
-            facet = {'name': f['name'], 'buckets': []}
-            filter = filter_map.get(f['field_name'], {})
-            for bucket in buckets:
-                buck = {
-                    'count': bucket['count'],
-                    'field_name': f['field_name'],
-                    'checked': bucket['value'] in filter.get('values', []),
-                }
-                if isinstance(bucket['value'], dict):
-                    buck['filter_type'] = FILTER_RANGE
-                    buck['value'] = serialize_gsearch_range(bucket['value'])
-                    qk = get_search_filter_query_key(f['field_name'],
-                                                     FILTER_RANGE)
-                    buck['search_filter_query_key'] = qk
-                else:
-                    buck['value'] = bucket['value']
-                    fm = filter_match or get_setting('DEFAULT_FILTER_MATCH')
-                    buck['filter_type'] = fm
-                    qk = get_search_filter_query_key(f['field_name'], fm)
-                    buck['search_filter_query_key'] = qk
-                facet['buckets'].append(buck)
-            cleaned_facets.append(facet)
+        if not buckets:
+            continue
+
+        filter_type = filter_types[f['field_name']]
+        facet = {'name': f['name'], 'buckets': []}
+        active_filter = active_filters.get(f['field_name'], {})
+        if filter_type in FILTER_DATE_RANGES:
+            active_filter_vals = [{
+                'from': parse_date_filter(d['from'])['datetime'],
+                'to': parse_date_filter(d['to'])['datetime']
+            } for d in active_filter.get('values', [])]
+        else:
+            active_filter_vals = active_filter.get('values', [])
+        for bucket in buckets:
+            query_key = get_search_filter_query_key(f['field_name'],
+                                                    filter_type)
+            if filter_type == FILTER_RANGE:
+                bucket_vals = serialize_gsearch_range(bucket['value'])
+            else:
+                bucket_vals = bucket['value']
+
+            if filter_type in FILTER_DATE_RANGES:
+                buck_dt = parse_date_filter(bucket['value'])['datetime']
+                checked = any([
+                    buck_dt >= afilter['from'] and buck_dt < afilter['to']
+                    for afilter in active_filter_vals
+                ])
+            else:
+                checked = bucket['value'] in active_filter_vals
+                buck_dt = None
+            new_facet = {
+                'count': bucket['count'],
+                'field_name': f['field_name'],
+                'filter_type': filter_type,
+                'search_filter_query_key': query_key,
+                'checked': checked,
+                'value': bucket_vals,
+            }
+            if buck_dt:
+                new_facet['datetime'] = buck_dt
+            facet['buckets'].append(new_facet)
+        cleaned_facets.append(facet)
     return cleaned_facets

@@ -12,6 +12,15 @@ from globus_portal_framework.views import logout
 # Two days in seconds
 TOKEN_EXPIRE_TIME = 48 * 60 * 60
 
+MOCK_EMPTY_SEARCH = {
+    "@datatype": "GSearchResult",
+    "@version": "2017-09-01",
+    "count": 0,
+    "gmeta": [],
+    "offset": 0,
+    "total": 0
+}
+
 
 class MockGlobusClient:
     def __init__(self, *args, **kwargs):
