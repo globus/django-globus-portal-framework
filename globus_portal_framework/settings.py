@@ -60,7 +60,13 @@ SEARCH_INDEXES = {
                 'field_name': 'remote_file_manifest.length',
                 'size': 10,
                 'histogram_range': {'low': 15000, 'high': 30000},
-            }
+            },
+            {
+                "name": "Dates",
+                "field_name": "perfdata.dates.value",
+                "type": "date_histogram",
+                "date_interval": "month",
+            },
         ],
         'filter_match': 'match-all',
         'template_override_dir': 'perfdata',
