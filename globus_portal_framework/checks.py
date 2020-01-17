@@ -72,6 +72,17 @@ def check_search_indexes(app_configs, **kwargs):
                 id='globus_portal_framework.settings.E001'
                 )
             )
+        if idata.get('result_format_version') == '2019-08-27':
+            errors.append(Warning(
+                'Globus Portal Framework does not support '
+                'result_format_version=="2019-08-27"',
+                obj=settings,
+                hint=('Suggested you unset '
+                      'settings.SEARCH_INDEXES.{}.result_format_version'
+                      ''.format(index_name)),
+                id='globus_portal_framework.settings.E002'
+                )
+            )
         fm = idata.get('filter_match', None)
         if fm is not None and fm not in FILTER_TYPES.keys():
             errors.append(

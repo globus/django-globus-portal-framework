@@ -58,3 +58,5 @@ VALID_SEARCH_KEYS = [
 VALID_SEARCH_FACET_KEYS = [
     'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval'
 ]
+# https://docs.globus.org/api/search/search/#request_documents
+DEFAULT_RESULT_FORMAT_VERSION = '2017-09-01'
