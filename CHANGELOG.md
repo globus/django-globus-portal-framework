@@ -4,6 +4,9 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.10 - 2020-01-17
+
+- Fixed version string
 
 ## 0.3.9 - 2020-01-17
 
