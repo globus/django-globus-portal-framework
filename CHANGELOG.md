@@ -4,6 +4,30 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+
+## 0.3.9 - 2020-01-17
+
+- Added support for several other Globus Search query options in index definitions
+    - `boosts` can be directly specified
+    - `sort` can be directly specified
+    - `advanced` can be turned on or off
+    - `bypass_visible_to` can be turned on or off
+    - `result_format_version` can be optionally set
+- `result_format_version` by default set to `2017-09-01`
+- Date Facets and Filters have been added
+    - Dates can now be faceted by intervals
+        - Year
+        - Month
+        - Day
+        - Hour
+        - Minute
+        - Second
+    - Date searches are automatically setup alongside facets
+    - Arbitrary date range searches are also possible
+- Added simple date example to DGPF default startup tutorial
+- 'filter-match' can now be specified per-facet for term-type facets
+- Fixed `is_authenticated` sometimes showing None on server errors
+
 ## 0.3.8 - 2019-12-04
 
 - Support Django 3.0, released Dec 2nd
