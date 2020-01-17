@@ -22,6 +22,8 @@ from globus_portal_framework.constants import (
     FILTER_SECOND,
 
     VALID_SEARCH_FACET_KEYS, VALID_SEARCH_KEYS,
+
+    DEFAULT_RESULT_FORMAT_VERSION,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -87,6 +89,8 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
         'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
     })
     search_data.update(search_kwargs or {})
+    search_data['result_format_version'] = search_data.get(
+        'result_format_version', DEFAULT_RESULT_FORMAT_VERSION)
     try:
         result = client.post_search(index_data['uuid'], search_data)
         return {
