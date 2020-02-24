@@ -353,7 +353,8 @@ def get_subject(index, subject, user=None):
     client = load_search_client(user)
     try:
         idata = get_index(index)
-        result = client.get_subject(idata['uuid'], unquote(subject))
+        result = client.get_subject(idata['uuid'], unquote(subject),
+                                    result_format_version='2017-09-01')
         return process_search_data(idata.get('fields', {}), [result.data])[0]
     except globus_sdk.exc.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
