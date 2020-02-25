@@ -362,7 +362,7 @@ def get_subject(index, subject, user=None):
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
-def process_search_data(field_mappers, results):
+def process_search_data(field_mappers, results, default_entry_name='default'):
     """
     Process results in a general search result, running the mapping function
     for each result and preparing other general data for being shown in
@@ -375,47 +375,78 @@ def process_search_data(field_mappers, results):
 
     """
     structured_results = []
-    for entry in results:
-        content = entry['content']
-        result = {
-            'subject': quote_plus(entry['subject']),
-            'all': content
-        }
-
-        if len(content) == 0:
-            log.warning('Subject {} contained no content, skipping...'.format(
-                entry['subject']
-            ))
-            continue
-        default_content = content[0]
-
-        for mapper in field_mappers:
-            field = {}
-            if isinstance(mapper, str):
-                field = {mapper: default_content.get(mapper)}
-            elif isinstance(mapper, collections.Iterable) and len(mapper) == 2:
-                field_name, map_approach = mapper
-                if isinstance(map_approach, str):
-                    field = {field_name: default_content.get(map_approach)}
-                elif callable(map_approach):
-                    try:
-                        field = {field_name: map_approach(content)}
-                    except Exception as e:
-                        log.exception(e)
-                        log.error('Error rendering content for "{}"'.format(
-                            field_name
-                        ))
-                        field = {field_name: None}
-
-            overwrites = [name for name in field.keys()
-                          if name in result.keys()]
-            if overwrites:
-                log.warning('{} defined by {} overwrite previous fields in '
-                            'search.'.format(overwrites, mapper))
-
-            result.update(field)
-        structured_results.append(result)
+    for content in results:
+        if content['@version'] == '2017-09-01':
+            result = process_2017_09_01_result(field_mappers, content)
+            structured_results.append(result)
+        if content['@version'] == '2019-08-27':
+            result = process_2019_08_27_result(field_mappers, content)
+            structured_results.append(result)
     return structured_results
+
+
+def process_2019_08_27_result(field_mappers, content,
+                              default_entry_name='default'):
+    entries = {
+        default_entry_name if c['entry_id'] is None else c['entry_id']: c
+        for c in content['entries']
+    }
+    result = {
+        'subject': quote_plus(content['subject']),
+        'all': entries
+    }
+    if len(entries) == 0:
+        log.warning('Subject {} contained no content, skipping...'.format(
+            content['subject']
+        ))
+        return result
+    result.update(process_field_mappers(field_mappers, entries))
+    return result
+
+
+def process_2017_09_01_result(field_mappers, content):
+    result = {
+        'subject': quote_plus(content['subject']),
+        'all': content
+    }
+    if len(content) == 0:
+        log.warning('Subject {} contained no content, skipping...'.format(
+            content['subject']
+        ))
+        return result
+    default_content = content['content'][0]
+    result.update(process_field_mappers(field_mappers, default_content))
+    return result
+
+
+def process_field_mappers(field_mappers, content):
+    result = {}
+    for mapper in field_mappers:
+        field = {}
+        if isinstance(mapper, str):
+            field = {mapper: content.get(mapper)}
+        elif isinstance(mapper, collections.Iterable) and len(mapper) == 2:
+            field_name, map_approach = mapper
+            if isinstance(map_approach, str) and isinstance(content, list):
+                log.warning('Warning, this will be deprecated soon!')
+                field = {field_name: content.get(map_approach)}
+            elif callable(map_approach):
+                try:
+                    field = {field_name: map_approach(content)}
+                except Exception as e:
+                    log.exception(e)
+                    log.error('Error rendering content for "{}"'.format(
+                        field_name
+                    ))
+                    field = {field_name: None}
+
+        overwrites = [name for name in field.keys()
+                      if name in result.keys()]
+        if overwrites:
+            log.warning('{} defined by {} overwrite previous fields in '
+                        'search.'.format(overwrites, mapper))
+        result.update(field)
+    return result
 
 
 def get_pagination(total_results, offset,
