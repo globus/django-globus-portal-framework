@@ -4,6 +4,11 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.12 - 2020-02-25
+
+- Fixed out of order merge to include changes from last release
+    - This adds the get_subject fix not properly included
+
 ## 0.3.11 - 2020-02-25
 
 - Fixed get_subject not setting the correct format version.
