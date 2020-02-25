@@ -4,6 +4,11 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.11 - 2020-02-25
+
+- Fixed get_subject not setting the correct format version.
+    - This caused get_subject to malfunction after the latest search release
+
 ## 0.3.10 - 2020-01-17
 
 - Fixed version string
