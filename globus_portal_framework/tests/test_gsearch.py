@@ -73,6 +73,7 @@ class SearchUtilsTest(TestCase):
 
     def setUp(self):
         self.factory = RequestFactory()
+        self.maxDiff = None
 
     @override_settings(SEARCH_INDEXES={'foo': {}})
     def test_get_index(self):
@@ -133,7 +134,7 @@ class SearchUtilsTest(TestCase):
         mappers, results = [], [sub]
         data = process_search_data(mappers, results)[0]
         self.assertEqual(quote_plus(sub['subject']), data['subject'])
-        self.assertEqual(sub['content'], data['all'])
+        self.assertEqual(sub['content'][0].keys(), data['all'][0].keys())
 
     def test_process_search_data_string_field(self):
         sub = get_mock_data(MOCK_RESULTS)['gmeta'][0]

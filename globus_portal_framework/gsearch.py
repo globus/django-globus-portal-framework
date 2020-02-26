@@ -24,6 +24,8 @@ from globus_portal_framework.constants import (
     VALID_SEARCH_FACET_KEYS, VALID_SEARCH_KEYS,
 
     DEFAULT_RESULT_FORMAT_VERSION,
+
+    SRF_2017_09_01, SRF_2019_08_27
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -89,13 +91,18 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
         'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
     })
     search_data.update(search_kwargs or {})
-    search_data['result_format_version'] = search_data.get(
-        'result_format_version', DEFAULT_RESULT_FORMAT_VERSION)
+    result_format_version = search_data.get('result_format_version',
+                                            DEFAULT_RESULT_FORMAT_VERSION)
+    search_data['result_format_version'] = result_format_version
+    log.debug('Requesting results with result_format_version: {}'.format(
+        result_format_version
+    ))
     try:
         result = client.post_search(index_data['uuid'], search_data)
         return {
             'search_results': process_search_data(index_data.get('fields', []),
-                                                  result.data['gmeta']),
+                                                  result.data['gmeta'],
+                                                  result_format_version),
             'facets': get_facets(result, index_data.get('facets', []),
                                  filters, index_data.get('filter_match')),
             'pagination': get_pagination(result.data['total'],
@@ -362,7 +369,8 @@ def get_subject(index, subject, user=None):
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
-def process_search_data(field_mappers, results, default_entry_name='default'):
+def process_search_data(field_mappers, results,
+                        result_format_version=DEFAULT_RESULT_FORMAT_VERSION):
     """
     Process results in a general search result, running the mapping function
     for each result and preparing other general data for being shown in
@@ -370,53 +378,62 @@ def process_search_data(field_mappers, results, default_entry_name='default'):
     :param results: List of GMeta results, which would be the r.data['gmeta']
     in from a simple query to Globus Search. See here:
     https://docs.globus.org/api/search/schemas/GMetaResult/
+    :param result_format_version: How to format search results for functions
+    defined in SEARCH_INEDXES.fields. Allowed values are:
+
     :return: A list of search results:
-
-
     """
-    structured_results = []
-    for content in results:
-        if content['@version'] == '2017-09-01':
-            result = process_2017_09_01_result(field_mappers, content)
-            structured_results.append(result)
-        if content['@version'] == '2019-08-27':
-            result = process_2019_08_27_result(field_mappers, content)
-            structured_results.append(result)
-    return structured_results
+    formatted_results = []
+    for result in results:
+        presult = parse_result(result)
+        if len(presult['entries']) == 0:
+            log.warning('Subject {} contained no content, skipping...'.format(
+                presult['subject']
+            ))
+            continue
+        c = format_result(presult, result_format_version)
+        formatted = {
+            'subject': quote_plus(presult.get('subject')),
+            'all': c['content'],
+        }
+        formatted.update(process_field_mappers(field_mappers, c['content']))
+        formatted_results.append(formatted)
+
+    return formatted_results
 
 
-def process_2019_08_27_result(field_mappers, content,
-                              default_entry_name='default'):
-    entries = {
-        default_entry_name if c['entry_id'] is None else c['entry_id']: c
-        for c in content['entries']
-    }
-    result = {
-        'subject': quote_plus(content['subject']),
-        'all': entries
-    }
-    if len(entries) == 0:
-        log.warning('Subject {} contained no content, skipping...'.format(
-            content['subject']
-        ))
+def parse_result(result):
+    version = result.get('@version', None)
+    if version == SRF_2017_09_01:
+        return {
+            'entries': [
+                {'entry_ids': eid, 'content': c}
+                for eid, c in zip(result.get('entry_ids', [None]),
+                                  result.get('content', []))
+            ],
+            'subject': result['subject']
+        }
+    elif version == SRF_2019_08_27:
         return result
-    result.update(process_field_mappers(field_mappers, entries))
-    return result
+    else:
+        raise exc.GlobusPortalException('Unexpected search Version returned '
+                                        'by Globus Search'.format(version))
 
 
-def process_2017_09_01_result(field_mappers, content):
-    result = {
-        'subject': quote_plus(content['subject']),
-        'all': content
-    }
-    if len(content) == 0:
-        log.warning('Subject {} contained no content, skipping...'.format(
-            content['subject']
-        ))
+def format_result(result, result_format_version):
+    if result_format_version == SRF_2017_09_01:
+        return {
+            'content': [r['content'] for r in result['entries']],
+            'entry_ids': result.get('entry_ids', [None]),
+            'subject': result['subject'],
+        }
+    elif result_format_version == SRF_2019_08_27:
         return result
-    default_content = content['content'][0]
-    result.update(process_field_mappers(field_mappers, default_content))
-    return result
+    else:
+        versions = ', '.join([SRF_2017_09_01, SRF_2019_08_27])
+        raise exc.GlobusPortalException(
+            'Invalid result_format_version {}, must be one of: {}'
+            ''.format(result_format_version, versions))
 
 
 def process_field_mappers(field_mappers, content):
@@ -424,7 +441,7 @@ def process_field_mappers(field_mappers, content):
     for mapper in field_mappers:
         field = {}
         if isinstance(mapper, str):
-            field = {mapper: content.get(mapper)}
+            field = {mapper: content[0].get(mapper)}
         elif isinstance(mapper, collections.Iterable) and len(mapper) == 2:
             field_name, map_approach = mapper
             if isinstance(map_approach, str) and isinstance(content, list):
