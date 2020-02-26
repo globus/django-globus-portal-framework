@@ -77,7 +77,7 @@ def check_search_indexes(app_configs, **kwargs):
                 )
             )
         rfv = idata.get('result_format_version')
-        if rfv not in SUPPORTED_FORMATS:
+        if rfv and rfv not in SUPPORTED_FORMATS:
             errors.append(Warning(
                 'Globus Portal Framework does not support '
                 'result_format_version=="{}"'.format(rfv),
