@@ -3,10 +3,14 @@ from django.core.checks import Error, Warning, register
 from django.conf import settings
 import globus_sdk
 
-from globus_portal_framework.constants import FILTER_TYPES
+from globus_portal_framework.constants import (
+    FILTER_TYPES, SRF_2017_09_01, SRF_2019_08_27
+)
 
 log = logging.getLogger(__name__)
 log.debug('Debugging is active.')
+
+SUPPORTED_FORMATS = (SRF_2017_09_01, SRF_2019_08_27)
 
 
 @register()
@@ -72,14 +76,15 @@ def check_search_indexes(app_configs, **kwargs):
                 id='globus_portal_framework.settings.E001'
                 )
             )
-        if idata.get('result_format_version') == '2019-08-27':
+        rfv = idata.get('result_format_version')
+        if rfv not in SUPPORTED_FORMATS:
             errors.append(Warning(
                 'Globus Portal Framework does not support '
-                'result_format_version=="2019-08-27"',
+                'result_format_version=="{}"'.format(rfv),
                 obj=settings,
-                hint=('Suggested you unset '
-                      'settings.SEARCH_INDEXES.{}.result_format_version'
-                      ''.format(index_name)),
+                hint=('Suggested you set '
+                      'settings.SEARCH_INDEXES.{}.result_format_version '
+                      'to one of {}'.format(index_name, SUPPORTED_FORMATS)),
                 id='globus_portal_framework.settings.E002'
                 )
             )
