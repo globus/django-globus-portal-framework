@@ -403,6 +403,13 @@ def process_search_data(field_mappers, results,
 
 
 def parse_result(result):
+    """
+    Parse a GMetaResult document. Autodetects the @version on the document and
+    parses it into a 2019-08-27 style document. See format_result for coercing
+    the data from a GMetaResult into the style you need.
+    :param result: A Gmeta Result
+    :return: Data in a GMeta Result parsed into 2019-08-27 format
+    """
     version = result.get('@version', None)
     if version == SRF_2017_09_01:
         return {
@@ -421,6 +428,13 @@ def parse_result(result):
 
 
 def format_result(result, result_format_version):
+    """
+    Format a given GMetaResult in 2019-08-27 format into another Globus Search
+    format. Supported formats are: 2017-09-01, 2019-08-27
+    :param result: GMetaResult in 2019-08-27 format
+    :param result_format_version: New format you want to use
+    :return: GMetaResult formatted in another Globus Search format
+    """
     if result_format_version == SRF_2017_09_01:
         return {
             'content': [r['content'] for r in result['entries']],
