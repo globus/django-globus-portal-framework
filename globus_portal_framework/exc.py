@@ -33,6 +33,16 @@ class IndexNotFound(GlobusPortalException):
                         )
 
 
+class FieldProcessingError(GlobusPortalException):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.code = 'FieldProcessingError'
+        self.message = kwargs.get(
+            'message',
+            'Unknown error processing a field for a Globus Search result.'
+        )
+
+
 class PreviewException(GlobusPortalException):
     """
     Exceptions when trying to fetch data from Globus Preview

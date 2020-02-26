@@ -23,8 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_rfm(search_result):
-    if search_result[0].get('remote_file_manifest'):
-        return [search_result[0]['remote_file_manifest']]
+    if search_result['content'].get('remote_file_manifest'):
+        return [search_result['content']['remote_file_manifest']]
     else:
         return []
 
@@ -34,13 +34,15 @@ SEARCH_INDEXES = {
         'name': 'Performance Data',
         'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
         'fields': [
-            'perfdata',
-            ('remote_file_manifest', get_rfm),
+            ('perfdata', None, None),
+            ('remote_file_manifest', get_rfm, None),
             ('globus_http_endpoint',
              lambda x: 'b4eab318-fc86-11e7-a5a9-0a448319c2f8.petrel.host'),
             ('globus_http_scope', lambda x: 'petrel_https_server'),
             ('globus_http_path',
-             lambda x: x[0]['remote_file_manifest']['url'].split(':')[2]),
+             lambda x: (x['content']['remote_file_manifest']['url']
+                        .split(':')[2]),
+             None),
 
         ],
         'facets': [
@@ -71,7 +73,8 @@ SEARCH_INDEXES = {
         'filter_match': 'match-all',
         'template_override_dir': 'perfdata',
         'test_index': True,
-
+        'result_format_version': '2019-08-27',
+        # 'result_format_version': '2017-09-01',
     }
 }
 

@@ -10,6 +10,7 @@ from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
 from django.conf import settings
+from django.utils.module_loading import import_string
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound, exc
@@ -391,14 +392,11 @@ def process_search_data(field_mappers, results,
                 presult['subject']
             ))
             continue
-        c = format_result(presult, result_format_version)
-        formatted = {
-            'subject': quote_plus(presult.get('subject')),
-            'all': c['content'],
-        }
-        formatted.update(process_field_mappers(field_mappers, c['content']))
-        formatted_results.append(formatted)
 
+        formatted_result = format_result(presult, result_format_version)
+        processed = process_field_mappers(field_mappers, formatted_result,
+                                          result_format_version)
+        formatted_results.append(processed)
     return formatted_results
 
 
@@ -450,8 +448,26 @@ def format_result(result, result_format_version):
             ''.format(result_format_version, versions))
 
 
-def process_field_mappers(field_mappers, content):
-    result = {}
+def process_field_mappers(field_mappers, formatted_result,
+                          result_format_version=DEFAULT_RESULT_FORMAT_VERSION):
+    if result_format_version == SRF_2017_09_01:
+        return process_field_mappers_2017_09_01(field_mappers,
+                                                formatted_result)
+    elif result_format_version == SRF_2019_08_27:
+        return process_field_mappers_2019_08_27(field_mappers,
+                                                formatted_result)
+    else:
+        raise exc.GlobusPortalException(
+            'Unexpected search Version returned '
+            'by Globus Search'.format(result_format_version))
+
+
+def process_field_mappers_2017_09_01(field_mappers, result):
+    content = result['content']
+    processed_result = {
+        'subject': quote_plus(result.get('subject')),
+        'all': content,
+    }
     for mapper in field_mappers:
         field = {}
         if isinstance(mapper, str):
@@ -470,14 +486,94 @@ def process_field_mappers(field_mappers, content):
                         field_name
                     ))
                     field = {field_name: None}
+        else:
+            raise exc.GlobusPortalException('Field {} must have either one or '
+                                            'two items'.format(mapper))
 
         overwrites = [name for name in field.keys()
-                      if name in result.keys()]
+                      if name in processed_result.keys()]
         if overwrites:
             log.warning('{} defined by {} overwrite previous fields in '
                         'search.'.format(overwrites, mapper))
-        result.update(field)
-    return result
+        processed_result.update(field)
+    return processed_result
+
+
+def process_field_mappers_2019_08_27(field_mappers, result):
+    processed_result = {
+        'subject': quote_plus(result.get('subject')),
+        'all': result,
+    }
+    for mapper in field_mappers:
+        is_iterable = isinstance(mapper, collections.Iterable)
+        if not is_iterable or not len(mapper) in [2, 3]:
+            raise exc.FieldProcessingError(
+                message='Field {} is invaid, please pass a tuple with either '
+                        '2 or 3 args'.format(mapper)
+            )
+
+        # Break apart the supplied tuple. A two tuple or three tuple is allowed
+        # containing the name, function, and optionally the entry id.
+        # entry_ids *can* be None, so has_entry_id checks whether we should
+        # return an entry id.
+        has_entry_id, entry_id = False, None
+        if len(mapper) == 2:
+            field_name, func = mapper
+        else:
+            field_name, func, entry_id = mapper
+            has_entry_id = True
+
+        # Parse the second argument: The function. The function can be three
+        # things: None, a callable function, or a dotted path to a function.
+        if func is None:
+            def return_as_is(r): return r
+            func = return_as_is
+        elif isinstance(func, str):
+            func = import_string(func)
+        elif callable(func):
+            func = func
+        else:
+            exc.FieldProcessingError(
+                message='Second argument for "{}" must be None, a function, '
+                'or a dotted function string path.'.format(field_name)
+            )
+
+        # Fetch the entry id. If no entry id has been given, we'll return all
+        # entry ids. If an entry id has been specified but none exists, skip
+        # this field completely.
+        #
+        # Skipping entry_ids is preferable to raising an error, since the most
+        # likely scenario is the entry id only exists for some results, such as
+        # a 'special_metadata' entry id, or one with enhanced permissions
+        # attached to it.
+        content = result
+        if has_entry_id:
+            try:
+                f = filter(lambda e: e['entry_id'] == entry_id,
+                           result['entries'])
+                content = next(f)
+            except StopIteration:
+                log.debug('No entry ID {}, skipping...'.format(entry_id))
+                continue
+
+        # Attempt to run the function against the content, fetch the result,
+        # and write that into the field.
+        try:
+            field = {field_name: func(content)}
+        except Exception as e:
+            log.exception(e)
+            log.error('Error rendering content for "{}"'.format(
+                field_name
+            ))
+            field = {field_name: None}
+
+        overwrites = [name for name in field.keys()
+                      if name in processed_result.keys()]
+        if overwrites:
+            log.warning('{} defined by {} overwrite previous fields in '
+                        'search.'.format(overwrites, mapper))
+        processed_result.update(field)
+    return processed_result
 
 
 def get_pagination(total_results, offset,
