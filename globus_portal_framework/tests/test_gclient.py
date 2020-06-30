@@ -96,3 +96,19 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
         revoke_globus_tokens(user)
         # Twice for each service access_token, and refresh_token
         self.assertEqual(cc_instance.oauth2_revoke_token.call_count, 6)
+
+    @mock.patch('globus_portal_framework.gclients.log')
+    @mock.patch('globus_sdk.ConfidentialAppAuthClient')
+    @mock.patch('globus_sdk.exc')
+    def test_logout_revokes_tokens(self, globus_exceptions, patched_cc_client,
+                                   log):
+        cc_instance = mock.Mock()
+        patched_cc_client.return_value = cc_instance
+        globus_exceptions.GlobusAPIError = Exception
+        cc_instance.oauth2_revoke_token.side_effect = globus_sdk.exc.GlobusAPIError
+
+        user = mock_user('alice', ['auth.globus.org', 'search.api.globus.org'
+                                   'transfer.api.globus.org'])
+        revoke_globus_tokens(user)
+        # Twice for each service access_token, and refresh_token
+        self.assertEqual(log.exception.call_count, 3)

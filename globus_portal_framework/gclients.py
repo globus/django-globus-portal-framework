@@ -40,8 +40,12 @@ def revoke_globus_tokens(user):
                     for t in tokens.get('other_tokens', [])])
 
     for at, rt in tok_list:
-        ac.oauth2_revoke_token(at)
-        ac.oauth2_revoke_token(rt)
+        try:
+            ac.oauth2_revoke_token(at)
+            ac.oauth2_revoke_token(rt)
+        except globus_sdk.exc.GlobusAPIError as gapie:
+            log.exception(gapie)
+
     log.debug('Revoked tokens for user {}'.format(user))
 
 
