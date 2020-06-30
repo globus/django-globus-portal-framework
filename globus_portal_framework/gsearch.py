@@ -89,7 +89,7 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
         'facets': prepare_search_facets(index_data.get('facets', [])),
         'filters': filters,
         'offset': (int(page) - 1) * get_setting('SEARCH_RESULTS_PER_PAGE'),
-        'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
+        'limit': 1,
     })
     search_data.update(search_kwargs or {})
     result_format_version = search_data.get('result_format_version',
@@ -393,6 +393,9 @@ def process_search_data(field_mappers, results,
             ))
             continue
 
+        from pprint import pprint
+        pprint(result)
+
         formatted_result = format_result(presult, result_format_version)
         processed = process_field_mappers(field_mappers, formatted_result,
                                           result_format_version)
@@ -413,7 +416,7 @@ def parse_result(result):
         return {
             'entries': [
                 {'entry_ids': eid, 'content': c}
-                for eid, c in zip(result.get('entry_ids', [None]),
+                for eid, c in zip(result.get('entry_id', [None]),
                                   result.get('content', []))
             ],
             'subject': result['subject']
@@ -434,6 +437,7 @@ def format_result(result, result_format_version):
     :return: GMetaResult formatted in another Globus Search format
     """
     if result_format_version == SRF_2017_09_01:
+        ## AAHH! This won't work! Fix!
         return {
             'content': [r['content'] for r in result['entries']],
             'entry_ids': result.get('entry_ids', [None]),
@@ -505,30 +509,34 @@ def process_field_mappers_2019_08_27(field_mappers, result):
         'all': result,
     }
     for mapper in field_mappers:
-        is_iterable = isinstance(mapper, collections.Iterable)
-        if not is_iterable or not len(mapper) in [2, 3]:
-            raise exc.FieldProcessingError(
-                message='Field {} is invaid, please pass a tuple with either '
-                        '2 or 3 args'.format(mapper)
-            )
+        # is_iterable = isinstance(mapper, collections.Iterable)
+        # if not is_iterable or not len(mapper) in [1, 2]:
+        #     raise exc.FieldProcessingError(
+        #         message='Field {} is invaid, please pass a tuple with either '
+        #                 '1 or 2 args'.format(mapper)
+        #     )
 
         # Break apart the supplied tuple. A two tuple or three tuple is allowed
         # containing the name, function, and optionally the entry id.
         # entry_ids *can* be None, so has_entry_id checks whether we should
         # return an entry id.
-        has_entry_id, entry_id = False, None
-        if len(mapper) == 2:
-            field_name, func = mapper
-        else:
-            field_name, func, entry_id = mapper
+        has_entry_id, entry_id, field_name = False, None, None
+        if isinstance(mapper, collections.Iterable) and len(mapper) == 1:
+            func = mapper[0]
+        elif isinstance(mapper, str):
+            func = mapper
+        elif len(mapper) == 2:
+            func, entry_id = mapper
             has_entry_id = True
+        else:
+            raise ValueError()
 
         # Parse the second argument: The function. The function can be three
         # things: None, a callable function, or a dotted path to a function.
-        if func is None:
-            def return_as_is(r): return r
-            func = return_as_is
-        elif isinstance(func, str):
+        # if func is None:
+        #     def return_as_is(r): return r
+        #     func = return_as_is
+        if isinstance(func, str):
             func = import_string(func)
         elif callable(func):
             func = func
@@ -537,6 +545,7 @@ def process_field_mappers_2019_08_27(field_mappers, result):
                 message='Second argument for "{}" must be None, a function, '
                 'or a dotted function string path.'.format(field_name)
             )
+        field_name = func.__name__
 
         # Fetch the entry id. If no entry id has been given, we'll return all
         # entry ids. If an entry id has been specified but none exists, skip
