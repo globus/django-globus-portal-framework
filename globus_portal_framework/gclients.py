@@ -124,8 +124,12 @@ def load_transfer_client(user):
 
 def get_user_groups(user):
     MY_GROUPS_URL = 'https://groups.api.globus.org/v2/groups/my_groups'
-    GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
-    token = load_globus_access_token(user, GROUPS_RS)
+    # Attempt to load the access token for Globus Groups. Both
+    try:
+        GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
+        token = load_globus_access_token(user, GROUPS_RS)
+    except ValueError:
+        token = load_globus_access_token(user, 'groups.api.globus.org')
     headers = {'Authorization': 'Bearer ' + token}
     request = requests.get(MY_GROUPS_URL, headers=headers)
     return request.json()
