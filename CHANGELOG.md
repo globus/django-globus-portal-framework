@@ -4,6 +4,13 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.13 - 2020-09-09
+
+- Fixed Globus API errors on logout
+- Added support for new Globus Groups Resource Server name
+    - Changed from 04896e9e-b98e-437e-becd-8084b9e234a0 to 'groups.api.globus.org'
+    - 0.3.12 will continue to work for groups until September 23rd
+
 ## 0.3.12 - 2020-02-25
 
 - Fixed out of order merge to include changes from last release
