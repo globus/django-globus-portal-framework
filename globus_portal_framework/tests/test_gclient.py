@@ -15,7 +15,9 @@ from globus_portal_framework import (
     ExpiredGlobusToken, GlobusPortalException,
 )
 
-from globus_portal_framework.gclients import revoke_globus_tokens, get_user_groups
+from globus_portal_framework.gclients import (
+    revoke_globus_tokens, get_user_groups
+)
 
 from globus_portal_framework.tests.mocks import (
     MockGlobusClient, mock_user, globus_client_is_loaded_with_authorizer,
@@ -102,12 +104,13 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
     @mock.patch('globus_portal_framework.gclients.log')
     @mock.patch('globus_sdk.ConfidentialAppAuthClient')
     @mock.patch('globus_sdk.exc')
-    def test_logout_revokes_tokens(self, globus_exceptions, patched_cc_client,
+    def test_revocation_globus_err(self, globus_exceptions, patched_cc_client,
                                    log):
         cc_instance = mock.Mock()
         patched_cc_client.return_value = cc_instance
         globus_exceptions.GlobusAPIError = Exception
-        cc_instance.oauth2_revoke_token.side_effect = globus_sdk.exc.GlobusAPIError
+        cc_instance.oauth2_revoke_token.side_effect = \
+            globus_sdk.exc.GlobusAPIError
 
         user = mock_user('alice', ['auth.globus.org', 'search.api.globus.org'
                                    'transfer.api.globus.org'])
@@ -128,7 +131,8 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
     @mock.patch('requests.get')
     def test_get_groups_token_name(self, rget):
         # get user with public groups scope
-        client, user = get_logged_in_client('mal', ['groups.api.globus.org'])
+        client, user = get_logged_in_client('mal',
+                                            ['groups.api.globus.org'])
         get_user_groups(user)
         self.assertTrue(user.is_authenticated)
         self.assertTrue(rget.called)
@@ -137,7 +141,8 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
     @mock.patch('requests.get')
     def test_get_groups_bad_token_name(self, rget):
         # get user with public groups scope
-        client, user = get_logged_in_client('mal', ['incorrect.api.globus.org'])
+        client, user = get_logged_in_client('mal',
+                                            ['incorrect.api.globus.org'])
         with self.assertRaises(ValueError):
             get_user_groups(user)
 
