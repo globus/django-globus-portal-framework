@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 import globus_sdk
 
-from globus_portal_framework import ExpiredGlobusToken
+from globus_portal_framework import ExpiredGlobusToken, exc
 from globus_portal_framework.apps import get_setting
 
 import logging
@@ -124,8 +124,24 @@ def load_transfer_client(user):
 
 def get_user_groups(user):
     MY_GROUPS_URL = 'https://groups.api.globus.org/v2/groups/my_groups'
-    GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
-    token = load_globus_access_token(user, GROUPS_RS)
+    # Attempt to load the access token for Globus Groups. The scope name will
+    # change Sept 23rd, at which point attempting to fetch via the old name
+    # can be removed.
+    try:
+        GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
+        token = load_globus_access_token(user, GROUPS_RS)
+        log.debug('Fetched old-style groups token')
+    except ValueError:
+        log.debug('Fetched new-style groups token. Old style can now be '
+                  'removed.')
+        token = load_globus_access_token(user, 'groups.api.globus.org')
     headers = {'Authorization': 'Bearer ' + token}
-    request = requests.get(MY_GROUPS_URL, headers=headers)
-    return request.json()
+    response = requests.get(MY_GROUPS_URL, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except requests.HTTPError as httpe:
+        log.error(response.data)
+        raise exc.GlobusPortalException(message='Failed to get groups info '
+                                                'for user {}: '
+                                                .format(user, httpe))
