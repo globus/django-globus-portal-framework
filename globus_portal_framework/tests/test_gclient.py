@@ -12,7 +12,7 @@ import globus_sdk
 from globus_portal_framework import (
     load_globus_client, load_search_client, load_transfer_client,
 
-    ExpiredGlobusToken, GlobusPortalException,
+    ExpiredGlobusToken, GroupsException,
 )
 
 from globus_portal_framework.gclients import (
@@ -151,5 +151,5 @@ class GlobusPortalFrameworkUtilsTests(TestCase):
         # get user with public groups scope
         client, user = get_logged_in_client('mal', ['groups.api.globus.org'])
         rget.return_value.raise_for_status.side_effect = requests.HTTPError()
-        with self.assertRaises(GlobusPortalException):
+        with self.assertRaises(GroupsException):
             get_user_groups(user)

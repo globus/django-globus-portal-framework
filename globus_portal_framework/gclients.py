@@ -141,7 +141,6 @@ def get_user_groups(user):
         response.raise_for_status()
         return response.json()
     except requests.HTTPError as httpe:
-        log.error(response.data)
-        raise exc.GlobusPortalException(message='Failed to get groups info '
-                                                'for user {}: '
-                                                .format(user, httpe))
+        log.error(response.text)
+        raise exc.GroupsException(message='Failed to get groups info for user '
+                                          '{}: {}'.format(user, httpe))

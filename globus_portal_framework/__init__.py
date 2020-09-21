@@ -3,7 +3,8 @@ from globus_portal_framework.version import __version__
 from globus_portal_framework.exc import (
     GlobusPortalException, PreviewPermissionDenied, PreviewServerError,
     PreviewException, PreviewBinaryData, PreviewNotFound, PreviewURLNotFound,
-    ExpiredGlobusToken, IndexNotFound
+    ExpiredGlobusToken, IndexNotFound,
+    GroupsException,
 )
 
 from globus_portal_framework.gclients import (
@@ -31,6 +32,7 @@ __all__ = [
     'GlobusPortalException', 'PreviewPermissionDenied', 'PreviewServerError',
     'PreviewException', 'PreviewBinaryData', 'PreviewNotFound',
     'PreviewURLNotFound', 'ExpiredGlobusToken', 'IndexNotFound',
+    'GroupsException',
 
     'load_auth_client', 'load_transfer_client', 'load_search_client',
     'load_globus_client', 'load_globus_access_token', 'validate_token',
