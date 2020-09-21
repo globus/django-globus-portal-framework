@@ -9,8 +9,9 @@ class GlobusPortalException(Exception):
             that should be taken.
         """
         self.code = code or 'UnexpectedError'
-        self.message = message or 'There was an unexpected error ' \
-                                  'when fetching preview data.'
+        self.message = message or (
+            'Globus Portal Framework encountered an unexpected error'
+        )
         self.index = index or '<Index Not Listed>'
 
     def __str__(self):
@@ -18,6 +19,13 @@ class GlobusPortalException(Exception):
 
     def __repr__(self):
         return str(self)
+
+
+class GroupsException(GlobusPortalException):
+    def __init__(self, code='', message=''):
+        self.code = code or 'GroupsException'
+        self.message = message or 'User Globus Groups could not be fetched'
+        self.index = 'Index Not Applicable'
 
 
 class IndexNotFound(GlobusPortalException):

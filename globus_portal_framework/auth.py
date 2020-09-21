@@ -2,22 +2,20 @@
 Globus Auth OpenID Connect backend, docs at:
     https://docs.globus.org/api/auth
 """
-import os
 import logging
 from social_core.backends.globus import (
     GlobusOpenIdConnect as GlobusOpenIdConnectBase
 )
 from social_core.exceptions import AuthForbidden
+from globus_portal_framework.gclients import (
+    get_service_url, GROUPS_SCOPE, GLOBUS_GROUPS_V2_MY_GROUPS
+)
 
 log = logging.getLogger(__name__)
 
 
 class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
-    GROUPS_ENDPOINT = 'https://groups.api.globus.org'
-    GROUPS_API_MY_GROUPS = 'v2/groups/my_groups'
-    GROUPS_RESOURCE_SERVER = '04896e9e-b98e-437e-becd-8084b9e234a0'
-    GROUPS_SCOPE = ('urn:globus:auth:scope:groups.api.globus.org:'
-                    'view_my_groups_and_memberships')
+    OIDC_ENDPOINT = get_service_url('auth')
     GLOBUS_APP_URL = 'https://app.globus.org'
 
     def get_user_details(self, response):
@@ -130,21 +128,20 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         """
         groups_token = None
         for item in other_tokens:
-            if item.get('scope') == self.GROUPS_SCOPE:
+            if item.get('scope') == GROUPS_SCOPE:
                 groups_token = item.get('access_token')
 
         if groups_token is None:
             raise ValueError(
                 'You must set the {} scope on {} in order to set an allowed '
-                'group'.format(
-                    self.GROUPS_SCOPE,
-                    'settings.SOCIAL_AUTH_GLOBUS_SCOPE',
-                )
+                'group'.format(GROUPS_SCOPE,
+                               'settings.SOCIAL_AUTH_GLOBUS_SCOPE')
             )
 
         # Get the allowed group
         return self.get_json(
-            os.path.join(self.GROUPS_ENDPOINT, self.GROUPS_API_MY_GROUPS),
+            '{}{}'.format(get_service_url('groups'),
+                          GLOBUS_GROUPS_V2_MY_GROUPS),
             method='GET',
             headers={'Authorization': 'Bearer ' + groups_token}
         )

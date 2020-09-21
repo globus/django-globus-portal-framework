@@ -21,7 +21,7 @@ from globus_portal_framework.gsearch import (get_search_query,
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
-    ExpiredGlobusToken, check_exists, get_template
+    ExpiredGlobusToken, GroupsException, check_exists, get_template
 )
 
 log = logging.getLogger(__name__)
@@ -256,10 +256,14 @@ def allowed_groups(request):
     portal_groups = getattr(settings, 'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     context = {'allowed_groups': copy.deepcopy(portal_groups)}
     if request.user.is_authenticated:
-        user_groups = {g['id']: g for g in get_user_groups(request.user)}
-        for group in context['allowed_groups']:
-            if user_groups.get(group['uuid']):
-                group['is_member'] = True
+        try:
+            user_groups = {g['id']: g for g in get_user_groups(request.user)}
+            for group in context['allowed_groups']:
+                if user_groups.get(group['uuid']):
+                    group['is_member'] = True
+        except GroupsException as ge:
+            log.exception(ge)
+            messages.error(request, 'Error: Unable to fetch Globus Groups')
     return render(request, 'allowed-groups.html', context)
 
 
