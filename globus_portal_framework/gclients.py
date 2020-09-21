@@ -12,6 +12,44 @@ import logging
 
 log = logging.getLogger(__name__)
 
+CUSTOM_ENVS = {
+    'groups': {
+        'default': 'https://groups.api.globus.org',
+        'preview': 'https://groups.api.preview.globus.org',
+    }
+}
+
+# At this point, 'groups' is still a beta service for Globus.
+# This will likely be folded into the Globus SDK at some point, but needs
+# to be hardcoded here in the mean time.
+GROUPS_SCOPE = ('urn:globus:auth:scope:groups.api.globus.org:'
+                'view_my_groups_and_memberships')
+GLOBUS_GROUPS_V2_MY_GROUPS = '/v2/groups/my_groups'
+
+
+def get_globus_environment():
+    """Get the current Globus Environment. Used primarily for checking whether
+    the user has set GLOBUS_SDK_ENVIRONMENT=preview from the Globus SDK, but
+    may also be used for other Globus Environments. See here for more info:
+    Globus Preview: https://docs.globus.org/how-to/preview/
+    Globus SDK: https://globus-sdk-python.readthedocs.io/en/stable/config.html?highlight=preview#environment-variables  # noqa
+    """
+    return globus_sdk.config.get_globus_environ()
+
+
+def get_service_url(service_name):
+    """Get the URL based on the current Globus Environment. Is a wrapper around
+    The Globus SDK .get_service_url(), but also provides lookup for custom beta
+    services such as Globus Groups."""
+    env = get_globus_environment()
+    if service_name in CUSTOM_ENVS:
+        if env not in CUSTOM_ENVS[service_name]:
+            err = (f'Service {service_name} has no service url for the '
+                   f'configured environment: "{env}"')
+            raise exc.GlobusPortalException('InvalidEnv', err)
+        return CUSTOM_ENVS[service_name][env]
+    return globus_sdk.config.get_service_url(env, service_name)
+
 
 def validate_token(tok):
     """Validate if the given token is active.
@@ -123,10 +161,7 @@ def load_transfer_client(user):
 
 
 def get_user_groups(user):
-    MY_GROUPS_URL = 'https://groups.api.globus.org/v2/groups/my_groups'
-    # Attempt to load the access token for Globus Groups. The scope name will
-    # change Sept 23rd, at which point attempting to fetch via the old name
-    # can be removed.
+    """Get all user groups from the groups.api.globus.org service."""
     try:
         GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
         token = load_globus_access_token(user, GROUPS_RS)
@@ -135,8 +170,12 @@ def get_user_groups(user):
         log.debug('Fetched new-style groups token. Old style can now be '
                   'removed.')
         token = load_globus_access_token(user, 'groups.api.globus.org')
+    # Attempt to load the access token for Globus Groups. The scope name will
+    # change Sept 23rd, at which point attempting to fetch via the old name
+    # can be removed.
+    groups_url = f'{get_service_url("groups")}{GLOBUS_GROUPS_V2_MY_GROUPS}'
     headers = {'Authorization': 'Bearer ' + token}
-    response = requests.get(MY_GROUPS_URL, headers=headers)
+    response = requests.get(groups_url, headers=headers)
     try:
         response.raise_for_status()
         return response.json()

@@ -2,17 +2,20 @@
 Globus Auth OpenID Connect backend, docs at:
     https://docs.globus.org/api/auth
 """
-import os
 import logging
 from social_core.backends.globus import (
     GlobusOpenIdConnect as GlobusOpenIdConnectBase
 )
 from social_core.exceptions import AuthForbidden
+from globus_portal_framework.gclients import (
+    get_service_url, GROUPS_SCOPE, GLOBUS_GROUPS_V2_MY_GROUPS
+)
 
 log = logging.getLogger(__name__)
 
 
 class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
+    OIDC_ENDPOINT = get_service_url('auth')
     GROUPS_ENDPOINT = 'https://groups.api.globus.org'
     GROUPS_API_MY_GROUPS = 'v2/groups/my_groups'
     GROUPS_RESOURCE_SERVER = '04896e9e-b98e-437e-becd-8084b9e234a0'
