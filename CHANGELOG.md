@@ -4,6 +4,12 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.14 - 2020-09-21
+
+- Fixed error on /allowed-groups view when groups could not be fetched from Globus
+- Added Globus 'Preview' support
+- Added specific "GroupsException" for catching groups-specific exceptions
+
 ## 0.3.13 - 2020-09-09
 
 - Fixed Globus API errors on logout
