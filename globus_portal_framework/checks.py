@@ -4,6 +4,7 @@ from django.conf import settings
 import globus_sdk
 
 from globus_portal_framework.constants import FILTER_TYPES
+from globus_portal_framework.gclients import get_globus_environment
 
 log = logging.getLogger(__name__)
 log.debug('Debugging is active.')
@@ -93,3 +94,12 @@ def check_search_indexes(app_configs, **kwargs):
                             tuple(FILTER_TYPES.keys()))
                         ))
     return errors
+
+
+@register()
+def check_globus_env(app_configs, **kwargs):
+    env = get_globus_environment()
+    if env != 'default':
+        return [Warning('Environment set to "{}", unset with '
+                        '"export GLOBUS_SDK_ENVIRONMENT=default"'.format(env))]
+    return []
