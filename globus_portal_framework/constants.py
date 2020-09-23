@@ -36,6 +36,8 @@ __f_types = '|'.join(FILTER_TYPES.keys())
 FILTER_QUERY_PATTERN = '^{}(-(?P<filter_type>{}))?\\..*'.format(
     FILTER_PREFIX, __f_types)
 
+FACET_NAME_PATTERN = r'facet_def_(?P<order_index>\d+)_.+'
+
 FILTER_DATE_TYPE_PATTERN = (
     r'(?P<year>\d\d\d\d)'
     r'(?P<month>-\d\d)?'
@@ -56,7 +58,8 @@ VALID_SEARCH_KEYS = [
 ]
 
 VALID_SEARCH_FACET_KEYS = [
-    'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval'
+    'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval',
+    'missing'
 ]
 # https://docs.globus.org/api/search/search/#request_documents
 DEFAULT_RESULT_FORMAT_VERSION = '2017-09-01'

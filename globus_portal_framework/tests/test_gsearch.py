@@ -1,3 +1,4 @@
+from copy import deepcopy
 from unittest import mock
 from urllib.parse import quote_plus
 
@@ -38,7 +39,7 @@ class MockGlobusResponse:
         self.data = {}
 
 
-MOCK_FACETS = {
+MOCK_GS_FACETS = {
     "facet_results": [
         {
             "@datatype": "GFacetResult",
@@ -51,7 +52,7 @@ MOCK_FACETS = {
                     "value": "Problems"
                 }
             ],
-            "name": "Things I Got"
+            "name": "facet_def_0_things.i.got"
         }
     ],
 }
@@ -72,6 +73,7 @@ class SearchUtilsTest(TestCase):
     }}
 
     def setUp(self):
+        self.mock_gs_facets = deepcopy(MOCK_GS_FACETS)
         self.factory = RequestFactory()
 
     @override_settings(SEARCH_INDEXES={'foo': {}})
@@ -269,22 +271,25 @@ class SearchUtilsTest(TestCase):
 
     def test_get_facets(self):
         search_response = MockGlobusResponse()
-        search_response.data = MOCK_FACETS
+        search_response.data = self.mock_gs_facets
         r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, {})
         self.assertEqual(len(r), 1)
         facet = r[0]
-        self.assertEqual(set(facet.keys()), {'name', 'buckets'})
+        expected_fields = {'name', 'buckets', 'size', 'type',
+                           'field_name', 'unique_name'}
+        self.assertEqual(set(facet.keys()), expected_fields)
         bucket = facet['buckets'][0]
         self.assertEqual(set(bucket.keys()), {'count', 'value', 'field_name',
                                               'checked', 'filter_type',
-                                              'search_filter_query_key'})
+                                              'search_filter_query_key',
+                                              'datetime'})
         # No filters defined in third argument, this should not be 'checked'
         self.assertFalse(bucket['checked'])
 
     @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL)
     def test_checked_facet_shows_up(self):
         search_response = MockGlobusResponse()
-        search_response.data = MOCK_FACETS
+        search_response.data = self.mock_gs_facets
         request = self.factory.get('/?filter.things.i.got=Problems')
         filters = get_search_filters(request)
         r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, filters)
@@ -325,7 +330,7 @@ class SearchUtilsTest(TestCase):
             }]),
             [{
                 'field_name': 'foo.bar.baz',
-                'name': 'foo.bar.baz',
+                'name': 'facet_def_0_foo.bar.baz',
                 'type': 'terms',
                 'size': 10
             }]
@@ -338,7 +343,7 @@ class SearchUtilsTest(TestCase):
             }]),
             [{
                 'field_name': 'foo.bar.baz',
-                'name': 'foo.bar.baz',
+                'name': 'facet_def_0_foo.bar.baz',
                 'type': 'terms',
                 'size': 10
             }]
