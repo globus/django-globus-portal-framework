@@ -637,9 +637,40 @@ def deserialize_gsearch_range(serialized_filter_range):
     }
 
 
+def get_facet_filter_type(facet_definition, default_terms=None):
+    """Given a definition from settings.SEARCH_INDEXES.facets,
+    derive the corresponding filter which should be used for
+    filtering on the data returned in Globus Search facets.
+
+    Returns a valid Globus Search filter type, or None if the given facets
+    cannot be filtered on. A warning will be raised if the facet definition
+    does not match any known types in Globus Search -- in this case, filtering
+    on the unknown type will not be possible but no errors will be raised.
+    """
+    ftype = facet_definition.get('type', 'terms')
+    field = facet_definition['field_name']
+    if ftype == 'terms':
+        return (
+                facet_definition.get('filter_type') or
+                default_terms or
+                get_setting('DEFAULT_FILTER_MATCH')
+        )
+    elif ftype == 'numeric_histogram':
+        return FILTER_RANGE
+    elif ftype == 'date_histogram':
+        return (facet_definition.get('filter_type') or
+                facet_definition['date_interval'])
+    elif ftype in ['sum', 'avg']:
+        return None
+    else:
+        log.warning('Filter type could not be determined for facet "{}" '
+                    'facet type "{}" is not know by DGPF. Filtering will '
+                    'be disabled for this field.'.format(field, ftype))
+    return None
+
+
 def get_field_facet_filter_types(facet_definitions, default_terms=None):
-    """Build a map of a list of facet definitions of 'field_name' mapped
-    to 'filter_type'. """
+    """Deprecated and no longer used. Will be removed in v0.4.0"""
     field_types = {}
     for facet in facet_definitions:
         ftype = facet.get('type', 'terms')
@@ -662,6 +693,49 @@ def get_field_facet_filter_types(facet_definitions, default_terms=None):
     return field_types
 
 
+def get_active_filters(facet_field_name, filter_type, user_filters):
+    """
+    Given a list of all user search filter query params, derive a list
+    of active filters which can be matched up against facets. The return
+    value will be a list of filters for a given facet field and type which
+    can be checked against facet buckets to determine which bucket a user
+    wants to use to filter their search.
+
+    The return values are tailored to be as easy as possible to compare against
+    existing facets. For Terms, and Numeric Histograms, it's easiest to compare
+    against the raw value and serialized value respectively. Date filters are
+    different, where the user specifies a range of time around a certain date,
+    such as a "Month" filter of February being Feb 1st 2018 to Feb 28th 2018.
+    Datetimes MUST be used to compare facets due to the specificity of facets.
+    A filter might look like "2018-02" but Globus Search fields can have
+    different formats such as "2018-02-16" or "2018-02-16 00:00:00" which
+    cannot be matched by string.
+
+    Example return values below:
+    Match-Any, Match-All filter Example: ['sheep', 'rainbow', 'lollipop']
+    Numeric Range Filter Example: ['18000.0--19500.0']
+    Date Range Filter Example: [{
+      'from': datetime.datetime(2018, 2, 1, 0, 0),
+      'to': datetime.datetime(2018, 2, 28, 0, 0)
+    }]
+    """
+    gs_filter_type = FILTER_TYPES[filter_type]
+    filter_vals_nested = [uf.get('values', []) for uf in user_filters
+                          if (uf['field_name'] == facet_field_name and
+                          uf['type'] == gs_filter_type)]
+    # Flatten the filter values into a simple list
+    filter_vals = [item for sublist in filter_vals_nested for item in sublist]
+
+    if filter_type in FILTER_DATE_RANGES:
+        filter_vals = [{
+            'from': parse_date_filter(f['from'])['datetime'],
+            'to': parse_date_filter(f['to'])['datetime']
+        } for f in filter_vals]
+    elif filter_type == FILTER_RANGE:
+        filter_vals = [serialize_gsearch_range(r) for r in filter_vals]
+    return filter_vals
+
+
 def get_facets(search_result, portal_defined_facets, filters,
                filter_match=None):
     """Prepare facets for display. Globus Search data is removed from results
@@ -677,20 +751,33 @@ def get_facets(search_result, portal_defined_facets, filters,
     `filters` only determines the look of the page (which box is checked) and
     generates the query-params for the user's next possible search.
     :param filter_match: Deprecated. Please set filtering behavior in the
-    facet definition.
+    facet definition. Will be removed in v0.4.0
 
     :return: A list of facets. An example is here:
         [
             {
             'name': 'Contributor'
+            'field_name': 'myfields.contributors.value',
+            'size': 10,
+            'type': 'terms',
+            'unique_name': 'facet_def_0_myfields.contributors.value'
             'buckets': [{
                    'checked': False,
                    'count': 4,
-                   'field_name': 'searchdata.contributors.contributor_name',
+                   'datetime': None,
+                   'field_name':
+                       'searchdata.contributors.contributor_name,
+                   'filter_type': 'match-all',
+                   'search_filter_query_key':
+                       'filter-match-all.searchdata.contributors.contributor_name',  # noqa
                    'value': 'Cobb, Jane'},
                   {'checked': True,
                    'count': 4,
+                   'datetime': None,
                    'field_name': 'searchdata.contributors.contributor_name',
+                   'filter_type': 'match-all',
+                   'search_filter_query_key':
+                       'filter-match-all.myfields.contributors.value',
                    'value': 'Reynolds, Malcolm'}
                    # ...<More Buckets>
                    ],
@@ -701,9 +788,6 @@ def get_facets(search_result, portal_defined_facets, filters,
     """
     facets = resolve_facet_results(portal_defined_facets,
                                    search_result.data.get('facet_results', []))
-    filter_types = get_field_facet_filter_types(portal_defined_facets,
-                                                default_terms=filter_match)
-    active_filters = {filter['field_name']: filter for filter in filters}
     for facet in facets:
         # Some facet types, like avg and sum, don't have buckets. Skip them
         # completely.
@@ -711,20 +795,11 @@ def get_facets(search_result, portal_defined_facets, filters,
         if not buckets:
             continue
 
-        # Analyze this facet's buckets, and determine how filtering should
-        # work.
-        filter_type = filter_types[facet['field_name']]
-        # Check if this facet has any active filters on it. Multiple filters
-        # can be active per-facet, and will all show up in active_filter.values
-        active_filter = active_filters.get(facet['field_name'], {})
-        if filter_type in FILTER_DATE_RANGES:
-            active_filter_vals = [{
-                'from': parse_date_filter(d['from'])['datetime'],
-                'to': parse_date_filter(d['to'])['datetime']
-            } for d in active_filter.get('values', [])]
-        else:
-            active_filter_vals = active_filter.get('values', [])
-
+        # Get the filter type, and any active filters for this category.
+        # active_filters will determine which buckets are 'checked'
+        filter_type = get_facet_filter_type(facet, default_terms=filter_match)
+        active_filter_vals = get_active_filters(facet['field_name'],
+                                                filter_type, filters)
         for bucket in buckets:
             # Remove any extra Globus Search keys, only keep data relevant
             # to the search.

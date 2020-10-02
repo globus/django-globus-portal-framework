@@ -12,7 +12,7 @@ from globus_portal_framework.gsearch import (
     process_search_data, get_facets, get_search_filters,
     get_date_range_for_date, get_search_query, parse_filters,
     prepare_search_facets, serialize_gsearch_range, deserialize_gsearch_range,
-    get_field_facet_filter_types,
+    get_facet_filter_type,
 )
 from globus_portal_framework.exc import (
     IndexNotFound, GlobusPortalException, InvalidRangeFilter,
@@ -42,27 +42,91 @@ class MockGlobusResponse:
 MOCK_GS_FACETS = {
     "facet_results": [
         {
-            "@datatype": "GFacetResult",
-            "@version": "2017-09-01",
-            "buckets": [
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'name': 'facet_def_0_perfdata.things.i.got',
+            'buckets': [
                 {
-                    "@datatype": "GBucket",
-                    "@version": "2017-09-01",
-                    "count": 99,
-                    "value": "Problems"
-                }
+                    '@datatype': 'GBucket',
+                    '@version': '2017-09-01',
+                    'count': 99,
+                    'value': 'Problems'
+                },
             ],
-            "name": "facet_def_0_things.i.got"
-        }
-    ],
+        },
+        {
+
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'name': 'facet_def_1_remote_file_manifest.length',
+            'buckets': [
+                {
+                    '@datatype': 'GBucket',
+                    '@version': '2017-09-01',
+                    'count': 1,
+                    'value': {'from': 18000.0, 'to': 19500.0}
+                },
+            ],
+        },
+        {
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'name': 'facet_def_2_perfdata.dates.value',
+            'buckets': [
+                {
+                    '@datatype': 'GBucket',
+                    '@version': '2017-09-01',
+                    'count': 1,
+                    'value': '2017-01'
+                },
+            ],
+        },
+        {
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'name': 'facet_def_3_remote_file_manifest.length',
+            'value': 1835339736.675
+        },
+        {
+            '@datatype': 'GFacetResult',
+            '@version': '2017-09-01',
+            'name': 'facet_def_4_remote_file_manifest.length',
+            'value': 73413589467.0
+        },
+    ]
 }
 
-MOCK_PORTAL_DEFINED_FACETS = [{
-    'name': 'Things I Got',
-    'type': 'terms',
-    'field_name': 'things.i.got',
-    'size': 10
-}]
+MOCK_PORTAL_DEFINED_FACETS = [
+    {
+        'name': 'Things I Got',
+        'type': 'terms',
+        'field_name': 'things.i.got',
+        'size': 10
+    },
+    {
+        'name': 'File Size (Bytes)',
+        'type': 'numeric_histogram',
+        'field_name': 'remote_file_manifest.length',
+        'size': 10,
+        'histogram_range': {'low': 15000, 'high': 30000},
+    },
+    {
+        "name": "Dates",
+        "field_name": "dates.value",
+        "type": "date_histogram",
+        "date_interval": "month",
+    },
+    {
+        'name': 'File Size Average',
+        'field_name': 'remote_file_manifest.length',
+        'type': 'avg',
+    },
+    {
+        'name': 'Total Size (current search)',
+        'field_name': 'remote_file_manifest.length',
+        'type': 'sum',
+    },
+]
 
 
 class SearchUtilsTest(TestCase):
@@ -273,7 +337,7 @@ class SearchUtilsTest(TestCase):
         search_response = MockGlobusResponse()
         search_response.data = self.mock_gs_facets
         r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, {})
-        self.assertEqual(len(r), 1)
+        self.assertEqual(len(r), 5)
         facet = r[0]
         expected_fields = {'name', 'buckets', 'size', 'type',
                            'field_name', 'unique_name'}
@@ -287,13 +351,34 @@ class SearchUtilsTest(TestCase):
         self.assertFalse(bucket['checked'])
 
     @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL)
-    def test_checked_facet_shows_up(self):
+    def test_facet_terms_checked(self):
         search_response = MockGlobusResponse()
         search_response.data = self.mock_gs_facets
         request = self.factory.get('/?filter.things.i.got=Problems')
         filters = get_search_filters(request)
         r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, filters)
         self.assertTrue(r[0]['buckets'][0]['checked'])
+
+    @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL)
+    def test_facet_numeric_checked(self):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+        request = self.factory.get(
+            '/?filter-range.remote_file_manifest.length=18000.0--19500.0')
+        filters = get_search_filters(request)
+        r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, filters)
+        # "dates" is the third defined facet [2], with the first bucket checked
+        self.assertTrue(r[1]['buckets'][0]['checked'])
+
+    @override_settings(DEFAULT_FILTER_MATCH=FILTER_MATCH_ALL)
+    def test_facet_date_checked(self):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+        request = self.factory.get('/?filter-month.dates.value=2017-01')
+        filters = get_search_filters(request)
+        r = get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, filters)
+        # "dates" is the third defined facet [2], with the first bucket checked
+        self.assertTrue(r[2]['buckets'][0]['checked'])
 
     def test_get_invalid_search_range_raises_error(self):
         with self.assertRaises(GlobusPortalException):
@@ -374,21 +459,36 @@ class SearchUtilsTest(TestCase):
         with self.assertRaises(InvalidRangeFilter):
             deserialize_gsearch_range('missing-high-bounds--')
 
-    def test_get_field_facet_filter_types_valid(self):
-        facets = get_field_facet_filter_types([
-            {'field_name': 'foo.defaults.to.terms'},
-            {'field_name': 'foo.match-all', 'filter_type': 'match-all'},
-            {'field_name': 'foo.match-any', 'filter_type': 'match-any'},
-            {'field_name': 'foo.num.hist', 'type': 'numeric_histogram'},
-            {'field_name': 'foo.date.hist', 'type': 'date_histogram',
-             'date_interval': 'day'},
-        ])
-        self.assertEqual(facets['foo.defaults.to.terms'], 'match-all')
-        self.assertEqual(facets['foo.match-all'], 'match-all')
-        self.assertEqual(facets['foo.match-any'], 'match-any')
-        self.assertEqual(facets['foo.num.hist'], 'range')
-        self.assertEqual(facets['foo.date.hist'], 'day')
+    def test_get_facet_filter_type_valid(self):
+        expected_matches = [
+            # Match all, match any 'terms' filters
+            ({'field_name': 'foo.defaults.to.terms'}, 'match-all'),
+            ({'field_name': 'foo.match-all',
+              'filter_type': 'match-all'}, 'match-all'),
+            ({'field_name': 'foo.match-any', 'filter_type': 'match-any'},
+             'match-any'),
 
-    def test_get_field_facet_filter_types_invalid_filter(self):
-        with self.assertRaises(ValueError):
-            get_field_facet_filter_types([{'field_name': 'foo', 'type': ''}])
+            # Numeric histograms
+            ({'field_name': 'foo.num.hist', 'type': 'numeric_histogram'},
+             'range'),
+
+            # Dates
+            ({'field_name': 'foo.date.hist', 'type': 'date_histogram',
+             'date_interval': 'day'}, 'day'),
+            ({'field_name': 'foo.date.hist', 'type': 'date_histogram',
+              'date_interval': 'month'}, 'month'),
+            ({'field_name': 'foo.date.hist', 'type': 'date_histogram',
+              'date_interval': 'year'}, 'year'),
+
+            # Stat facets (Not filterable! Should return None)
+            ({'field_name': 'foo.num.sum', 'type': 'avg'}, None),
+            ({'field_name': 'foo.num.avg', 'type': 'sum'}, None),
+        ]
+        for facet_definition, filter_type in expected_matches:
+            self.assertEqual(get_facet_filter_type(facet_definition),
+                             filter_type)
+
+    @mock.patch('globus_portal_framework.gsearch.log')
+    def test_get_field_facet_filter_types_invalid_filter(self, log):
+        get_facet_filter_type({'field_name': 'foo', 'type': ''})
+        self.assertTrue(log.warning.called)
