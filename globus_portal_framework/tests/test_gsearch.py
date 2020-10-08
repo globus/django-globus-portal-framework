@@ -99,7 +99,6 @@ MOCK_GS_FACETS = {
 MOCK_PORTAL_DEFINED_FACETS = [
     {
         'name': 'Things I Got',
-        'type': 'terms',
         'field_name': 'things.i.got',
         'size': 10
     },
@@ -129,7 +128,7 @@ MOCK_PORTAL_DEFINED_FACETS = [
 ]
 
 
-class SearchUtilsTest(TestCase):
+class TestGSearch(TestCase):
 
     SEARCH_INDEXES = {'myindex': {
         # Randomly generated and not real

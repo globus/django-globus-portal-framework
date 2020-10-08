@@ -1,0 +1,212 @@
+[
+  {
+    "buckets": [
+      {
+        "checked": false,
+        "count": 35,
+        "datetime": null,
+        "field_name": "myindex.subjects.value",
+        "filter_type": "match-all",
+        "search_filter_query_key": "filter-match-all.myindex.subjects.value",
+        "value": "Sheep Results"
+      },
+      {
+        "checked": false,
+        "count": 5,
+        "datetime": null,
+        "field_name": "myindex.subjects.value",
+        "filter_type": "match-all",
+        "search_filter_query_key": "filter-match-all.myindex.subjects.value",
+        "value": "Rainbow Results"
+      },
+      {
+        "checked": false,
+        "count": 3,
+        "datetime": null,
+        "field_name": "myindex.subjects.value",
+        "filter_type": "match-all",
+        "search_filter_query_key": "filter-match-all.myindex.subjects.value",
+        "value": "Lollipop Results"
+      }
+    ],
+    "field_name": "myindex.subjects.value",
+    "name": "Subject",
+    "size": 10,
+    "type": "terms",
+    "unique_name": "facet_def_0_myindex.subjects.value"
+  },
+  {
+    "buckets": [
+      {
+        "checked": false,
+        "count": 28,
+        "datetime": null,
+        "field_name": "myindex.publication_year.value",
+        "filter_type": "match-all",
+        "search_filter_query_key": "filter-match-all.myindex.publication_year.value",
+        "value": "2018"
+      },
+      {
+        "checked": false,
+        "count": 20,
+        "datetime": null,
+        "field_name": "myindex.publication_year.value",
+        "filter_type": "match-all",
+        "search_filter_query_key": "filter-match-all.myindex.publication_year.value",
+        "value": "2016"
+      },
+      {
+        "checked": false,
+        "count": 12,
+        "datetime": null,
+        "field_name": "myindex.publication_year.value",
+        "filter_type": "match-all",
+        "search_filter_query_key": "filter-match-all.myindex.publication_year.value",
+        "value": "2017"
+      }
+    ],
+    "field_name": "myindex.publication_year.value",
+    "name": "Publication Year",
+    "size": 10,
+    "type": "terms",
+    "unique_name": "facet_def_1_myindex.publication_year.value"
+  },
+  {
+    "buckets": [
+      {
+        "checked": false,
+        "count": 6,
+        "datetime": null,
+        "field_name": "remote_file_manifest.length",
+        "filter_type": "range",
+        "search_filter_query_key": "filter-range.remote_file_manifest.length",
+        "value": "18000.0--19500.0"
+      },
+      {
+        "checked": false,
+        "count": 4,
+        "datetime": null,
+        "field_name": "remote_file_manifest.length",
+        "filter_type": "range",
+        "search_filter_query_key": "filter-range.remote_file_manifest.length",
+        "value": "19500.0--21000.0"
+      },
+      {
+        "checked": false,
+        "count": 9,
+        "datetime": null,
+        "field_name": "remote_file_manifest.length",
+        "filter_type": "range",
+        "search_filter_query_key": "filter-range.remote_file_manifest.length",
+        "value": "21000.0--22500.0"
+      },
+      {
+        "checked": false,
+        "count": 10,
+        "datetime": null,
+        "field_name": "remote_file_manifest.length",
+        "filter_type": "range",
+        "search_filter_query_key": "filter-range.remote_file_manifest.length",
+        "value": "24000.0--25500.0"
+      },
+      {
+        "checked": false,
+        "count": 6,
+        "datetime": null,
+        "field_name": "remote_file_manifest.length",
+        "filter_type": "range",
+        "search_filter_query_key": "filter-range.remote_file_manifest.length",
+        "value": "25500.0--27000.0"
+      },
+      {
+        "checked": false,
+        "count": 5,
+        "datetime": null,
+        "field_name": "remote_file_manifest.length",
+        "filter_type": "range",
+        "search_filter_query_key": "filter-range.remote_file_manifest.length",
+        "value": "30000.0--*"
+      }
+    ],
+    "field_name": "remote_file_manifest.length",
+    "histogram_range": {
+      "high": 30000,
+      "low": 15000
+    },
+    "name": "File Size (Bytes)",
+    "size": 10,
+    "type": "numeric_histogram",
+    "unique_name": "facet_def_2_remote_file_manifest.length"
+  },
+  {
+    "buckets": [
+      {
+        "checked": false,
+        "count": 5,
+        "datetime": 1483257600.0,
+        "field_name": "myindex.dates.value",
+        "filter_type": "month",
+        "search_filter_query_key": "filter-month.myindex.dates.value",
+        "value": "2017-01"
+      },
+      {
+        "checked": false,
+        "count": 2,
+        "datetime": 1485936000.0,
+        "field_name": "myindex.dates.value",
+        "filter_type": "month",
+        "search_filter_query_key": "filter-month.myindex.dates.value",
+        "value": "2017-02"
+      },
+      {
+        "checked": false,
+        "count": 3,
+        "datetime": 1509519600.0,
+        "field_name": "myindex.dates.value",
+        "filter_type": "month",
+        "search_filter_query_key": "filter-month.myindex.dates.value",
+        "value": "2017-11"
+      },
+      {
+        "checked": false,
+        "count": 2,
+        "datetime": 1512115200.0,
+        "field_name": "myindex.dates.value",
+        "filter_type": "month",
+        "search_filter_query_key": "filter-month.myindex.dates.value",
+        "value": "2017-12"
+      },
+      {
+        "checked": false,
+        "count": 28,
+        "datetime": 1517472000.0,
+        "field_name": "myindex.dates.value",
+        "filter_type": "month",
+        "search_filter_query_key": "filter-month.myindex.dates.value",
+        "value": "2018-02"
+      }
+    ],
+    "date_interval": "month",
+    "field_name": "myindex.dates.value",
+    "name": "Dates",
+    "size": 10,
+    "type": "date_histogram",
+    "unique_name": "facet_def_3_myindex.dates.value"
+  },
+  {
+    "field_name": "remote_file_manifest.length",
+    "name": "File Size Average",
+    "size": 10,
+    "type": "avg",
+    "unique_name": "facet_def_4_remote_file_manifest.length",
+    "value": 1835339736.675
+  },
+  {
+    "field_name": "remote_file_manifest.length",
+    "name": "Total Size (current search)",
+    "size": 10,
+    "type": "sum",
+    "unique_name": "facet_def_5_remote_file_manifest.length",
+    "value": 73413589467.0
+  }
+]
