@@ -4,7 +4,6 @@ import re
 import json
 import logging
 import math
-import copy
 import collections
 import datetime
 from urllib.parse import quote_plus, unquote
@@ -322,7 +321,15 @@ def resolve_facet_results(portal_defined_facets, facet_results):
     search added: unique_name, buckets, and value. The ordering exactly matches
     the ordering of facets defined in settings.py
     """
-    facets = copy.deepcopy(portal_defined_facets)
+    # Set general facet information. prepare_search_facets will ensure we get
+    # all GS fields and the dev didn't leave anything out in the definition.
+    facets = prepare_search_facets(portal_defined_facets)
+    for prepped_facet, def_facet in zip(facets, portal_defined_facets):
+        prepped_facet['unique_name'] = prepped_facet.pop('name')
+        prepped_facet['name'] = def_facet.get('name', def_facet['field_name'])
+
+    # Set all of the facet results that came back from Globus Search on the
+    # facets defined above.
     for fresult in facet_results:
         match = facet_name_matcher.match(fresult['name'])
         if not match:
@@ -338,7 +345,6 @@ def resolve_facet_results(portal_defined_facets, facet_results):
             continue
         name = match.groupdict()
         idx = int(name['order_index'])
-        facets[idx]['unique_name'] = fresult.pop('name')
         if fresult.get('buckets') is not None:
             facets[idx]['buckets'] = fresult['buckets']
         else:
