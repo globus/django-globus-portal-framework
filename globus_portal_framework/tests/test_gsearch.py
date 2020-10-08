@@ -99,7 +99,6 @@ MOCK_GS_FACETS = {
 MOCK_PORTAL_DEFINED_FACETS = [
     {
         'name': 'Things I Got',
-        'type': 'terms',
         'field_name': 'things.i.got',
         'size': 10
     },
@@ -129,7 +128,7 @@ MOCK_PORTAL_DEFINED_FACETS = [
 ]
 
 
-class SearchUtilsTest(TestCase):
+class TestGSearch(TestCase):
 
     SEARCH_INDEXES = {'myindex': {
         # Randomly generated and not real
@@ -139,6 +138,7 @@ class SearchUtilsTest(TestCase):
     def setUp(self):
         self.mock_gs_facets = deepcopy(MOCK_GS_FACETS)
         self.factory = RequestFactory()
+        self.MOCK_FACET_MODIFIER = mock.Mock()
 
     @override_settings(SEARCH_INDEXES={'foo': {}})
     def test_get_index(self):
@@ -380,6 +380,36 @@ class SearchUtilsTest(TestCase):
         # "dates" is the third defined facet [2], with the first bucket checked
         self.assertTrue(r[2]['buckets'][0]['checked'])
 
+    def test_get_facet_with_modifiers(self):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+        mock_mod = mock.Mock()
+        import globus_portal_framework.modifiers.facets
+        setattr(globus_portal_framework.modifiers.facets, 'mock_mod', mock_mod)
+
+        mock_mods = ['globus_portal_framework.modifiers.facets.mock_mod']
+        get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
+                   filter_match=None, facet_modifiers=mock_mods)
+        self.assertTrue(mock_mod.called)
+
+    @mock.patch('globus_portal_framework.modifiers.facets.drop_empty')
+    def test_default_get_facet_with_modifiers(self, default_modifier):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+
+        get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
+                   filter_match=None, facet_modifiers=None)
+        self.assertTrue(default_modifier.called)
+
+    @mock.patch('globus_portal_framework.modifiers.facets.drop_empty')
+    def test_default_get_facet_with_no_modifiers(self, default_modifier):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+
+        get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
+                   filter_match=None, facet_modifiers=[])
+        self.assertFalse(default_modifier.called)
+
     def test_get_invalid_search_range_raises_error(self):
         with self.assertRaises(GlobusPortalException):
             get_date_range_for_date('2018-02-02', 'fortnight')
@@ -489,6 +519,6 @@ class SearchUtilsTest(TestCase):
                              filter_type)
 
     @mock.patch('globus_portal_framework.gsearch.log')
-    def test_get_field_facet_filter_types_invalid_filter(self, log):
+    def get_facet_filter_type_invalid_filter(self, log):
         get_facet_filter_type({'field_name': 'foo', 'type': ''})
         self.assertTrue(log.warning.called)

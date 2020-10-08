@@ -4,12 +4,12 @@ import re
 import json
 import logging
 import math
-import copy
 import collections
 import datetime
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
+from django.utils.module_loading import import_string
 from django.conf import settings
 
 from globus_portal_framework.apps import get_setting
@@ -26,6 +26,8 @@ from globus_portal_framework.constants import (
     VALID_SEARCH_FACET_KEYS, VALID_SEARCH_KEYS,
 
     DEFAULT_RESULT_FORMAT_VERSION,
+
+    DEFAULT_FACET_MODIFIERS,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -100,7 +102,8 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
             'search_results': process_search_data(index_data.get('fields', []),
                                                   result.data['gmeta']),
             'facets': get_facets(result, index_data.get('facets', []),
-                                 filters, index_data.get('filter_match')),
+                                 filters, index_data.get('filter_match'),
+                                 index_data.get('facet_modifiers', [])),
             'pagination': get_pagination(result.data['total'],
                                          result.data['offset']),
             'count': result.data['count'],
@@ -318,7 +321,15 @@ def resolve_facet_results(portal_defined_facets, facet_results):
     search added: unique_name, buckets, and value. The ordering exactly matches
     the ordering of facets defined in settings.py
     """
-    facets = copy.deepcopy(portal_defined_facets)
+    # Set general facet information. prepare_search_facets will ensure we get
+    # all GS fields and the dev didn't leave anything out in the definition.
+    facets = prepare_search_facets(portal_defined_facets)
+    for prepped_facet, def_facet in zip(facets, portal_defined_facets):
+        prepped_facet['unique_name'] = prepped_facet.pop('name')
+        prepped_facet['name'] = def_facet.get('name', def_facet['field_name'])
+
+    # Set all of the facet results that came back from Globus Search on the
+    # facets defined above.
     for fresult in facet_results:
         match = facet_name_matcher.match(fresult['name'])
         if not match:
@@ -334,7 +345,6 @@ def resolve_facet_results(portal_defined_facets, facet_results):
             continue
         name = match.groupdict()
         idx = int(name['order_index'])
-        facets[idx]['unique_name'] = fresult.pop('name')
         if fresult.get('buckets') is not None:
             facets[idx]['buckets'] = fresult['buckets']
         else:
@@ -737,7 +747,7 @@ def get_active_filters(facet_field_name, filter_type, user_filters):
 
 
 def get_facets(search_result, portal_defined_facets, filters,
-               filter_match=None):
+               filter_match=None, facet_modifiers=None):
     """Prepare facets for display. Globus Search data is removed from results
     and the results are ordered according to the facet map. Empty categories
     are removed and any filters the user checked are tracked.
@@ -751,7 +761,13 @@ def get_facets(search_result, portal_defined_facets, filters,
     `filters` only determines the look of the page (which box is checked) and
     generates the query-params for the user's next possible search.
     :param filter_match: Deprecated. Please set filtering behavior in the
-    facet definition. Will be removed in v0.4.0
+    facet definition.
+    :param facet_modifiers: A list of shim function import strings which
+    modify the output of facets before search data is returned to the
+    Django view. This provides a handy way to provide index-level edits to
+    facet data while leaving views unchanged. Each import string should take
+    a single parameter for the list of facets. Each function is called in the
+    order it is defined.
 
     :return: A list of facets. An example is here:
         [
@@ -829,4 +845,9 @@ def get_facets(search_result, portal_defined_facets, filters,
             else:
                 bucket['checked'] = bucket['value'] in active_filter_vals
                 bucket['datetime'] = None
+    # Apply user modifications to all finished facets
+    facet_modifiers = (facet_modifiers if facet_modifiers is not None
+                       else DEFAULT_FACET_MODIFIERS)
+    for fmodder in facet_modifiers:
+        facets = import_string(fmodder)(facets)
     return facets
