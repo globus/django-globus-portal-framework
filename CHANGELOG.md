@@ -4,6 +4,15 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.15 - 2020-10-09
+
+- Added 'facet_modifiers' field to index config
+    - This allows customizing facets before they are rendered in templates, without writing new views.
+- Added support for 'value' type facets
+    - 'sum' and 'avg' type facets can now be configured
+- Added facet fields 'unique_name' and 'type' to facet results
+- Added 'filter_type' to each 'bucket' field in facet results
+
 ## 0.3.14 - 2020-09-21
 
 - Fixed error on /allowed-groups view when groups could not be fetched from Globus
