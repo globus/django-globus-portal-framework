@@ -845,9 +845,18 @@ def get_facets(search_result, portal_defined_facets, filters,
             else:
                 bucket['checked'] = bucket['value'] in active_filter_vals
                 bucket['datetime'] = None
-    # Apply user modifications to all finished facets
+    # Apply user modifications to all finished facets. Catch ALL facet mod
+    # exceptions. Typically, this happens due to an edge case in the modifier,
+    # and should not result in the search page failing to load.
     facet_modifiers = (facet_modifiers if facet_modifiers is not None
                        else DEFAULT_FACET_MODIFIERS)
     for fmodder in facet_modifiers:
-        facets = import_string(fmodder)(facets)
+        try:
+            facets = import_string(fmodder)(facets)
+        except ModuleNotFoundError:
+            # Don't catch these. Developer error.
+            raise
+        except Exception as e:
+            log.exception(e)
+            log.error('Facet modifier raised exception {}'.format(fmodder))
     return facets
