@@ -14,6 +14,7 @@ from globus_portal_framework.gsearch import (
     prepare_search_facets, serialize_gsearch_range, deserialize_gsearch_range,
     get_facet_filter_type,
 )
+import globus_portal_framework.modifiers.facets
 from globus_portal_framework.exc import (
     IndexNotFound, GlobusPortalException, InvalidRangeFilter,
 )
@@ -138,7 +139,7 @@ class TestGSearch(TestCase):
     def setUp(self):
         self.mock_gs_facets = deepcopy(MOCK_GS_FACETS)
         self.factory = RequestFactory()
-        self.MOCK_FACET_MODIFIER = mock.Mock()
+        self.mock_facet_modifier = mock.Mock()
 
     @override_settings(SEARCH_INDEXES={'foo': {}})
     def test_get_index(self):
@@ -384,10 +385,9 @@ class TestGSearch(TestCase):
         search_response = MockGlobusResponse()
         search_response.data = self.mock_gs_facets
         mock_mod = mock.Mock()
-        import globus_portal_framework.modifiers.facets
-        setattr(globus_portal_framework.modifiers.facets, 'mock_mod', mock_mod)
-
-        mock_mods = ['globus_portal_framework.modifiers.facets.mock_mod']
+        setattr(globus_portal_framework.tests.test_gsearch, 'mock_mod',
+                mock_mod)
+        mock_mods = ['globus_portal_framework.tests.test_gsearch.mock_mod']
         get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
                    filter_match=None, facet_modifiers=mock_mods)
         self.assertTrue(mock_mod.called)
@@ -409,6 +409,24 @@ class TestGSearch(TestCase):
         get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
                    filter_match=None, facet_modifiers=[])
         self.assertFalse(default_modifier.called)
+
+    def test_facet_modifiers_raise_import_errors(self):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+
+        with self.assertRaises(ImportError):
+            get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
+                       filter_match=None, facet_modifiers=['does.not.exist'])
+
+    def test_facet_modifiers_do_not_raise_non_import_exceptions(self):
+        search_response = MockGlobusResponse()
+        search_response.data = self.mock_gs_facets
+        exc_mod = mock.Mock(side_effect=Exception())
+        setattr(globus_portal_framework.tests.test_gsearch, 'exc_mod', exc_mod)
+        mock_mods = ['globus_portal_framework.tests.test_gsearch.exc_mod']
+        get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
+                   filter_match=None, facet_modifiers=mock_mods)
+        self.asserTrue(exc_mod.called)
 
     def test_get_invalid_search_range_raises_error(self):
         with self.assertRaises(GlobusPortalException):
