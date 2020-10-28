@@ -44,8 +44,8 @@ def get_service_url(service_name):
     env = get_globus_environment()
     if service_name in CUSTOM_ENVS:
         if env not in CUSTOM_ENVS[service_name]:
-            err = (f'Service {service_name} has no service url for the '
-                   f'configured environment: "{env}"')
+            err = ('Service {} has no service url for the '
+                   'configured environment: "{}"'.format(service_name, env))
             raise exc.GlobusPortalException('InvalidEnv', err)
         return CUSTOM_ENVS[service_name][env]
     return globus_sdk.config.get_service_url(env, service_name)
@@ -173,7 +173,8 @@ def get_user_groups(user):
     # Attempt to load the access token for Globus Groups. The scope name will
     # change Sept 23rd, at which point attempting to fetch via the old name
     # can be removed.
-    groups_url = f'{get_service_url("groups")}{GLOBUS_GROUPS_V2_MY_GROUPS}'
+    groups_service = get_service_url('groups')
+    groups_url = '{}{}'.format(groups_service, GLOBUS_GROUPS_V2_MY_GROUPS)
     headers = {'Authorization': 'Bearer ' + token}
     response = requests.get(groups_url, headers=headers)
     try:

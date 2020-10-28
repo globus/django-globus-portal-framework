@@ -853,7 +853,7 @@ def get_facets(search_result, portal_defined_facets, filters,
     for fmodder in facet_modifiers:
         try:
             facets = import_string(fmodder)(facets)
-        except ModuleNotFoundError:
+        except ImportError:
             # Don't catch these. Developer error.
             raise
         except Exception as e:

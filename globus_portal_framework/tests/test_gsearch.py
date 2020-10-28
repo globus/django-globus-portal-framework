@@ -426,7 +426,7 @@ class TestGSearch(TestCase):
         mock_mods = ['globus_portal_framework.tests.test_gsearch.exc_mod']
         get_facets(search_response, MOCK_PORTAL_DEFINED_FACETS, [],
                    filter_match=None, facet_modifiers=mock_mods)
-        self.asserTrue(exc_mod.called)
+        self.assertTrue(exc_mod.called)
 
     def test_get_invalid_search_range_raises_error(self):
         with self.assertRaises(GlobusPortalException):

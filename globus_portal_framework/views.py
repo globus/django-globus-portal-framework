@@ -197,7 +197,7 @@ def detail_transfer(request, index, subject):
                 context['detail_error'] = tapie
                 log.error('File not found: {}'.format(tapie.message))
             elif tapie.code not in ['EndpointPermissionDenied']:
-                log.error('Unexpected Error found during transfer request'
+                log.error('Unexpected Error found during transfer request: {}'
                           ''.format(tapie))
         except ValueError as ve:
             log.error(ve)
