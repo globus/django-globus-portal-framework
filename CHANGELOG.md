@@ -4,6 +4,12 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.17 - 2020-10-28
+
+- Fix bugs in python 3.5
+    - Remove F strings and other python 3.6 features
+
+
 ## 0.3.16 - 2020-10-20
 
 - Added broad exception handling on facet_modifiers
