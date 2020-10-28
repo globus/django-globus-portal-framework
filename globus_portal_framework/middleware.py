@@ -65,7 +65,7 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
             'session_message',
             'Your current account does not have sufficient access to this '
             'resource, but one of your linked identities does. Please '
-            'login with one of those identities listed below.'
+            'login with one of those identities listed below: {}'
                 .format([g['username'] for g in allowed_user_member_groups])
         )
         # strategy does not handle lists well, so we need to encode the
