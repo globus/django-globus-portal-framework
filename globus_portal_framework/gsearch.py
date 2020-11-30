@@ -367,7 +367,8 @@ def prepare_search_facets(facets):
             raise ValueError('Each facet must define at minimum "field_name"')
         cfacet['name'] = generate_globus_search_facet_name(facet, idx)
         cfacet['type'] = cfacet.get('type', 'terms')
-        cfacet['size'] = cfacet.get('size', 10)
+        if cfacet['type'] != 'date_histogram':
+            cfacet['size'] = cfacet.get('size', 10)
         cleaned_facets.append(cfacet)
     return cleaned_facets
 
