@@ -4,6 +4,10 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.20 - 2021-03-09
+
+- Pinned social-auth-app-django to 3.x.x due to bug in 4.0.0
+
 ## 0.3.19 - 2020-11-30
 
 - Fixed search bug with date facets providing invalid 'size' param, causing searches to error with 400's
