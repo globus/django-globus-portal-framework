@@ -4,6 +4,10 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.21 - 2021-03-12
+
+- Pinned social-auth-core to 3.x.x, which wasn't always set by pinning social-auth-app-django
+
 ## 0.3.20 - 2021-03-09
 
 - Pinned social-auth-app-django to 3.x.x due to bug in 4.0.0
