@@ -34,7 +34,10 @@ def get_globus_environment():
     Globus Preview: https://docs.globus.org/how-to/preview/
     Globus SDK: https://globus-sdk-python.readthedocs.io/en/stable/config.html?highlight=preview#environment-variables  # noqa
     """
-    return globus_sdk.config.get_globus_environ()
+    try:
+        return globus_sdk.config.get_globus_environ()
+    except AttributeError:
+        return globus_sdk.config.get_environment_name()
 
 
 def get_service_url(service_name):

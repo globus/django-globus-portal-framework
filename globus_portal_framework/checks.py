@@ -99,7 +99,8 @@ def check_search_indexes(app_configs, **kwargs):
 @register()
 def check_globus_env(app_configs, **kwargs):
     env = get_globus_environment()
-    if env != 'default':
+    # 'default' is used in Globus SDK v2, 'production' in v3
+    if not env in ['default', 'production']:
         return [Warning('Environment set to "{}", unset with '
-                        '"export GLOBUS_SDK_ENVIRONMENT=default"'.format(env))]
+                        '"unset GLOBUS_SDK_ENVIRONMENT"'.format(env))]
     return []
