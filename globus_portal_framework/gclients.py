@@ -14,7 +14,10 @@ log = logging.getLogger(__name__)
 
 CUSTOM_ENVS = {
     'groups': {
+        # Globus SDK v2
         'default': 'https://groups.api.globus.org',
+        # Globus SDK v3
+        'production': 'https://groups.api.globus.org',
         'preview': 'https://groups.api.preview.globus.org',
     }
 }
