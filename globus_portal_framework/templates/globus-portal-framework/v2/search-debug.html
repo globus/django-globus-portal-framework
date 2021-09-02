@@ -1,0 +1,55 @@
+{%extends "base.html"%}
+{% load static %}
+{% load index_template %}
+
+
+{%block title%}Detail{%endblock%}
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
+{%endblock%}
+
+{%block body%}
+
+{% if request.session.search %}
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+              <a href="{% url 'search' globus_portal_framework.index %}?{{request.session.search.full_query}}">Back to Search</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{%block detail_messages %}
+<div class="container my-3">
+    {% index_template "components/messages.html" as it_messages %}
+    {% include it_messages %}
+</div>
+{%endblock%}
+
+
+<div class="container mb-5">
+
+    <div class="card">
+        <div class="card-header">
+          <h3>Debugging Data For {{globus_portal_framework.index}}</h3>
+        </div>
+
+        <div class="card-body">
+          <h5>Results</h5>
+          {% for result in search.search_results %}
+          <div>
+            <a href="{% url 'search-debug-detail' globus_portal_framework.index result.subject %}">{{result.subject}}</a>
+          </div>
+          {% endfor %}
+          <h5 class="mt-2">Facets</h5>
+          <pre>{{facets}}</pre>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% load static index_template is_active %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    {% block base_styling %}
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+    <script type="text/javascript" src="{% static 'js/fontawesome-all.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+    {% endblock %}
+
+    {% block search_head %}{% endblock %}
+
+    {# Extras #}
+    {%block headextras%}
+    {% index_template 'globus-portal-framework/v2/components/base-head-extras.html' as bhe %}
+    {% include bhe %}
+    {%endblock%}
+
+    <title>{%block title%}{%endblock%}</title>
+
+  </head>
+  <body>
+
+    {% block base_nav %}
+    {% index_template 'globus-portal-framework/v2/components/base-nav.html' as base_nav %}
+    {% include base_nav %}
+    {% endblock %}
+
+    {% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% block breadcrumb_items %}
+        <li class="breadcrumb-item {% is_active request 'index-selection' %}">
+          <a class="h5" href="{% url 'index-selection' %}">{{globus_portal_framework.project_title}}</a>
+        </li>
+        {% endblock %}
+      </ol>
+    </nav>
+    {% endblock %}
+
+    {% block main_nav %}{% endblock %}
+
+    {%block base_messages %}
+    <div class="container my-3">
+      {% index_template 'globus-portal-framework/v2/components/messages.html' as it_messages %}
+      {% include it_messages %}
+    </div>
+    {%endblock%}
+
+    <!-- Page body -->
+    {%block body%}
+    {%endblock%}
+
+    <!-- Page footer -->
+    {% index_template 'globus-portal-framework/v2/components/footer.html' as it_footer %}
+    {% include it_footer %}
+  </body>
+</html>

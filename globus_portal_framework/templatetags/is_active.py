@@ -17,4 +17,5 @@ def is_active(request, url_name, **url_kwargs):
     except Resolver404 as nfe:
         log.exception(nfe)
         log.error('Are you passing the correct args for {}?'.format(url_name))
+    log.debug(f'{url_name}: Is Active? {True if view else False}')
     return view

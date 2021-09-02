@@ -19,7 +19,7 @@ from django.urls import path, include, register_converter
 from django.conf import settings
 from globus_portal_framework.views import (
     search, index_selection, detail, detail_transfer, detail_preview, logout,
-    allowed_groups,
+    allowed_groups, search_about,
 )
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 from globus_portal_framework.exc import IndexNotFound
@@ -91,6 +91,7 @@ register_custom_index('index', list(settings.SEARCH_INDEXES.keys()))
 
 # search detail for viewing info about a single search result
 search_urlpatterns = [
+    path('<index:index>/about/', search_about, name='search-about'),
     path('<index:index>/', search, name='search'),
     path('<index:index>/detail-preview/<subject>/',
          detail_preview, name='detail-preview'),

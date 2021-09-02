@@ -1,0 +1,50 @@
+{%extends "base.html"%}
+{% load static %}
+{% load index_template %}
+
+{%block title%}Detail{%endblock%}
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
+{%endblock%}
+
+{%block body%}
+
+{% if request.session.search %}
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+              <a href="{% url 'search' request.session.search.index %}?{{request.session.search.full_query}}">Back to Search</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{%block detail_messages %}
+<div class="container my-3">
+    {% index_template "components/messages.html" as it_messages %}
+    {% include it_messages %}
+</div>
+{%endblock%}
+
+
+<div class="container mb-5">
+
+    <div class="card">
+        <div class="card-header">
+          <h3>Search Index: {{globus_portal_framework.index}}</h3>
+        </div>
+
+        <div class="card-body">
+          {% for field_name, data in django_portal_framework_debug_fields.items %}
+              <h5>{{field_name}}:</h5>
+              <pre>{{data}}</pre>
+          {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

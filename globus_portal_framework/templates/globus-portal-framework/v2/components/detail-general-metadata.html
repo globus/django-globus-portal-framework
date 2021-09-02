@@ -1,0 +1,13 @@
+<table class="table table-striped table-bordered">
+  <tbody>
+  {% block project_metadata %}
+
+  {% for field in detail_general_metadata %}
+  <tr>
+    <td>{{field.name}}</td>
+    <td>{{field.value}}</td>
+  </tr>
+  {% endfor %}
+  {% endblock %}
+  </tbody>
+</table>

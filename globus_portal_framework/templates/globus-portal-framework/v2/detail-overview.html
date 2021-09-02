@@ -1,0 +1,31 @@
+{% extends 'globus-portal-framework/v2/detail-base.html' %}
+
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a class="h5" href="{% url 'index-selection' %}">{{globus_portal_framework.project_title}}</a></li>
+<li class="breadcrumb-item"><a class="h5" href="{% url 'search' globus_portal_framework.index %}">{{globus_portal_framework.index_data.name}}</a></li>
+<li class="breadcrumb-item active"><a class="h5">{{title}}</a></li>
+{% endblock %}
+
+
+{% block detail_body %}
+
+<div class="row">
+  <div class="col-md-12">
+
+        <h3 class="text-center mb-5">General Info</h3>
+        {% with all|first as doc %}
+        <div class="row">
+          <div class="col-md-6">
+            {% include 'globus-portal-framework/v2/components/dc-metadata.html' %}
+          </div>
+          <div class="col-md-6">
+            {% include 'globus-portal-framework/v2/components/detail-general-metadata.html' %}
+          </div>
+        </div>
+        {% endwith %}
+
+  </div>
+</div>
+
+{% endblock %}
