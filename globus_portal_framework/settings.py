@@ -276,3 +276,5 @@ except ImportError:
 
 # Used to check if this app is running
 GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
