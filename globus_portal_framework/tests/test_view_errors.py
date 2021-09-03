@@ -14,7 +14,7 @@ urlpatterns += [
 @override_settings(ROOT_URLCONF=__name__, DEBUG=False)
 class CustomErrorHandlerTests(SimpleTestCase):
 
-    @mock.patch('globus_portal_framework.views.log', mock.Mock())
+    @mock.patch('globus_portal_framework.views.base.log', mock.Mock())
     def test_404_handler(self):
         response = self.client.get('/not-a-real-page/')
         # Make assertions on the response here. For example:
