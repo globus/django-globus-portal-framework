@@ -36,6 +36,11 @@ def index_selection(request):
     return render(request, 'index-selection.html', context)
 
 
+def search_about(request, index):
+    template = get_template(index, 'globus-portal-framework/v2/search-about.html')
+    return render(request, template, {})
+
+
 def search(request, index):
     """
     Search the 'index' with the queryparams 'q' for query, 'filter.<filter>'
