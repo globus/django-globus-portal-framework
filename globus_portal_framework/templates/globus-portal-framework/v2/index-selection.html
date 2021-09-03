@@ -1,0 +1,55 @@
+{%extends "globus-portal-framework/v2/base.html"%}
+{% load static %}
+
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+{% endblock %}
+
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center mt-3 mb-5">{{project_title}}</h2>
+  </div>
+</div>
+
+{% block list_indexes %}
+{% for index, index_data in search_indexes.items %}
+<div class="row">
+  <div class="col"></div>
+  <div class="col-10">
+
+    {% if index_data.test_index %}
+    <div class="alert alert-secondary" role="alert">
+      <h3 class="text-center">Globus Portal Framework has been installed!</h3>
+
+      <p class="text-center">You can checkout our demo index, or continue setting up your own from the README</p>
+    </div>
+    {% endif %}
+
+    {% block allowed_groups %}
+    {% if forloop.first and allowed_groups %}
+    <div class="alert alert-warning border" role="alert">
+      <h3 class="text-center">Resources restricted to select users</h3>
+
+      <p class="text-center">You must be a group member before logging in. You can view groups and request access below.</p>
+      <p class="text-center">
+        <a class="btn btn-primary" href="{% url 'allowed-groups' %}">View Groups and Request Access</a>
+      </p>
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    {% block index %}
+    <h2 class="text-center card card-body">
+      <a href="{% url 'search' index %}?q=*">{{index_data.name|default:index}}</a>
+    </h2>
+    {% endblock %}
+  </div>
+  <div class="col"></div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{%extends "detail-base.html"%}
+
+{% load index_template %}
+
+{# Silence regular messages so we can display them closer to preview #}
+{% block detail_messages %}
+{% endblock %}
+
+{% block detail_body %}
+
+<div class="row">
+  <div class="col-md-12">
+
+    <div class="card mt-4">
+      <div class="card-header">{{title|default:'Result'}} -- Preview of initial {{globus_portal_framework.preview_data_size}}</div>
+      <div class="card-body">
+        {% if globus_http_access == 'disabled' %}
+            <div class="alert alert-info" role="alert">
+              <p>Preview is not currently available</p>
+            </div>
+        {% endif %}
+        {% if not request.user.is_authenticated %}
+          <div class="alert alert-info" role="alert">
+            <p>You must be logged in to view preview data.</p>
+          </div>
+        {% else %}
+          <pre>{{preview_data|default:'No Data to Display'}}</pre>
+        {% endif %}
+      </div>
+      <div class="card-footer">
+        {% if detail_error.code == 'PermissionDenied' %}
+          {% index_template "components/permission-error.html" as it_pe %}
+          {% include it_pe %}
+        {% elif messages %}
+          {% index_template "components/messages.html" as it_mess %}
+          {% include it_mess %}
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

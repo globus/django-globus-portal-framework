@@ -1,0 +1,52 @@
+{%extends "globus-portal-framework/v2/base.html"%}
+{% load static is_active %}
+
+{%block headextras%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a class="h5" href="{% url 'landing-page' %}">{{globus_portal_framework.project_title}}</a></li>
+<li class="breadcrumb-item active"><a class="h5">About</a></li>
+{% endblock %}
+
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center mt-3 mb-5">{{project_title}}</h2>
+  </div>
+</div>
+
+
+<div class="row mb-5">
+  <div class="col"></div>
+  <div class="col-10">
+
+    <div>
+      <h1><a href="{% url 'search' %}">Project Foo</a></h1>
+      <p class="lead font-weight-bolder">
+        Here is a good place to talk about your project. More to come!
+      </p>
+      <p class=""><a href="https://digirolamo.web.illinois.edu/projects/terra-fusion/">Continue Reading about Terra</a></p>
+    </div>
+    <div>
+      <h1>Globus Search</h1>
+      <p class="lead font-weight-bolder">
+        Globus Search is a service which allows users to store data with visibility
+        controls based on Globus Identities and Groups. Data may be public, or only
+        visible to certain sets of users. The primary features of the service are
+        APIs for storing and managing data, and visibility-filtered query APIs.
+      </p>
+      <p class="">
+        <a target="_blank" href="https://docs.globus.org/api/search/">
+          Continue reading about Globus Search
+        </a>
+      </p>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+
+{% endblock %}
