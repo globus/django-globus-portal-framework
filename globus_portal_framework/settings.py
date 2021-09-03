@@ -201,8 +201,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'globus_portal_framework.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
