@@ -161,7 +161,7 @@ class TestGSearch(TestCase):
         assert gs_post_search.called
 
     @override_settings(SEARCH_INDEXES={'foo': {'uuid': 'foo_uuid'}})
-    @mock.patch('globus_sdk.exc.SearchAPIError', MockSearchAPI500Error)
+    @mock.patch('globus_sdk.SearchAPIError', MockSearchAPI500Error)
     @mock.patch('globus_sdk.SearchClient.post_search')
     def test_post_search_search_500_error(self, gs_post_search):
         gs_post_search.side_effect = MockSearchAPI500Error
@@ -169,7 +169,7 @@ class TestGSearch(TestCase):
         assert 'error' in result
 
     @override_settings(SEARCH_INDEXES={'foo': {'uuid': 'foo_uuid'}})
-    @mock.patch('globus_sdk.exc.SearchAPIError', MockSearchAPI400Error)
+    @mock.patch('globus_sdk.SearchAPIError', MockSearchAPI400Error)
     @mock.patch('globus_sdk.SearchClient.post_search')
     def test_post_search_dgpf_error(self, gs_post_search):
         gs_post_search.side_effect = MockSearchAPI400Error

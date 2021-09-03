@@ -14,7 +14,10 @@ log = logging.getLogger(__name__)
 
 CUSTOM_ENVS = {
     'groups': {
+        # Globus SDK v2
         'default': 'https://groups.api.globus.org',
+        # Globus SDK v3
+        'production': 'https://groups.api.globus.org',
         'preview': 'https://groups.api.preview.globus.org',
     }
 }
@@ -34,7 +37,10 @@ def get_globus_environment():
     Globus Preview: https://docs.globus.org/how-to/preview/
     Globus SDK: https://globus-sdk-python.readthedocs.io/en/stable/config.html?highlight=preview#environment-variables  # noqa
     """
-    return globus_sdk.config.get_globus_environ()
+    try:
+        return globus_sdk.config.get_globus_environ()
+    except AttributeError:
+        return globus_sdk.config.get_environment_name()
 
 
 def get_service_url(service_name):
@@ -80,11 +86,17 @@ def revoke_globus_tokens(user):
     for at, rt in tok_list:
         try:
             ac.oauth2_revoke_token(at)
-            ac.oauth2_revoke_token(rt)
+            if rt:
+                ac.oauth2_revoke_token(rt)
         except globus_sdk.exc.GlobusAPIError as gapie:
             log.exception(gapie)
 
-    log.debug('Revoked tokens for user {}'.format(user))
+    # Gather info on what was revoked
+    access, refresh = zip(*tok_list)
+    at, rt = filter(None, access), filter(None, refresh)
+    num_at, num_rt = len(list(at)), len(list(rt))
+    log.info(f'Revoked {num_at + num_rt} ({num_at} access, {num_rt} refresh) '
+             f'tokens for user {user}')
 
 
 def load_globus_access_token(user, token_name):

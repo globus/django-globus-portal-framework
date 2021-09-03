@@ -17,6 +17,8 @@ log = logging.getLogger(__name__)
 class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
     OIDC_ENDPOINT = get_service_url('auth')
     GLOBUS_APP_URL = 'https://app.globus.org'
+    # Fixed by https://github.com/python-social-auth/social-core/pull/577
+    JWT_ALGORITHMS = ['RS512']
 
     def get_user_details(self, response):
         # If SOCIAL_AUTH_GLOBUS_SESSIONS is not set, fall back to default

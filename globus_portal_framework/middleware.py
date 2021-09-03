@@ -49,9 +49,8 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
     def process_exception(self, request, exception):
         if not isinstance(exception, AuthForbidden):
             return
-        if not isinstance(exception.args, tuple):
-            return
-        if not isinstance(exception.args[0], dict):
+        # ensure the exception arg is a dict.
+        if not exception.args or not isinstance(exception.args[0], dict):
             return
 
         kwargs = exception.args[0]

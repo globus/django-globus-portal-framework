@@ -110,7 +110,7 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
             'offset': result.data['offset'],
             'total': result.data['total'],
             }
-    except globus_sdk.exc.SearchAPIError as sapie:
+    except globus_sdk.SearchAPIError as sapie:
         log.exception(sapie)
         etext = ('There was an error in {}, you can file '
                  'an issue here:\n{}\nWith the following data: \n\n')
@@ -418,7 +418,7 @@ def get_subject(index, subject, user=None):
         result = client.get_subject(idata['uuid'], unquote(subject),
                                     result_format_version='2017-09-01')
         return process_search_data(idata.get('fields', {}), [result.data])[0]
-    except globus_sdk.exc.SearchAPIError:
+    except globus_sdk.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
