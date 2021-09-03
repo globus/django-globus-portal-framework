@@ -4,6 +4,13 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.22 - 2021-09-03
+
+- Sped up token revocation on logout
+- Fixed Bug in Python Social Auth v4 for Globus Backend.
+- Fixed Possible mishandling of AuthForbidden exception
+- Fixed compatibility for Globus SDK v3
+
 ## 0.3.21 - 2021-03-12
 
 - Pinned social-auth-core to 3.x.x, which wasn't always set by pinning social-auth-app-django
