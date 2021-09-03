@@ -1,0 +1,11 @@
+{% load index_template %}
+{% if messages %}
+{% for message in messages %}
+<div class="row justify-content-md-center">
+  <div class="col">
+    {% index_template "globus-portal-framework/v2/components/message.html" as it_message %}
+    {% include it_message %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
