@@ -1,11 +1,10 @@
 <table class="table table-striped table-bordered">
   <tbody>
-  {% block project_metadata %}
-
-  {% for field in detail_general_metadata %}
+  {% block detail_general_metadata %}
+  {% for key, value in project_metadata.items %}
   <tr>
-    <td>{{field.name}}</td>
-    <td>{{field.value}}</td>
+    <td>{{key}}</td>
+    <td>{{value}}</td>
   </tr>
   {% endfor %}
   {% endblock %}
