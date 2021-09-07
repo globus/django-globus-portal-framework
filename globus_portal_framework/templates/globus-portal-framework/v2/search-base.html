@@ -3,9 +3,12 @@
 
 {%block title%}Search{%endblock%}
 
-{%block search_head%}
+{% block headextras %}
+{% block search_head %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
-{%endblock%}
+{% endblock %}
+{{block.super}}
+{% endblock %}
 
 {% block main_nav %}
   {% block search_nav %}

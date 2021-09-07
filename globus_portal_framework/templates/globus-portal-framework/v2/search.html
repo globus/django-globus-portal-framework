@@ -1,6 +1,7 @@
 {% extends 'globus-portal-framework/v2/search-base.html' %}
 {% load static index_template is_active %}
 
+{% block headextras %}
 {%block search_head%}
 {{block.super}}
 <script>
@@ -17,6 +18,8 @@
   }
 </script>
 {%endblock%}
+{{block.super}}
+{% endblock %}
 
 {% block breadcrumb_items %}
 {{block.super}}
