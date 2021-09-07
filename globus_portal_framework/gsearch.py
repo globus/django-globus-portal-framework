@@ -6,6 +6,7 @@ import logging
 import math
 import collections
 import datetime
+import pathlib
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
@@ -28,6 +29,8 @@ from globus_portal_framework.constants import (
     DEFAULT_RESULT_FORMAT_VERSION,
 
     DEFAULT_FACET_MODIFIERS,
+
+    BASE_TEMPLATES,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -371,6 +374,32 @@ def prepare_search_facets(facets):
             cfacet['size'] = cfacet.get('size', 10)
         cleaned_facets.append(cfacet)
     return cleaned_facets
+
+
+def get_template_path(template, index=None):
+    """Get the base template path to a given template
+    set and return the setting prefix with the ``template`` given.
+    The template set can either be a setting per-index with the
+    ``base_templates`` setting, or global as ``BASE_TEMPLATES``
+    in settings.py.
+
+    This is primarily used to allow operation between newer Globus Portal
+    Framework templates (globus_portal_framework/v2) and older versions
+    of templates. This would also allow users to draft an entirely new set
+    of base templates, if they wished.
+
+    :param template: Path to template. Ex: search.html
+    :param index: The name of the index (key in SEARCH_INDEXES). Optional.
+
+
+    """
+    index_data = get_index(index) if index is not None else {}
+    prefix = (
+            index_data.get('BASE_TEMPLATES') or
+            get_setting('BASE_TEMPLATES') or
+            ''
+    )
+    return str(pathlib.Path(prefix) / template)
 
 
 def get_template(index, base_template):
