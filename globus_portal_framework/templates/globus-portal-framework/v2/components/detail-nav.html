@@ -9,8 +9,8 @@ Requires the following fields:
 <div class="card-header">
   <nav class="navbar">
     <a class="navbar-brand">{{title|default:'Result'}}</a>
-    <ul class="nav nav-pills justify-content-end">
-      <li class="nav-item mx-1">
+    <ul class="nav nav-pills nav-detail-nav justify-content-end">
+      <li class="nav-item nav-item-detail-nav mx-1">
         {% block detail_nav_transfer_sync_button %}
         <a
                 {% if globus_app_link %}
@@ -24,7 +24,7 @@ Requires the following fields:
         </a>
         {% endblock %}
       </li>
-      <li class="nav-item mx-1">
+      <li class="nav-item nav-item-detail-nav mx-1">
         {% block detail_nav_download_via_https_button %}
         <a
                 {% if https_url %}
@@ -39,7 +39,7 @@ Requires the following fields:
         </a>
         {% endblock %}
       </li>
-      <li class="nav-item mx-1">
+      <li class="nav-item nav-item-detail-nav mx-1">
         {% block detail_nav_get_link_button %}
         <a
                 {% if https_url %}
