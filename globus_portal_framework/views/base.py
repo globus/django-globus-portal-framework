@@ -21,8 +21,10 @@ from globus_portal_framework.gsearch import (get_search_query,
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
-    ExpiredGlobusToken, GroupsException, check_exists, get_template
+    ExpiredGlobusToken, GroupsException, check_exists, get_template,
 )
+
+from globus_portal_framework.gsearch import get_template_path
 
 log = logging.getLogger(__name__)
 
@@ -33,12 +35,12 @@ def index_selection(request):
         'allowed_groups': getattr(settings,
                                   'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     }
-    return render(request, 'globus-portal-framework/v2/index-selection.html', context)
+    return render(request, get_template_path('index-selection.html'), context)
 
 
 def search_about(request, index):
-    template = get_template(index, 'globus-portal-framework/v2/search-about.html')
-    return render(request, template, {})
+    tvers = get_template_path('search-about.html', index=index)
+    return render(request, get_template(index, tvers), {})
 
 
 def search(request, index):
@@ -114,8 +116,8 @@ def search(request, index):
         error = context['search'].get('error')
         if error:
             messages.error(request, error)
-    template = get_template(index, 'globus-portal-framework/v2/search.html')
-    return render(request, template, context)
+    tvers = get_template_path('search.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def search_debug(request, index):
@@ -126,7 +128,8 @@ def search_debug(request, index):
         'search': results,
         'facets': dumps(results['facets'], indent=2)
     }
-    return render(request, get_template(index, 'search-debug.html'), context)
+    tvers = get_template_path('search-debug.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def search_debug_detail(request, index, subject):
@@ -135,8 +138,8 @@ def search_debug_detail(request, index, subject):
     dfields = OrderedDict(debug_fields)
     dfields.move_to_end('all')
     sub['django_portal_framework_debug_fields'] = dfields
-    template = get_template(index, 'globus-portal-framework/v2/search-debug-detail.html')
-    return render(request, template, sub)
+    tvers = get_template_path('search-debug-detail.html', index=index)
+    return render(request, get_template(index, tvers), sub)
 
 
 def detail(request, index, subject):
@@ -161,7 +164,8 @@ def detail(request, index, subject):
                 }
     }
     """
-    template = get_template(index, 'globus-portal-framework/v2/detail-overview.html')
+    tvers = get_template_path('detail-overview.html', index=index)
+    template = get_template(index, tvers)
     return render(request, template, get_subject(index, subject, request.user))
 
 
@@ -207,8 +211,8 @@ def detail_transfer(request, index, subject):
                           ''.format(tapie))
         except ValueError as ve:
             log.error(ve)
-    template = get_template(index, 'globus-portal-framework/v2/detail-transfer.html')
-    return render(request, template, context)
+    tvers = get_template_path('detail-transfer.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def detail_preview(request, index, subject, endpoint=None, url_path=None):
@@ -228,8 +232,8 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
             log.exception(pe)
         context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
-    template = get_template(index, 'globus-portal-framework/v2/detail-preview.html')
-    return render(request, template, context)
+    tvers = get_template_path('detail-preview.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def logout(request, next='/'):
@@ -271,7 +275,8 @@ def allowed_groups(request):
         except GroupsException as ge:
             log.exception(ge)
             messages.error(request, 'Error: Unable to fetch Globus Groups')
-    return render(request, 'globus-portal-framework/v2/allowed-groups.html', context)
+    tvers = get_template_path('allowed-groups.html')
+    return render(request, tvers, context)
 
 
 def handler404(*args, **kwargs):

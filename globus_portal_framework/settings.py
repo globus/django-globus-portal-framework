@@ -182,6 +182,7 @@ CSRF_USE_SESSIONS = True
 
 ROOT_URLCONF = 'globus_portal_framework.urls'
 
+BASE_TEMPLATES = 'globus-portal-framework/v2/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

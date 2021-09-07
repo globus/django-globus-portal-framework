@@ -64,6 +64,8 @@ VALID_SEARCH_FACET_KEYS = [
 # https://docs.globus.org/api/search/search/#request_documents
 DEFAULT_RESULT_FORMAT_VERSION = '2017-09-01'
 
+BASE_TEMPLATES = 'globus-portal-framework/v2/'
+
 # drop_empty enforces backwards compatible facet handling for 0.3.x
 DEFAULT_FACET_MODIFIERS = [
     'globus_portal_framework.modifiers.facets.drop_empty',
