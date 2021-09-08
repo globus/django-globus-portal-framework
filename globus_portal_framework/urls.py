@@ -100,16 +100,16 @@ search_urlpatterns = [
     path('<index:index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
     path('<index:index>/detail/<subject>/', detail, name='detail'),
-    path('allowed-groups/', allowed_groups, name='allowed-groups')
+    path('allowed-groups/', allowed_groups, name='allowed-groups'),
+    # Globus search portal. Provides default url '/'.
+    path('', index_selection, name='index-selection'),
 ]
 
 urlpatterns = [
     # Proxy remote file requests
     path('api/proxy/', restricted_endpoint_proxy_stream,
          name='restricted_endpoint_proxy_stream'),
-    # Globus search portal. Provides default url '/'.
     path('logout/', logout, name='logout'),
-    path('', index_selection, name='index-selection'),
     path('', include(search_urlpatterns)),
 ]
 
