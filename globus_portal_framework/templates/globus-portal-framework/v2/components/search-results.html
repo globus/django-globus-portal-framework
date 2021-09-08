@@ -10,17 +10,6 @@
     <h6 class="h6">{{search.total}} datasets found</h6>
     {% endif %}
   </div>
-  {% if request.user.is_authenticated %}
-  <div class="col-md-4" style="float: right">
-    <a class="btn btn-primary nav-link active"
-       href="{% url 'search-transfer' globus_portal_framework.index %}?{{request.session.search.full_query}}"
-    >
-      <i class="fas fa-exchange-alt"></i>
-      Transfer Datasets
-    </a>
-    {% endif %}
-  </div>
-
 </div>
 
 <div id="search-result" class="search-result">
