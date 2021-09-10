@@ -395,7 +395,7 @@ def get_template_path(template, index=None):
     """
     index_data = get_index(index) if index is not None else {}
     prefix = (
-            index_data.get('BASE_TEMPLATES') or
+            index_data.get('base_templates') or
             get_setting('BASE_TEMPLATES') or
             ''
     )
