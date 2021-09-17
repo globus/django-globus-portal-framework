@@ -1,0 +1,19 @@
+{%extends "globus-portal-framework/v2/base.html"%}
+{% load static index_template is_active %}
+
+{%block title%}Collections{%endblock%}
+
+{% block headextras %}
+{% block collections_head %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+{% endblock %}
+{% endblock %}
+
+{% block main_nav %}
+  {% block search_nav %}
+  {% index_template 'globus-portal-framework/v2/components/collections-nav.html' as collections_nav %}
+  {% include collections_nav %}
+  {% endblock %}
+{% endblock %}
+
+{% block body %}{%endblock%}

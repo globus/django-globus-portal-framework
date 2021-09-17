@@ -52,4 +52,23 @@
 {% endfor %}
 {% endblock %}
 
+{% block list_collections %}
+  {% if collections %}
+  <hr class="my-5">
+
+  <div class="row">
+    <div class="col"></div>
+    <div class="col-10">
+  {% for collection in collections %}
+    <h2 class="text-center card card-body">
+      <a href="{% if collection.slug %}{% url 'collections-overview' collection.slug %}{%else%}{% url 'collections-overview' collection.uuid %}{%endif%}"
+      >{{collection.name|default:collection.uuid}}</a>
+    </h2>
+  {% endfor %}
+    </div>
+    <div class="col"></div>
+  </div>
+  {% endif %}
+{% endblock %}
+
 {% endblock %}

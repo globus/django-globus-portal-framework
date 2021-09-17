@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.urls import resolve, reverse, NoReverseMatch, Resolver404
-from globus_portal_framework import get_index, IndexNotFound
+from globus_portal_framework import get_index
+from globus_portal_framework.gtransfer import get_collection
+from globus_portal_framework.exc import IndexNotFound, CollectionNotFound
 
 
 def globals(request):
@@ -18,6 +20,14 @@ def globals(request):
     except (IndexNotFound, Resolver404):
         pass
 
+    # Do the same for the collection
+    collection, collection_data = None, {}
+    try:
+        collection = resolve(request.path).kwargs.get('collection')
+        collection_data = get_collection(collection)
+    except (CollectionNotFound, Resolver404):
+        pass
+
     # Report if search debugging is enabled so it can be linked in templates
     try:
         reverse('search-debug', args=[index])
@@ -32,6 +42,8 @@ def globals(request):
                 'transfer_enabled': auth_enabled and transfer_scope_set,
                 'index_data': index_data,
                 'index': index,
+                'collection_data': collection_data,
+                'collection': collection,
                 'search_debugging_enabled': search_debugging_enabled,
                 }
             }

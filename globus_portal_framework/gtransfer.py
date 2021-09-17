@@ -2,7 +2,10 @@ import requests
 import globus_sdk
 import logging
 import os
+import uuid
 from django.core.validators import URLValidator
+from globus_portal_framework.apps import get_setting
+from globus_portal_framework.exc import CollectionNotFound
 
 
 from globus_portal_framework import (
@@ -13,6 +16,49 @@ from globus_portal_framework import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def get_collection(collection):
+    """
+    Get collection info given a collection UUID
+    :param collection:
+    :return: all data about the collection
+    :raises: globus_portal_framework.exc.CollectionNotFound
+    """
+    if collection is None:
+        raise CollectionNotFound(f'Collection {collection} was not found '
+                                 f'in settings.COLLECTIONS')
+    try:
+        uuid.UUID(collection)
+        return get_collection_by_uuid(collection)
+    except ValueError:
+        return get_collection_by_slug(collection)
+
+
+def get_collection_by_slug(slug):
+    """
+    Get collection info given a collection ``slug``
+    :param collection:
+    :return: all data about the collection
+    :raises: globus_portal_framework.exc.CollectionNotFound
+    """
+    for col_data in get_setting('COLLECTIONS') or []:
+        if col_data.get('slug') == slug:
+            return col_data
+    raise CollectionNotFound(slug)
+
+
+def get_collection_by_uuid(collection):
+    """
+    Get collection info given a collection UUID
+    :param collection:
+    :return: all data about the collection
+    :raises: globus_portal_framework.exc.CollectionNotFound
+    """
+    for col_data in get_setting('COLLECTIONS') or []:
+        if col_data.get('uuid') == collection:
+            return col_data
+    raise CollectionNotFound(collection)
 
 
 def check_exists(user, src_ep, src_path, raises=False):

@@ -75,6 +75,15 @@ SEARCH_INDEXES = {
     }
 }
 
+COLLECTIONS = [
+    {
+        'uuid': '60a0c6af-3f73-453c-afbe-c8504fc428b6',
+        'slug': 'airport-climate-data',
+        'name': 'Airport Climate Data',
+        'path': '/portal/catalog/',
+    }
+]
+
 GLOBUS_CLIENT_LOADER = 'globus_portal_framework.gclients.load_globus_client'
 
 SEARCH_RESULTS_PER_PAGE = 10
@@ -100,6 +109,7 @@ DEBUG = False
 # Get your keys at 'developers.globus.org'
 SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
 SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
+LOGIN_URL = '/login/globus'
 
 # Set if using POSTGRES
 # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html#database  # noqa

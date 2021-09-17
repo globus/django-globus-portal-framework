@@ -48,6 +48,19 @@ class IndexNotFound(GlobusPortalException):
                         )
 
 
+class CollectionNotFound(GlobusPortalException):
+    """
+    Exception when user tried to access an index not defined by this portal
+    """
+    def __init__(self, collection, **kwargs):
+        super().__init__(**kwargs)
+        self.code = 'CollectionNotFound'
+        self.collection = collection
+        self.message = ('The collection "{}" was not defined for this portal'
+                        ''.format(collection)
+                        )
+
+
 class PreviewException(GlobusPortalException):
     """
     Exceptions when trying to fetch data from Globus Preview

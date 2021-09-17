@@ -1,0 +1,42 @@
+{% extends 'globus-portal-framework/v2/collections-base.html' %}
+{% comment %}
+This template lists files inside a Globus Collection using javascript
+components to make each file listing call asynchronously. It requires
+no context, outside the Global DGPF collections context. However, the
+CollectionSelector component DOES require an API endpoint for fetching
+the listing. Ensure your urls.py file has
+{% endcomment %}
+{% load static index_template is_active %}
+
+{% block headextras %}
+{%block collections_head%}
+{{block.super}}
+<style>
+#feedback { font-size: 1.4em; }
+#collectionSelectorFiles .ui-selecting { background: #0074af; }
+#collectionSelectorFiles .ui-selected { background: #0074af; color: white; }
+</style>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="{% static 'globus-portal-framework/js/collection-selector.js' %}"></script>
+<script>
+$( document ).ready(function() {
+  selector = new CollectionSelector('{{globus_portal_framework.collection_data.uuid}}',
+                                    '{{globus_portal_framework.collection_data.path}}');
+});
+</script>
+{%endblock%}
+
+{% endblock %}
+
+{% block breadcrumb_items %}
+{{block.super}}
+<li class="breadcrumb-item {% is_active request 'collections-file-manager' collection=globus_portal_framework.collection %}">
+  <a class="h5">{{project_info.title}} Collection</a>
+</li>
+{% endblock %}
+
+{%block body%}
+<div class="container">
+      {% include 'globus-portal-framework/v2/components/collection-selector.html' %}
+</div>
+{% endblock %}

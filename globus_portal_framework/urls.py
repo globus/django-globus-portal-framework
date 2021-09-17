@@ -20,9 +20,12 @@ from django.conf import settings
 from globus_portal_framework.views import (
     search, index_selection, detail, detail_transfer, detail_preview, logout,
     allowed_groups, search_about,
+
+    collections_overview, collections_file_manager,
 )
 from globus_portal_framework.apps import get_setting
-from globus_portal_framework.api import restricted_endpoint_proxy_stream
+from globus_portal_framework.api import (restricted_endpoint_proxy_stream,
+                                         operation_ls,)
 from globus_portal_framework.exc import IndexNotFound
 
 
@@ -106,12 +109,25 @@ search_urlpatterns = [
     path('', index_selection, name='index-selection'),
 ]
 
+collection_urlpatterns = [
+    path('<collection>/overview/', collections_overview,
+         name='collections-overview'),
+    path('<collection>/file-manager/', collections_file_manager,
+         name='collections-file-manager'),
+]
+
+api_transfer_urlpatterns = [
+    path('operation-ls/', operation_ls, name='transfer-operation-ls')
+]
+
 urlpatterns = [
     # Proxy remote file requests
     path('api/proxy/', restricted_endpoint_proxy_stream,
          name='restricted_endpoint_proxy_stream'),
+    path('api/transfer/', include(api_transfer_urlpatterns)),
     path('logout/', logout, name='logout'),
     path('', include(search_urlpatterns)),
+    path('collections/', include(collection_urlpatterns))
 ]
 
 

@@ -11,9 +11,11 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
+from django.contrib.auth.decorators import login_required
 
-from globus_portal_framework.gclients import (revoke_globus_tokens,
-                                              get_user_groups)
+from globus_portal_framework.gclients import (
+    revoke_globus_tokens, get_user_groups, load_transfer_client
+)
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework.gsearch import (get_search_query,
@@ -25,6 +27,7 @@ from globus_portal_framework import (
 )
 
 from globus_portal_framework.gsearch import get_template_path
+from globus_portal_framework.gtransfer import get_collection
 
 log = logging.getLogger(__name__)
 
@@ -32,10 +35,50 @@ log = logging.getLogger(__name__)
 def index_selection(request):
     context = {
         'search_indexes': get_setting('SEARCH_INDEXES'),
+        'collections': get_setting('COLLECTIONS'),
         'allowed_groups': getattr(settings,
                                   'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     }
-    return render(request, get_template_path('index-selection.html'), context)
+    return render(request, 'globus-portal-framework/v2/index-selection.html',
+                  context)
+
+
+@login_required
+def collections_overview(request, collection):
+    cdata = get_collection(collection)
+    tc = load_transfer_client(request.user)
+    endpoint_info = tc.get_endpoint(cdata['uuid']).data
+    display_fields = cdata.get('display_info', [
+        'owner_string',
+        'activated',
+        'high_assurance',
+        'keywords',
+        'https_server',
+        'storage_type',
+        's3_url',
+        'default_directory',
+        'id',
+    ])
+    display_info = []
+    for field in display_fields:
+        if field not in endpoint_info:
+            log.warning(f'Field {field} missing from collection {collection} '
+                        'endpoint info')
+            continue
+        display_info.append({
+            'field': field,
+            'value': endpoint_info[field],
+            'name': ' '.join([w.capitalize() for w in field.split('_')])
+        })
+    tvers = get_template_path('collections-overview.html')
+    context = {'endpoint_info': endpoint_info, 'display_info': display_info}
+    return render(request, tvers, context)
+
+
+@login_required
+def collections_file_manager(request, collection):
+    tvers = get_template_path('collections-file-manager.html')
+    return render(request, tvers, {})
 
 
 def search_about(request, index):

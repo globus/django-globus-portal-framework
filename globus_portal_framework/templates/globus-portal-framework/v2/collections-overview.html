@@ -1,0 +1,58 @@
+{% extends "globus-portal-framework/v2/collections-base.html" %}
+{% comment %}
+This is a general template to display information about an endpoint. It requires
+two context items in addition to the global DGPF collections context:
+* ``endpoint_info`` -- Results from a TransferClient.get_endpoint()
+* ``fields_info`` -- A list of dictionaries containing field, value, and name.
+{% endcomment %}
+{% load is_active index_template is_active %}
+
+{% block breadcrumb_items %}
+{{block.super}}
+<li class="breadcrumb-item {% is_active request 'collections-overview' collection=collection %}">
+  <a class="h5">{{project_info.title}} About</a>
+</li>
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center mt-3 mb-5">{{project_title}}</h2>
+  </div>
+</div>
+
+
+<div class="row mb-5">
+  <div class="col"></div>
+  <div class="col-10">
+
+    <div>
+      <h1>{{globus_portal_framework.collection_data.name|default:endpoint_info.display_name}}</h1>
+      {% if endpoint_info.description %}
+      {{endpoint_info.description}}
+      {% else %}
+      <p>Information gathered from endpoint.</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <h1>Collection Info</h1>
+      <table class="table table-striped table-bordered">
+        <tbody>
+        {% block detail_overview_datacite %}
+        {% for field in display_info %}
+        <tr>
+          <td>{{field.name}}</td>
+          <td>{{field.value}}</td>
+        </tr>
+        {% endfor %}
+        {% endblock %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+
+{% endblock %}

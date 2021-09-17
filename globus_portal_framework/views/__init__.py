@@ -4,4 +4,6 @@ from globus_portal_framework.views.base import (
 
     detail_transfer, detail_preview,
 
+    collections_overview, collections_file_manager,
+
 )
