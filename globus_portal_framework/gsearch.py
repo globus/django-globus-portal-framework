@@ -7,6 +7,7 @@ import math
 import collections
 import datetime
 import pathlib
+from packaging import version
 from urllib.parse import quote_plus, unquote
 import globus_sdk
 from django import template
@@ -444,8 +445,11 @@ def get_subject(index, subject, user=None):
     client = load_search_client(user)
     try:
         idata = get_index(index)
-        result = client.get_subject(idata['uuid'], unquote(subject),
-                                    result_format_version='2017-09-01')
+        if version.parse(globus_sdk.version.__version__).major < 3:
+            params = dict(result_format_version='2017-09-01')
+        else:
+            params = dict(query_params=dict(result_format_version='2017-09-01'))
+        result = client.get_subject(idata['uuid'], unquote(subject), **params)
         return process_search_data(idata.get('fields', {}), [result.data])[0]
     except globus_sdk.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
