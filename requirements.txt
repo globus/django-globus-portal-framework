@@ -1,4 +1,4 @@
 django<4.0.0
-globus_sdk<4.0.0,>=3.0.0
+globus_sdk<4.0.0
 social-auth-app-django
 social-auth-core
