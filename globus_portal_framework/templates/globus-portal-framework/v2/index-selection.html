@@ -61,7 +61,7 @@
     <div class="col-10">
   {% for collection in collections %}
     <h2 class="text-center card card-body">
-      <a href="{% if collection.slug %}{% url 'collections-overview' collection.slug %}{%else%}{% url 'collections-overview' collection.uuid %}{%endif%}"
+      <a href="{% if collection.slug %}{% url 'collections-file-manager' collection.slug %}{%else%}{% url 'collections-overview' collection.uuid %}{%endif%}"
       >{{collection.name|default:collection.uuid}}</a>
     </h2>
   {% endfor %}

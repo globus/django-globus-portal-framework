@@ -9,8 +9,8 @@ two context items in addition to the global DGPF collections context:
 
 {% block breadcrumb_items %}
 {{block.super}}
-<li class="breadcrumb-item {% is_active request 'collections-overview' collection=collection %}">
-  <a class="h5">{{project_info.title}} About</a>
+<li class="breadcrumb-item {% is_active request 'collections-overview' collection=globus_portal_framework.collection %}">
+  <a class="h5">{{project_info.title}} Overview</a>
 </li>
 {% endblock %}
 
