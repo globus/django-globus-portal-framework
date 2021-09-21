@@ -145,8 +145,10 @@ def load_globus_client(user, client, token_name, require_authorized=False):
     elif not require_authorized:
         return client()
     else:
-        raise ValueError(
-            'User {} has not been authorized for {}'.format(user, client))
+        raise exc.PortalAuthException(
+            message='Authenticated User {} has no tokens for {}. Is {} missing '
+                    'from SOCIAL_AUTH_GLOBUS_SCOPE?'.format(user, client,
+                                                             token_name))
 
 
 def get_default_client_loader():
@@ -169,7 +171,7 @@ def load_search_client(user=None):
 def load_transfer_client(user):
     load_client = get_default_client_loader()
     return load_client(user, globus_sdk.TransferClient,
-                       'transfer.api.globus.org')
+                       'transfer.api.globus.org', require_authorized=True)
 
 
 def get_user_groups(user):

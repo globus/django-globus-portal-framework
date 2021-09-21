@@ -21,6 +21,13 @@ class GlobusPortalException(Exception):
         return str(self)
 
 
+class PortalAuthException(GlobusPortalException):
+    def __init__(self, code='', message=''):
+        self.code = code or 'PortalAuthException'
+        self.message = message or 'The portal encountered an error authorizing this action'
+        self.index = ''
+
+
 class GroupsException(GlobusPortalException):
     def __init__(self, code='', message=''):
         self.code = code or 'GroupsException'
