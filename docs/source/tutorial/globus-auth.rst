@@ -59,6 +59,8 @@ You will also need to wire up your login URLs in your ``myproject.urls.py`` file
 .. code-block:: bash
 
   urlpatterns = [
+      # Provides the basic search portal
+      path('', include('globus_portal_framework.urls')),
       # Provides Login urls for Globus Auth
       path('', include('social_django.urls', namespace='social')),
   ]
