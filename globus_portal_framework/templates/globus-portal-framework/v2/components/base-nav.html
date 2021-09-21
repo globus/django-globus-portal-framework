@@ -25,7 +25,7 @@
       {% elif globus_portal_framework.auth_enabled %}
       <li>
         <a class="nav-link nav-link-base-nav btn btn-dark" href="{% url 'social:begin' 'globus' %}?next={{ request.get_full_path|urlencode }}">
-          <img src="{% static 'images/globus.png' %}" height="32px" width="32px" style="border-radius: 4px">
+          <img src="{% static 'globus-portal-framework/images/globus.png' %}" height="32px" width="32px" style="border-radius: 4px">
            Login
         </a>
       </li>
