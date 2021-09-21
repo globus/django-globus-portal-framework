@@ -47,27 +47,29 @@ Disabling Links Requiring Login
 
 If you want to prevent unauthenticated users from even navigating to your views 
 in the first place, you can disable links in templates. 
-```
-<nav>
-  <ul class="nav nav-tabs">
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'my-landing-page' globus_portal_framework.index %}">About {{project_title}}</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'my-projects-page' globus_portal_framework.index %}">Projects</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{% url 'my-search' globus_portal_framework.index %}">Search</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link
-        {% if not request.user.is_authenticated %}
-        disabled
-        {% endif %}
-      " href="{% url 'my-files' globus_portal_framework.index %}">View My Files</a>
-    </li>
-  </ul>
-</nav>
-```
 
-In this example using [Bootstrap](https://getbootstrap.com/docs/4.0/components/navbar/#nav), the "View My Files" link will be disabled. 
+.. code-block::
+
+  <nav>
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'my-landing-page' globus_portal_framework.index %}">About {{project_title}}</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'my-projects-page' globus_portal_framework.index %}">Projects</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'my-search' globus_portal_framework.index %}">Search</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link
+          {% if not request.user.is_authenticated %}
+          disabled
+          {% endif %}
+        " href="{% url 'my-files' globus_portal_framework.index %}">View My Files</a>
+      </li>
+    </ul>
+  </nav>
+
+
+In this example using `Bootstrap <https://getbootstrap.com/docs/4.0/components/navbar/#nav>`_, the "View My Files" link will be disabled.

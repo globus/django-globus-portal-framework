@@ -14,3 +14,4 @@ other configurations are also possible.
    search/custom-urls
    search/custom-views
    search/facet-modifiers
+   search/requiring-login
