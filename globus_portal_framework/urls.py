@@ -21,6 +21,7 @@ from globus_portal_framework.views import (
     search, index_selection, detail, detail_transfer, detail_preview, logout,
     allowed_groups, search_about,
 )
+from globus_portal_framework.apps import get_setting
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 from globus_portal_framework.exc import IndexNotFound
 
@@ -69,7 +70,7 @@ def register_custom_index(name, match_list):
     simply fall through.
     """
     for index in match_list:
-        if index not in settings.SEARCH_INDEXES.keys():
+        if index not in get_setting('SEARCH_INDEXES').keys():
             raise IndexNotFound(index)
 
     class CustomIndexConverter:
@@ -87,7 +88,7 @@ def register_custom_index(name, match_list):
     register_converter(CustomIndexConverter, name)
 
 
-register_custom_index('index', list(settings.SEARCH_INDEXES.keys()))
+register_custom_index('index', list(get_setting('SEARCH_INDEXES').keys()))
 
 # search detail for viewing info about a single search result
 search_urlpatterns = [
