@@ -7,7 +7,7 @@ Install the packages below to get started. Globus Portal Framework requires Pyth
 .. code-block:: bash
 
   pip install django-admin
-  pip install -e git+https://github.com/globusonline/django-globus-portal-framework#egg=django-globus-portal-framework
+  pip install -e git+https://github.com/globus/django-globus-portal-framework#egg=django-globus-portal-framework
 
 
 Django-admin will help you bootstrap your initial portal while Globus Portal Framework will
