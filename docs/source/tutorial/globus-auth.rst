@@ -59,7 +59,6 @@ You will also need to wire up your login URLs in your ``myproject.urls.py`` file
 .. code-block:: bash
 
   urlpatterns = [
-
       # Provides Login urls for Globus Auth
       path('', include('social_django.urls', namespace='social')),
   ]

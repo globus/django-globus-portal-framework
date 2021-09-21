@@ -20,8 +20,18 @@ workflow.
 
    tutorial/installation-and-setup
    tutorial/globus-auth
+   tutorial/portal-configuration
 
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference:
+
+   reference/settings
+   reference/local-settings
+   reference/search-indexes
+   reference/facets
+   reference/deployment
 
 
 Indices and tables
