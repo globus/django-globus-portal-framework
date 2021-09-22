@@ -15,7 +15,8 @@ Modify facet data before it is passed to templates for rendering. This is handy 
 
 Each of these modifiers will be applied to facets in the order they are defined. 
 
-### Custom Facet Modifiers
+Custom Facet Modifiers
+----------------------
 
 You can add your own modifiers to the list:
 
@@ -28,9 +29,12 @@ You can add your own modifiers to the list:
   ],
 
 
-Each entry in the list is an import string to a Python callable. Each callable needs to take a single argument for the list of facets, and return the new modified list of facets. Modifying the `facets` parameter won't cause issues.
+Each entry in the list is an import string to a Python callable. Each callable
+needs to take a single argument for the list of facets, and return the new
+modified list of facets. Modifying the `facets` parameter won't cause issues.
 
-Define the function below in a module that matches the import string above. The function below should be defined in a module called `myapp/modifiers.py`
+Define the function below in a module that matches the import string above.
+The function below should be defined in a module called `myapp/modifiers.py`
 
 .. code-block::
 

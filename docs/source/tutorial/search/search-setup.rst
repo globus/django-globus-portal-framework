@@ -1,5 +1,5 @@
-Search Configuration
---------------------
+Search Setup
+============
 
 .. warning::
   These docs are still preliminary and missing some finer detail on search ingest.

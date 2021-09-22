@@ -1,14 +1,16 @@
-Writing your own search view
-============================
+Custom Search Views
+===================
 
 .. note::
   **Note**: Most portals shouldn't need these changes, it's only necessary if you need
   finer control over the low level components that make requests to the Globus Search service.
   Try customizing your search templates [here first](https://github.com/globusonline/django-globus-portal-framework/wiki/Customizing-Fields-and-Templates).
 
-
-
-At some point, you may need more control over the context for your search templates. An example may be rendering graphs based on the statistics returned by facets. The examples below include writing your own 'search' view, and wiring it up to override the default search view provided by Globus Portal Framework. This requires two changes:
+At some point, you may need more control over the context for your search templates.
+An example may be rendering graphs based on the statistics returned by facets.
+The examples below include writing your own 'search' view, and wiring it up to
+override the default search view provided by Globus Portal Framework.
+This requires two changes:
 
 * views.py -- Writing a custom view to capture a user search parameters and return context to the portal
 * urls.py -- Apply the custom view to one or more of your indices
@@ -34,7 +36,8 @@ In your project's urls.py:
   ]
 
 
-The URLs are still very similar to the old ones, except for the `register_custom_index` line. This registers a new [Django URL Converter](https://docs.djangoproject.com/en/2.2/topics/http/urls/#registering-custom-path-converters) for the indices you include in the second argument. This does a couple things:
+The URLs are still very similar to the old ones, except for the `register_custom_index` line.
+This registers a new [Django URL Converter](https://docs.djangoproject.com/en/2.2/topics/http/urls/#registering-custom-path-converters) for the indices you include in the second argument. This does a couple things:
 
 * Only the indices you include will use the new functionality
 * Unrelated URLs won't match as an 'index', such as if a bot searches for '/robots.txt'. Only URLs which map to the indices you include in the list will be matched.
