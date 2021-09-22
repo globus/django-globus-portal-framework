@@ -17,6 +17,14 @@ other configurations are also possible.
 
 .. toctree::
    :maxdepth: 1
+   :caption: Collections:
+
+   collections/collections-setup
+   collections/collections-templates
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: Portal Customizations:
 
    portal/custom-urls
