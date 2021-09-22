@@ -53,7 +53,7 @@
 {% endblock %}
 
 {% block list_collections %}
-  {% if collections %}
+  {% if collections and globus_portal_framework.auth_enabled %}
   <hr class="my-5">
 
   <div class="row">
