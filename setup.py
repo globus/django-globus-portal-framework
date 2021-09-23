@@ -20,7 +20,7 @@ setup(name='django-globus-portal-framework',
       version=version_ns['__version__'],
       description='A framework for collating Globus Search data for use with '
                   'various Globus services. ',
-      long_description=open('README.md').read(),
+      long_description=open('README.rst').read(),
       author='Globus Team',
       author_email='support@globus.org',
       url='https://github.com/globusonline/django-globus-portal-framework',

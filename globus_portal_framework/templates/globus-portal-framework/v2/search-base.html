@@ -1,0 +1,20 @@
+{%extends "globus-portal-framework/v2/base.html"%}
+{% load static index_template is_active %}
+
+{%block title%}Search{%endblock%}
+
+{% block headextras %}
+{% block search_head %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+{% endblock %}
+{{block.super}}
+{% endblock %}
+
+{% block main_nav %}
+  {% block search_nav %}
+  {% index_template 'globus-portal-framework/v2/components/search-nav.html' as search_nav %}
+  {% include search_nav %}
+  {% endblock %}
+{% endblock %}
+
+{% block body %}{%endblock%}

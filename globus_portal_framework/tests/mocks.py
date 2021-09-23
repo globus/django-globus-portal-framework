@@ -53,9 +53,14 @@ class MockTransferClient(MockGlobusClient):
 
 
 def mock_tokens(resource_servers):
-    return [{'resource_server': token,
-             'access_token': 'foo', 'expires_in': TOKEN_EXPIRE_TIME
-             } for token in resource_servers]
+    return [
+        {
+            'resource_server': token,
+            'access_token': 'access_token',
+            'refresh_token': 'refresh_token',
+            'expires_in': TOKEN_EXPIRE_TIME
+        } for token in resource_servers
+    ]
 
 
 def mock_user(username, resource_servers):

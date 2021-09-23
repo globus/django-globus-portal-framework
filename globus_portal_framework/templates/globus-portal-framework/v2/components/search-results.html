@@ -1,0 +1,47 @@
+
+{% load static %}
+
+{% block headextras %}{% endblock %}
+
+<div class="row">
+  <div class="col-md-8">
+    <h3 class="h3">Results</h3>
+    {% if search.total %}
+    <h6 class="h6">{{search.total}} datasets found</h6>
+    {% endif %}
+  </div>
+</div>
+
+<div id="search-result" class="search-result">
+  {% for result in search.search_results %}
+  <div class="card my-3">
+    <div class="card-header">
+      <h3 class="search-title">
+        <a href="{% url 'detail' globus_portal_framework.index result.subject %}" title="{{result.title|default:'Result'}}">{{result.title|default:'Result'}}</a>
+      </h3>
+    </div>
+    <div class="card-body">
+      <table class="table table-sm borderless">
+        <tbody>
+        <tr>
+          {% for name in result.all.0.keys|slice:"0:5" %}
+          <th>{{name}}</th>
+          {% endfor %}
+        </tr>
+        <tr>
+          {% for value in result.all.0.values|slice:"0:2" %}
+          <th>Present</th>
+          {% endfor %}
+        </tr>
+        </tbody>
+      </table>
+      <p>Override this template by creating the following file:</p>
+      <div>
+        <pre>
+          templates/globus-portal-framework/v2/components/search-results.html
+        </pre>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

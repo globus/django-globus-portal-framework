@@ -5,12 +5,56 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 import globus_sdk
 
-from globus_portal_framework import ExpiredGlobusToken
+from globus_portal_framework import ExpiredGlobusToken, exc
 from globus_portal_framework.apps import get_setting
 
 import logging
 
 log = logging.getLogger(__name__)
+
+CUSTOM_ENVS = {
+    'groups': {
+        # Globus SDK v2
+        'default': 'https://groups.api.globus.org',
+        # Globus SDK v3
+        'production': 'https://groups.api.globus.org',
+        'preview': 'https://groups.api.preview.globus.org',
+    }
+}
+
+# At this point, 'groups' is still a beta service for Globus.
+# This will likely be folded into the Globus SDK at some point, but needs
+# to be hardcoded here in the mean time.
+GROUPS_SCOPE = ('urn:globus:auth:scope:groups.api.globus.org:'
+                'view_my_groups_and_memberships')
+GLOBUS_GROUPS_V2_MY_GROUPS = '/v2/groups/my_groups'
+
+
+def get_globus_environment():
+    """Get the current Globus Environment. Used primarily for checking whether
+    the user has set GLOBUS_SDK_ENVIRONMENT=preview from the Globus SDK, but
+    may also be used for other Globus Environments. See here for more info:
+    Globus Preview: https://docs.globus.org/how-to/preview/
+    Globus SDK: https://globus-sdk-python.readthedocs.io/en/stable/config.html?highlight=preview#environment-variables  # noqa
+    """
+    try:
+        return globus_sdk.config.get_globus_environ()
+    except AttributeError:
+        return globus_sdk.config.get_environment_name()
+
+
+def get_service_url(service_name):
+    """Get the URL based on the current Globus Environment. Is a wrapper around
+    The Globus SDK .get_service_url(), but also provides lookup for custom beta
+    services such as Globus Groups."""
+    env = get_globus_environment()
+    if service_name in CUSTOM_ENVS:
+        if env not in CUSTOM_ENVS[service_name]:
+            err = ('Service {} has no service url for the '
+                   'configured environment: "{}"'.format(service_name, env))
+            raise exc.GlobusPortalException('InvalidEnv', err)
+        return CUSTOM_ENVS[service_name][env]
+    return globus_sdk.config.get_service_url(env, service_name)
 
 
 def validate_token(tok):
@@ -40,9 +84,19 @@ def revoke_globus_tokens(user):
                     for t in tokens.get('other_tokens', [])])
 
     for at, rt in tok_list:
-        ac.oauth2_revoke_token(at)
-        ac.oauth2_revoke_token(rt)
-    log.debug('Revoked tokens for user {}'.format(user))
+        try:
+            ac.oauth2_revoke_token(at)
+            if rt:
+                ac.oauth2_revoke_token(rt)
+        except globus_sdk.exc.GlobusAPIError as gapie:
+            log.exception(gapie)
+
+    # Gather info on what was revoked
+    access, refresh = zip(*tok_list)
+    at, rt = filter(None, access), filter(None, refresh)
+    num_at, num_rt = len(list(at)), len(list(rt))
+    log.info(f'Revoked {num_at + num_rt} ({num_at} access, {num_rt} refresh) '
+             f'tokens for user {user}')
 
 
 def load_globus_access_token(user, token_name):
@@ -91,8 +145,10 @@ def load_globus_client(user, client, token_name, require_authorized=False):
     elif not require_authorized:
         return client()
     else:
-        raise ValueError(
-            'User {} has not been authorized for {}'.format(user, client))
+        raise exc.PortalAuthException(
+            message='Authenticated User {} has no tokens for {}. Is {} missing '
+                    'from SOCIAL_AUTH_GLOBUS_SCOPE?'.format(user, client,
+                                                             token_name))
 
 
 def get_default_client_loader():
@@ -115,13 +171,30 @@ def load_search_client(user=None):
 def load_transfer_client(user):
     load_client = get_default_client_loader()
     return load_client(user, globus_sdk.TransferClient,
-                       'transfer.api.globus.org')
+                       'transfer.api.globus.org', require_authorized=True)
 
 
 def get_user_groups(user):
-    MY_GROUPS_URL = 'https://groups.api.globus.org/v2/groups/my_groups'
-    GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
-    token = load_globus_access_token(user, GROUPS_RS)
+    """Get all user groups from the groups.api.globus.org service."""
+    try:
+        GROUPS_RS = '04896e9e-b98e-437e-becd-8084b9e234a0'
+        token = load_globus_access_token(user, GROUPS_RS)
+        log.debug('Fetched old-style groups token')
+    except ValueError:
+        log.debug('Fetched new-style groups token. Old style can now be '
+                  'removed.')
+        token = load_globus_access_token(user, 'groups.api.globus.org')
+    # Attempt to load the access token for Globus Groups. The scope name will
+    # change Sept 23rd, at which point attempting to fetch via the old name
+    # can be removed.
+    groups_service = get_service_url('groups')
+    groups_url = '{}{}'.format(groups_service, GLOBUS_GROUPS_V2_MY_GROUPS)
     headers = {'Authorization': 'Bearer ' + token}
-    request = requests.get(MY_GROUPS_URL, headers=headers)
-    return request.json()
+    response = requests.get(groups_url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except requests.HTTPError as httpe:
+        log.error(response.text)
+        raise exc.GroupsException(message='Failed to get groups info for user '
+                                          '{}: {}'.format(user, httpe))

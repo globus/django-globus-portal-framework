@@ -49,9 +49,8 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
     def process_exception(self, request, exception):
         if not isinstance(exception, AuthForbidden):
             return
-        if not isinstance(exception.args, tuple):
-            return
-        if not isinstance(exception.args[0], dict):
+        # ensure the exception arg is a dict.
+        if not exception.args or not isinstance(exception.args[0], dict):
             return
 
         kwargs = exception.args[0]
@@ -65,7 +64,7 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
             'session_message',
             'Your current account does not have sufficient access to this '
             'resource, but one of your linked identities does. Please '
-            'login with one of those identities listed below.'
+            'login with one of those identities listed below: {}'
                 .format([g['username'] for g in allowed_user_member_groups])
         )
         # strategy does not handle lists well, so we need to encode the

@@ -6,6 +6,7 @@ import globus_sdk
 from globus_portal_framework.constants import (
     FILTER_TYPES, SRF_2017_09_01, SRF_2019_08_27
 )
+from globus_portal_framework.gclients import get_globus_environment
 
 log = logging.getLogger(__name__)
 log.debug('Debugging is active.')
@@ -98,3 +99,13 @@ def check_search_indexes(app_configs, **kwargs):
                             tuple(FILTER_TYPES.keys()))
                         ))
     return errors
+
+
+@register()
+def check_globus_env(app_configs, **kwargs):
+    env = get_globus_environment()
+    # 'default' is used in Globus SDK v2, 'production' in v3
+    if not env in ['default', 'production']:
+        return [Warning('Environment set to "{}", unset with '
+                        '"unset GLOBUS_SDK_ENVIRONMENT"'.format(env))]
+    return []

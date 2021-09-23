@@ -1,0 +1,39 @@
+{# This template can be used in place of the standard DGPF components/search-facets.html template #}
+{% for facet in search.facets %}
+<div class="card mb-3">
+  <div class="card-header">
+    {{facet.name}}
+  </div>
+  <div class="card-body my-0 py-0">
+    <ul class="list-group list-group-flush">
+    {% for field in facet.buckets %}
+      <li class="list-group-item py-1">
+        <input type="checkbox" class="facet-checkbox mr-1"
+               name="{{field.search_filter_query_key}}"
+               value="{{field.value}}"
+               {# Reset page to 1 if user facets on a paginated search #}
+               onchange="customSearch(1);" autocomplete="off"
+               {% if field.checked %}
+               checked
+               {% endif %}
+        >
+        {% block facet_value %}
+        {% if field.filter_type == 'year' %}
+        {{field.datetime|date:'Y'}}
+        {% elif field.filter_type == 'month' %}
+        {{field.datetime|date:'F Y'}}
+        {% elif field.filter_type == 'day' %}
+        {{field.datetime|date:'M d Y'}}
+        {% elif field.filter_type in 'hour minute second' %}
+        {{field.datetime|date:'M d Y H:i:s T'}}
+        {% else %}
+        {{field.value|default:'No Value'}}
+        {% endif %}
+        {% endblock %}
+      <span class="badge badge-secondary" style="float: right">{{field.count}}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endfor %}

@@ -36,6 +36,8 @@ __f_types = '|'.join(FILTER_TYPES.keys())
 FILTER_QUERY_PATTERN = '^{}(-(?P<filter_type>{}))?\\..*'.format(
     FILTER_PREFIX, __f_types)
 
+FACET_NAME_PATTERN = r'facet_def_(?P<order_index>\d+)_.+'
+
 FILTER_DATE_TYPE_PATTERN = (
     r'(?P<year>\d\d\d\d)'
     r'(?P<month>-\d\d)?'
@@ -56,9 +58,17 @@ VALID_SEARCH_KEYS = [
 ]
 
 VALID_SEARCH_FACET_KEYS = [
-    'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval'
+    'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval',
+    'missing'
 ]
 # https://docs.globus.org/api/search/search/#request_documents
 SRF_2017_09_01 = '2017-09-01'
 SRF_2019_08_27 = '2019-08-27'
 DEFAULT_RESULT_FORMAT_VERSION = SRF_2017_09_01
+
+BASE_TEMPLATES = 'globus-portal-framework/v2/'
+
+# drop_empty enforces backwards compatible facet handling for 0.3.x
+DEFAULT_FACET_MODIFIERS = [
+    'globus_portal_framework.modifiers.facets.drop_empty',
+]

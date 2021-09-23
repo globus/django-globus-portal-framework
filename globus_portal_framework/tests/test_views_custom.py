@@ -51,7 +51,7 @@ class CustomViewsTest(TestCase):
         urlpatterns.insert(0, custom_path)
         setattr(thismodule, 'urlpatterns', urlpatterns)
 
-    @mock.patch('globus_portal_framework.views.post_search')
+    @mock.patch('globus_portal_framework.views.base.post_search')
     def test_custom_search_view(self, post_search):
         post_search.return_value = {}
         r = self.c.get(reverse('search', args=['my_custom_index']))
@@ -59,7 +59,7 @@ class CustomViewsTest(TestCase):
         self.assertTrue(self.custom_search.called)
         self.assertEqual(r.content, b'custom_search_view')
 
-    @mock.patch('globus_portal_framework.views.post_search')
+    @mock.patch('globus_portal_framework.views.base.post_search')
     def test_regular_search_view_not_affected(self, post_search):
         post_search.return_value = {}
         r = self.c.get(reverse('search', args=['myindex']))

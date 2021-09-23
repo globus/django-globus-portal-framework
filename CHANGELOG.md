@@ -4,6 +4,62 @@
 Below are major changes for each version Release. For detailed information,
 see the list of commits from the last version or use `git log`.
 
+## 0.3.22 - 2021-09-03
+
+- Sped up token revocation on logout
+- Fixed Bug in Python Social Auth v4 for Globus Backend.
+- Fixed Possible mishandling of AuthForbidden exception
+- Fixed compatibility for Globus SDK v3
+
+## 0.3.21 - 2021-03-12
+
+- Pinned social-auth-core to 3.x.x, which wasn't always set by pinning social-auth-app-django
+
+## 0.3.20 - 2021-03-09
+
+- Pinned social-auth-app-django to 3.x.x due to bug in 4.0.0
+
+## 0.3.19 - 2020-11-30
+
+- Fixed search bug with date facets providing invalid 'size' param, causing searches to error with 400's
+
+## 0.3.18 - 2020-10-29
+
+- Fixed possible ImportError on some systems
+
+## 0.3.17 - 2020-10-28
+
+- Fix bugs in python 3.5
+    - Remove F strings and other python 3.6 features
+
+
+## 0.3.16 - 2020-10-20
+
+- Added broad exception handling on facet_modifiers
+    - Catch all exceptions except import exceptions (developer errors)
+
+## 0.3.15 - 2020-10-09
+
+- Added 'facet_modifiers' field to index config
+    - This allows customizing facets before they are rendered in templates, without writing new views.
+- Added support for 'value' type facets
+    - 'sum' and 'avg' type facets can now be configured
+- Added facet fields 'unique_name' and 'type' to facet results
+- Added 'filter_type' to each 'bucket' field in facet results
+
+## 0.3.14 - 2020-09-21
+
+- Fixed error on /allowed-groups view when groups could not be fetched from Globus
+- Added Globus 'Preview' support
+- Added specific "GroupsException" for catching groups-specific exceptions
+
+## 0.3.13 - 2020-09-09
+
+- Fixed Globus API errors on logout
+- Added support for new Globus Groups Resource Server name
+    - Changed from 04896e9e-b98e-437e-becd-8084b9e234a0 to 'groups.api.globus.org'
+    - 0.3.12 will continue to work for groups until September 23rd
+
 ## 0.3.12 - 2020-02-25
 
 - Fixed out of order merge to include changes from last release

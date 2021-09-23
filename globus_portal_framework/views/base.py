@@ -21,8 +21,10 @@ from globus_portal_framework.gsearch import (get_search_query,
 from globus_portal_framework import (
     preview, helper_page_transfer, get_helper_page_url,
     get_subject, post_search, PreviewException, PreviewURLNotFound,
-    ExpiredGlobusToken, check_exists, get_template
+    ExpiredGlobusToken, GroupsException, check_exists, get_template,
 )
+
+from globus_portal_framework.gsearch import get_template_path
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +35,12 @@ def index_selection(request):
         'allowed_groups': getattr(settings,
                                   'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     }
-    return render(request, 'index-selection.html', context)
+    return render(request, get_template_path('index-selection.html'), context)
+
+
+def search_about(request, index):
+    tvers = get_template_path('search-about.html', index=index)
+    return render(request, get_template(index, tvers), {})
 
 
 def search(request, index):
@@ -109,7 +116,8 @@ def search(request, index):
         error = context['search'].get('error')
         if error:
             messages.error(request, error)
-    return render(request, get_template(index, 'search.html'), context)
+    tvers = get_template_path('search.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def search_debug(request, index):
@@ -120,7 +128,8 @@ def search_debug(request, index):
         'search': results,
         'facets': dumps(results['facets'], indent=2)
     }
-    return render(request, get_template(index, 'search-debug.html'), context)
+    tvers = get_template_path('search-debug.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def search_debug_detail(request, index, subject):
@@ -129,8 +138,8 @@ def search_debug_detail(request, index, subject):
     dfields = OrderedDict(debug_fields)
     dfields.move_to_end('all')
     sub['django_portal_framework_debug_fields'] = dfields
-    return render(request,
-                  get_template(index, 'search-debug-detail.html'), sub)
+    tvers = get_template_path('search-debug-detail.html', index=index)
+    return render(request, get_template(index, tvers), sub)
 
 
 def detail(request, index, subject):
@@ -155,8 +164,9 @@ def detail(request, index, subject):
                 }
     }
     """
-    return render(request, get_template(index, 'detail-overview.html'),
-                  get_subject(index, subject, request.user))
+    tvers = get_template_path('detail-overview.html', index=index)
+    template = get_template(index, tvers)
+    return render(request, template, get_subject(index, subject, request.user))
 
 
 @csrf_exempt
@@ -197,12 +207,12 @@ def detail_transfer(request, index, subject):
                 context['detail_error'] = tapie
                 log.error('File not found: {}'.format(tapie.message))
             elif tapie.code not in ['EndpointPermissionDenied']:
-                log.error('Unexpected Error found during transfer request'
+                log.error('Unexpected Error found during transfer request: {}'
                           ''.format(tapie))
         except ValueError as ve:
             log.error(ve)
-    return render(request,
-                  get_template(index, 'detail-transfer.html'), context)
+    tvers = get_template_path('detail-transfer.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def detail_preview(request, index, subject, endpoint=None, url_path=None):
@@ -222,7 +232,8 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
             log.exception(pe)
         context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
-    return render(request, get_template(index, 'detail-preview.html'), context)
+    tvers = get_template_path('detail-preview.html', index=index)
+    return render(request, get_template(index, tvers), context)
 
 
 def logout(request, next='/'):
@@ -256,11 +267,16 @@ def allowed_groups(request):
     portal_groups = getattr(settings, 'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     context = {'allowed_groups': copy.deepcopy(portal_groups)}
     if request.user.is_authenticated:
-        user_groups = {g['id']: g for g in get_user_groups(request.user)}
-        for group in context['allowed_groups']:
-            if user_groups.get(group['uuid']):
-                group['is_member'] = True
-    return render(request, 'allowed-groups.html', context)
+        try:
+            user_groups = {g['id']: g for g in get_user_groups(request.user)}
+            for group in context['allowed_groups']:
+                if user_groups.get(group['uuid']):
+                    group['is_member'] = True
+        except GroupsException as ge:
+            log.exception(ge)
+            messages.error(request, 'Error: Unable to fetch Globus Groups')
+    tvers = get_template_path('allowed-groups.html')
+    return render(request, tvers, context)
 
 
 def handler404(*args, **kwargs):

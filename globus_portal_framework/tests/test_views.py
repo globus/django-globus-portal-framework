@@ -64,13 +64,13 @@ class SearchViewsTest(TestCase):
             list(SEARCH_INDEXES.keys()))
         setattr(thismodule, 'urlpatterns', urlpatterns)
 
-    @mock.patch('globus_portal_framework.views.post_search')
+    @mock.patch('globus_portal_framework.views.base.post_search')
     def test_index(self, post_search):
         post_search.return_value = {}
         r = self.c.get(reverse('search', args=[self.index]))
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_portal_framework.views.post_search')
+    @mock.patch('globus_portal_framework.views.base.post_search')
     def test_nonexistant_search_index(self, post_search):
         post_search.return_value = {}
         with self.assertRaises(NoReverseMatch):
@@ -83,8 +83,8 @@ class SearchViewsTest(TestCase):
         r = self.c.get(url)
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_portal_framework.views.log')
-    @mock.patch('globus_portal_framework.views.get_helper_page_url',
+    @mock.patch('globus_portal_framework.views.base.log')
+    @mock.patch('globus_portal_framework.views.base.get_helper_page_url',
                 mock.Mock())
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
@@ -97,8 +97,8 @@ class SearchViewsTest(TestCase):
         self.assertTrue(log.error.called)
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_portal_framework.views.log')
-    @mock.patch('globus_portal_framework.views.get_helper_page_url',
+    @mock.patch('globus_portal_framework.views.base.log')
+    @mock.patch('globus_portal_framework.views.base.get_helper_page_url',
                 mock.Mock())
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
@@ -112,8 +112,8 @@ class SearchViewsTest(TestCase):
         self.assertTrue(log.error.called)
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_portal_framework.views.log')
-    @mock.patch('globus_portal_framework.views.get_helper_page_url',
+    @mock.patch('globus_portal_framework.views.base.log')
+    @mock.patch('globus_portal_framework.views.base.get_helper_page_url',
                 mock.Mock())
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
@@ -129,8 +129,8 @@ class SearchViewsTest(TestCase):
         self.assertFalse(log.error.called)
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_portal_framework.views.log')
-    @mock.patch('globus_portal_framework.views.preview')
+    @mock.patch('globus_portal_framework.views.base.log')
+    @mock.patch('globus_portal_framework.views.base.preview')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
     def test_detail_preview(self, get_subject, preview, log):
@@ -147,8 +147,8 @@ class SearchViewsTest(TestCase):
         self.assertFalse(log.warning.called)
         self.assertTrue(preview.called)
 
-    @mock.patch('globus_portal_framework.views.log')
-    @mock.patch('globus_portal_framework.views.preview')
+    @mock.patch('globus_portal_framework.views.base.log')
+    @mock.patch('globus_portal_framework.views.base.preview')
     @mock.patch('globus_sdk.SearchClient.get_subject')
     @mock.patch('globus_sdk.TransferClient', MockTransferClient)
     def test_detail_preview_exceptions(self, get_subject, preview, log):
@@ -171,7 +171,7 @@ class SearchViewsTest(TestCase):
         # Once for each: ['UnexpectedError', 'ServerError']
         self.assertEqual(log.exception.call_count, 2)
 
-    @mock.patch('globus_portal_framework.views.post_search')
+    @mock.patch('globus_portal_framework.views.base.post_search')
     def test_search_debug(self, post_search):
         post_search.return_value = {'facets': []}
         r = self.c.get(reverse('search-debug', args=[self.index]))
@@ -184,7 +184,7 @@ class SearchViewsTest(TestCase):
         r = self.c.get(url)
         self.assertEqual(r.status_code, 200)
 
-    @mock.patch('globus_portal_framework.views.revoke_globus_tokens')
+    @mock.patch('globus_portal_framework.views.base.revoke_globus_tokens')
     def test_logout(self, revoke_globus_tokens):
         client, user = get_logged_in_client('mal', ['search.api.globus.org',
                                                     'transfer.api.globus.org'])

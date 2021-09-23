@@ -1,0 +1,35 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-base-nav">
+  <a class="navbar-brand" href="{% block project_url %}{{ project_url|default:'/' }}{% endblock %}">
+    {% block project_title %}
+    {% if globus_portal_framework.index_data.tagline %}
+    {{globus_portal_framework.index_data.name|default:'globus_portal_framework.index'}}: {{globus_portal_framework.index_data.tagline}}
+    {% else %}
+    {{globus_portal_framework.project_title}}
+    {% endif %}
+    {% endblock %}
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto"></ul>
+    <ul class="navbar-nav my-lg-0">
+      {%if globus_portal_framework.auth_enabled and request.user.is_authenticated %}
+      <li>
+        <a class="nav-link nav-link-base-nav" href="{% url 'logout' %}?next=/">Logout</a>
+      </li>
+      <li>
+        <a class="nav-link nav-link-base-nav" href="/">{{request.user.username }}</a>
+      </li>
+      {% elif globus_portal_framework.auth_enabled %}
+      <li>
+        <a class="nav-link nav-link-base-nav btn btn-dark" href="{% url 'social:begin' 'globus' %}?next={{ request.get_full_path|urlencode }}">
+          <img src="{% static 'globus-portal-framework/images/globus.png' %}" height="32px" width="32px" style="border-radius: 4px">
+           Login
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>

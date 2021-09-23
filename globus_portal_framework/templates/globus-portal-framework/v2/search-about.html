@@ -1,0 +1,43 @@
+{% extends "globus-portal-framework/v2/search-base.html" %}
+{% load is_active index_template is_active %}
+
+{% block breadcrumb_items %}
+{{block.super}}
+<li class="breadcrumb-item {% is_active request 'search-about' index=globus_portal_framework.index %}">
+  <a class="h5">{{project_info.title}} About</a>
+</li>
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+  <div class="col">
+    <h2 class="text-center mt-3 mb-5">{{project_title}}</h2>
+  </div>
+</div>
+
+
+<div class="row mb-5">
+  <div class="col"></div>
+  <div class="col-10">
+
+    <div>
+      <h1>About</h1>
+      {% block landing_page_about %}
+      Add something about your project here, in the landing_page_about block!
+      {% endblock %}
+    </div>
+    <div>
+      <h1>Data Access</h1>
+      {% block landing_page_data_access %}
+      <p class="lead font-weight-bolder">Search results are limited to members of the {{project_title}} Group.</p>
+        <a class="btn btn-primary" target="_blank" href="https://app.globus.org/groups/{{globus_portal_framework.index_data.group}}/about">
+          Request Access to {{project_title}} Group
+        </a>
+      {% endblock %}
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+
+{% endblock %}

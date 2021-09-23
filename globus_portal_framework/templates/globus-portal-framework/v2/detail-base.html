@@ -1,0 +1,60 @@
+{%extends "globus-portal-framework/v2/base.html"%}
+{% load static index_template %}
+
+{%block title%}Detail{%endblock%}
+
+{% block headextras %}
+{% block detail_head %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/detail-base.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/detail-overview.css' %}" />
+<script src="{% static 'js/copy-to-clipboard.js' %}"></script>
+{% endblock %}
+{{block.super}}
+{% endblock %}
+
+{% block breadcrumb_items %}
+{{block.super}}
+<li class="breadcrumb-item">
+  <a class="h5" href="{% url 'search' globus_portal_framework.index %}">{{project_info.title}} Search</a>
+</li>
+{% endblock %}
+
+{% block body %}
+
+{% block detail_back_to_search %}
+{% if request.session.search %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <a href="{% url 'search' request.session.search.index %}?{{request.session.search.full_query}}"><i class="fas fa-arrow-left"></i> Back to Search</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block body_content %}
+<div class="container my-3">
+  <div class="card">
+    {% block detail_nav %}
+    {% index_template 'globus-portal-framework/v2/components/detail-nav.html' as it_detail_nav %}
+    {% include it_detail_nav %}
+    {% endblock %}
+    <div class="card-body">
+      {% block copy_to_clipboard %}
+      {% include 'globus-portal-framework/v2/components/copy-to-clipboard.html' %}
+      {% endblock %}
+      <div class="container">
+        {%block detail_body %}
+        {%endblock%}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% endblock %}

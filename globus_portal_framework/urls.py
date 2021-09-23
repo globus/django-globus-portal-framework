@@ -19,8 +19,9 @@ from django.urls import path, include, register_converter
 from django.conf import settings
 from globus_portal_framework.views import (
     search, index_selection, detail, detail_transfer, detail_preview, logout,
-    allowed_groups,
+    allowed_groups, search_about,
 )
+from globus_portal_framework.apps import get_setting
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
 from globus_portal_framework.exc import IndexNotFound
 
@@ -69,7 +70,7 @@ def register_custom_index(name, match_list):
     simply fall through.
     """
     for index in match_list:
-        if index not in settings.SEARCH_INDEXES.keys():
+        if index not in get_setting('SEARCH_INDEXES').keys():
             raise IndexNotFound(index)
 
     class CustomIndexConverter:
@@ -87,10 +88,11 @@ def register_custom_index(name, match_list):
     register_converter(CustomIndexConverter, name)
 
 
-register_custom_index('index', list(settings.SEARCH_INDEXES.keys()))
+register_custom_index('index', list(get_setting('SEARCH_INDEXES').keys()))
 
 # search detail for viewing info about a single search result
 search_urlpatterns = [
+    path('<index:index>/about/', search_about, name='search-about'),
     path('<index:index>/', search, name='search'),
     path('<index:index>/detail-preview/<subject>/',
          detail_preview, name='detail-preview'),
@@ -99,16 +101,16 @@ search_urlpatterns = [
     path('<index:index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
     path('<index:index>/detail/<subject>/', detail, name='detail'),
-    path('allowed-groups/', allowed_groups, name='allowed-groups')
+    path('allowed-groups/', allowed_groups, name='allowed-groups'),
+    # Globus search portal. Provides default url '/'.
+    path('', index_selection, name='index-selection'),
 ]
 
 urlpatterns = [
     # Proxy remote file requests
     path('api/proxy/', restricted_endpoint_proxy_stream,
          name='restricted_endpoint_proxy_stream'),
-    # Globus search portal. Provides default url '/'.
     path('logout/', logout, name='logout'),
-    path('', index_selection, name='index-selection'),
     path('', include(search_urlpatterns)),
 ]
 

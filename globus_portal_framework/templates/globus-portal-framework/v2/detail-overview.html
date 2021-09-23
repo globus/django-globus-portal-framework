@@ -1,0 +1,51 @@
+{% extends 'globus-portal-framework/v2/detail-base.html' %}
+
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a class="h5" href="{% url 'index-selection' %}">{{globus_portal_framework.project_title}}</a></li>
+<li class="breadcrumb-item"><a class="h5" href="{% url 'search' globus_portal_framework.index %}">{{globus_portal_framework.index_data.name}}</a></li>
+<li class="breadcrumb-item active"><a class="h5">{{title|default:'Result Details'}}</a></li>
+{% endblock %}
+
+
+{% block detail_body %}
+
+<div class="row">
+  <div class="col-md-12">
+
+        {% block detail_search_content %}
+        {% if result.dc or result.files or result.project_metadata  %}
+        <h3 class="text-center mb-5">General Info</h3>
+        {% with all|first as result %}
+        <div class="row">
+          <div class="col-md-6">
+            {% include 'globus-portal-framework/v2/components/detail-dc-metadata.html' %}
+          </div>
+          <div class="col-md-6">
+            {% include 'globus-portal-framework/v2/components/detail-general-metadata.html' %}
+          </div>
+        </div>
+        {% endwith %}
+
+        {% else %}
+
+        <p>
+          This the default built-in detail page for Globus Portal Framework.
+          Create a file named <i>templates/globus-portal-framework/v2/components/detail-overview.html</i>
+          to override this template with your own, so you can customize this page to your liking.
+          <br><br>
+          Also, checkout the docs on 'fields' for Globus Portal Framework, which will tell you
+          how to configure the Transfer/Download/Link buttons above.
+        </p>
+        <h3 class="text-center mb-5">Default Detail Page</h3>
+        {% with all|first as project_metadata %}
+        {% include 'globus-portal-framework/v2/components/detail-general-metadata.html' %}
+        {% endwith %}
+        {% endif %}
+        {% endblock %}
+
+
+  </div>
+</div>
+
+{% endblock %}

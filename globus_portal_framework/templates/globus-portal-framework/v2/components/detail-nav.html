@@ -1,0 +1,61 @@
+{% comment %}
+
+Requires the following fields:
+* https_url
+* title
+* globus_app_link
+{% endcomment %}
+
+<div class="card-header">
+  <nav class="navbar">
+    <a class="navbar-brand">{{title|default:'Result'}}</a>
+    <ul class="nav nav-pills nav-detail-nav justify-content-end">
+      <li class="nav-item nav-item-detail-nav mx-1">
+        {% block detail_nav_transfer_sync_button %}
+        <a
+                {% if globus_app_link %}
+                class="btn btn-primary nav-link active" target="_blank" href="{{globus_app_link}}"
+                {% else %}
+                class="btn btn-primary nav-link disabled" href="#"
+                {% endif %}
+        >
+          <i class="fas fa-exchange-alt"></i>
+          Transfer/Sync
+        </a>
+        {% endblock %}
+      </li>
+      <li class="nav-item nav-item-detail-nav mx-1">
+        {% block detail_nav_download_via_https_button %}
+        <a
+                {% if https_url %}
+                class="btn btn-primary nav-link active" target="_blank" href="{{https_url}}"
+                {% else %}
+                class="btn btn-light nav-link disabled" href="#"
+                {% endif %}
+
+        >
+          <i class="fas fa-cloud-download-alt"></i>
+          Download via HTTPS
+        </a>
+        {% endblock %}
+      </li>
+      <li class="nav-item nav-item-detail-nav mx-1">
+        {% block detail_nav_get_link_button %}
+        <a
+                {% if https_url %}
+                class="btn btn-primary nav-link active" data-toggle="collapse" href="#collapseExample"
+                target="_blank" role="button" aria-expanded="false" aria-controls="collapseExample"
+                {% else %}
+                class="btn btn-light nav-link disabled" href="#"
+                {% endif %}
+        >
+          <i class="fas fa-link"></i>
+          Get link
+        </a>
+        {% endblock %}
+      </li>
+      {% block extra_nav_items %}
+      {% endblock %}
+    </ul>
+  </nav>
+</div>

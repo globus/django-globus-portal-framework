@@ -185,6 +185,7 @@ CSRF_USE_SESSIONS = True
 
 ROOT_URLCONF = 'globus_portal_framework.urls'
 
+BASE_TEMPLATES = 'globus-portal-framework/v2/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -203,8 +204,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'globus_portal_framework.wsgi.application'
 
 
 # Database
@@ -279,3 +278,5 @@ except ImportError:
 
 # Used to check if this app is running
 GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

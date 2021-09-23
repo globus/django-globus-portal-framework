@@ -1,0 +1,90 @@
+{% extends 'globus-portal-framework/v2/search-base.html' %}
+{% load static index_template is_active %}
+
+{% block headextras %}
+{%block search_head%}
+{{block.super}}
+<script>
+  /*
+  This helper function ensures queries are inserted as the first query-param
+  so that the search url is copy-pastable by the user
+  */
+  function customSearch(page=1) {
+    //copy as a hidden field so we don't change the look of the page
+    var page = $('<input>').attr({type: 'hidden', id: 'foo',
+                                 name: 'page', value: page});
+    var input = $('#search-input').clone().attr('type','hidden');
+    $('#facet-form').prepend(page).prepend(input).submit();
+  }
+</script>
+{%endblock%}
+{{block.super}}
+{% endblock %}
+
+{% block breadcrumb_items %}
+{{block.super}}
+<li class="breadcrumb-item {% is_active request 'search' index=globus_portal_framework.index %}">
+  <a class="h5">{{project_info.title}} Search</a>
+</li>
+{% endblock %}
+
+{%block body%}
+<div class="container">
+
+  {% block search_form %}
+  <form id="search-form" class="my-4" name="search_form"
+        action="{% block search_form_url %}{% url 'search' globus_portal_framework.index %}{% endblock %}">
+    <input type="text" id="search-input" autocomplete="off"
+           data-provide="typeahead" name="q"
+           value="{{request.session.search.query}}" placeholder="Start your search here">
+    <button id="search-btn" type="submit" class="btn btn-default">
+      <i class="fas fa-search"></i>
+    </button>
+  </form>
+  {% endblock %}
+
+  <div class="row">
+    {% block search_facets %}
+    <div id="sidebar" class="col-xs-12 col-sm-4 col-md-4">
+      <div id="filters">
+        <div id="facet-container">
+          <form id="facet-form">
+            {% index_template 'globus-portal-framework/v2/components/search-facets.html' as it_search_facets %}
+            {% include it_search_facets %}
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+
+    <div id="content" class="col-xs-12 col-sm-8 col-md-8">
+
+      <div id="results" style="display: inline;">
+        {% index_template 'globus-portal-framework/v2/components/search-results.html' as it_search_results %}
+        {% include it_search_results %}
+
+        {% block search_pagination %}
+        <div class="row justify-content-md-center">
+          <nav class="mt-3 mb-5" aria-label="Search Results Pages">
+            <ul class="pagination">
+              {% for page in search.pagination.pages %}
+              {% if page.number == search.pagination.current_page %}
+              <li class="page-item active">
+              {% else %}
+              <li class="page-item">
+              {% endif %}
+                {% block search_pagination_link %}
+                <a class="page-link" onclick="customSearch({{page.number}});">{{page.number}}</a>
+                {% endblock %}
+              </li>
+              {% endfor %}
+            </ul>
+          </nav>
+        </div>
+        {% endblock %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
