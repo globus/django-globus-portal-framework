@@ -75,7 +75,7 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
                     'last_name': last_name,
                     'identity_id': identity_id,
                     'idp_id': idp_id,
-                    'identities': resp
+                    'identities': user_identities
                 }
 
         return None
