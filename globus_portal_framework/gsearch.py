@@ -119,7 +119,7 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
         etext = ('There was an error in {}, you can file '
                  'an issue here:\n{}\nWith the following data: \n\n')
         gs = 'https://github.com/globusonline/globus-search/issues'
-        dgpf = 'https://github.com/globusonline/django-globus-portal-framework'
+        dgpf = 'https://github.com/globus/django-globus-portal-framework'
         if str(sapie.http_status).startswith('5'):
             error = etext.format('Globus Search', gs)
         else:
@@ -486,7 +486,7 @@ def process_search_data(field_mappers, results):
             field = {}
             if isinstance(mapper, str):
                 field = {mapper: default_content.get(mapper)}
-            elif isinstance(mapper, collections.Iterable) and len(mapper) == 2:
+            elif isinstance(mapper, collections.abc.Iterable) and len(mapper) == 2:
                 field_name, map_approach = mapper
                 if isinstance(map_approach, str):
                     field = {field_name: default_content.get(map_approach)}

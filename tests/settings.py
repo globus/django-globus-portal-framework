@@ -22,26 +22,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ###############################################################################
 
 
-def get_rfm(search_result):
-    if search_result[0].get('remote_file_manifest'):
-        return [search_result[0]['remote_file_manifest']]
-    else:
-        return []
-
-
 SEARCH_INDEXES = {
-    'perfdata': {
-        'name': 'Performance Data',
-        'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
+    'testindex': {
+        'name': 'Not a Real Index',
+        'uuid': '5e83718e-add0-4f06-a00d-577dc78359ba',
         'fields': [
             'perfdata',
-            ('remote_file_manifest', get_rfm),
-            ('globus_http_endpoint',
-             lambda x: 'b4eab318-fc86-11e7-a5a9-0a448319c2f8.petrel.host'),
-            ('globus_http_scope', lambda x: 'petrel_https_server'),
-            ('globus_http_path',
-             lambda x: x[0]['remote_file_manifest']['url'].split(':')[2]),
-
         ],
         'facets': [
             {
@@ -69,9 +55,6 @@ SEARCH_INDEXES = {
             },
         ],
         'filter_match': 'match-all',
-        'template_override_dir': 'perfdata',
-        'test_index': True,
-
     }
 }
 
@@ -98,17 +81,20 @@ PREVIEW_DATA_SIZE = 2048
 SECRET_KEY = '<Add Your Secret Key Here>'
 DEBUG = False
 # Get your keys at 'developers.globus.org'
-SOCIAL_AUTH_GLOBUS_KEY = '<your_Globus_Auth_Client_ID>'
-SOCIAL_AUTH_GLOBUS_SECRET = '<your_Globus_Auth_Client_Secret>'
+SOCIAL_AUTH_GLOBUS_KEY = 'mock_client_id'
+SOCIAL_AUTH_GLOBUS_SECRET = 'mock_client_secret'
+
+SOCIAL_AUTH_GLOBUS_SESSIONS = True,
+SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = []
+SOCIAL_AUTH_GLOBUS_SCOPE = [
+   'urn:globus:auth:scope:groups.api.globus.org:'
+   'view_my_groups_and_memberships',
+]
 
 # Set if using POSTGRES
 # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html#database  # noqa
 # SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 
-ALLOWED_HOSTS = []
-INTERNAL_IPS = (
-    '127.0.0.1',
-)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -143,20 +129,6 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-SOCIAL_AUTH_SANITIZE_REDIRECTS = False
-# Access type needed to get a refresh token
-SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
-    # 'access_type': 'offline',
-}
-
-SOCIAL_AUTH_GLOBUS_SCOPE = [
-    'urn:globus:auth:scope:search.api.globus.org:search',
-    'urn:globus:auth:scope:transfer.api.globus.org:all',
-    'https://auth.globus.org/scopes/56ceac29-e98a-440a-a594-b41e7a084b62/all',
-    # Optional, only used if you want to restrict users to Globus Groups
-    'urn:globus:auth:scope:groups.api.globus.org:'
-    'view_my_groups_and_memberships'
-]
 
 # Set to True to retrieve information about a user identity from the Globus
 # sessions instead of relying on a Globus OIDC userinfo endpoint.
@@ -266,12 +238,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# Override any settings here if a local_settings.py file exists
-try:
-    from globus_portal_framework.local_settings import *  # noqa
-except ImportError:
-    pass
 
 # Used to check if this app is running
 GLOBUS_PORTAL_FRAMEWORK_DEVELOPMENT_APP = True

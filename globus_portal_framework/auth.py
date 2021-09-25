@@ -20,30 +20,37 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
     # Fixed by https://github.com/python-social-auth/social-core/pull/577
     JWT_ALGORITHMS = ['RS512']
 
+    def introspect_token(self, auth_token):
+        return self.get_json(
+            self.OIDC_ENDPOINT + '/v2/oauth2/token/introspect',
+            method='POST',
+            data={"token": auth_token,
+                  "include": "session_info,identities_set"},
+            auth=self.get_key_and_secret()
+        )
+
+    def get_globus_identities(self, auth_token, identities_set):
+        return self.get_json(
+            self.OIDC_ENDPOINT + '/v2/api/identities',
+            method='GET',
+            headers={'Authorization': 'Bearer ' + auth_token},
+            params={'ids': ','.join(identities_set),
+                    'include': 'identity_provider'},
+        )
+
     def get_user_details(self, response):
         # If SOCIAL_AUTH_GLOBUS_SESSIONS is not set, fall back to default
         if not self.setting('SESSIONS'):
             return super(GlobusOpenIdConnectBase, self).get_user_details(
                 response)
 
-        key, secret = self.get_key_and_secret()
         auth_token = response.get('access_token')
-
-        # Introspect the access_token with session_info and identities_set
-        # included
-        resp = self.get_json(
-            self.OIDC_ENDPOINT + '/v2/oauth2/token/introspect',
-            method='POST',
-            data={"token": auth_token,
-                  "include": "session_info,identities_set"},
-            auth=(key, secret)
-        )
-
-        # Get all user identities
-        identities_set = resp.get('identities_set')
+        introspection = self.introspect_token(auth_token)
+        identities_set = introspection.get('identities_set')
 
         # Find the latest authentication
-        ids = resp.get('session_info').get('authentications').items()
+        ids = introspection.get('session_info').get('authentications').items()
+
         identity_id = None
         idp_id = None
         auth_time = 0
@@ -55,15 +62,8 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
                 auth_time = at
 
         # Get user identities
-        resp = self.get_json(
-            self.OIDC_ENDPOINT + '/v2/api/identities',
-            method='GET',
-            headers={'Authorization': 'Bearer ' + auth_token},
-            params={'ids': ','.join(identities_set),
-                    'include': 'identity_provider'},
-        )
-
-        for item in resp.get('identities'):
+        user_identities = self.get_globus_identities(auth_token, identities_set)
+        for item in user_identities.get('identities'):
             if item.get('id') == identity_id:
                 fullname, first_name, last_name = self.get_user_names(
                     item.get('name'))
