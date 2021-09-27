@@ -1,13 +1,22 @@
 from datetime import datetime
 import pytz
+import pathlib
 from django.contrib.auth.models import User
-from django.test import Client
 from django.urls import path, include
 from social_django.models import UserSocialAuth
 from globus_portal_framework.urls import register_custom_index
 import globus_sdk
 
 from globus_portal_framework.views import logout
+import json
+
+mocks_path = pathlib.Path(__file__).parent / 'data'
+mock_data = {}
+for mpath in mocks_path.iterdir():
+    with open(mpath) as f:
+        print(f'FETCHING {mpath.stem}')
+        mock_data[mpath.stem] = json.loads(f.read())
+
 
 # Two days in seconds
 TOKEN_EXPIRE_TIME = 48 * 60 * 60
@@ -90,17 +99,17 @@ def mock_user(username, resource_servers):
     return user
 
 
-def get_logged_in_client(username, tokens):
-    c = Client()
-    user = mock_user(username, tokens)
-    # Password is set in mocks, and is always 'globusrocks' for this func
-    c.login(username=username, password='globusrocks')
-    return c, user
+# def get_logged_in_client(username, tokens):
+#     c = Client()
+#     user = mock_user(username, tokens)
+#     # Password is set in mocks, and is always 'globusrocks' for this func
+#     c.login(username=username, password='globusrocks')
+#     return c
 
-
-def globus_client_is_loaded_with_authorizer(client):
-    return isinstance(client.kwargs.get('authorizer'),
-                      globus_sdk.AccessTokenAuthorizer)
+#
+# def globus_client_is_loaded_with_authorizer(client):
+#     return isinstance(client.kwargs.get('authorizer'),
+#                       globus_sdk.AccessTokenAuthorizer)
 
 
 def rebuild_index_urlpatterns(old_urlpatterns, indices):

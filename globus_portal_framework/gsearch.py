@@ -126,7 +126,7 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
         etext = ('There was an error in {}, you can file '
                  'an issue here:\n{}\nWith the following data: \n\n')
         gs = 'https://github.com/globusonline/globus-search/issues'
-        dgpf = 'https://github.com/globusonline/django-globus-portal-framework'
+        dgpf = 'https://github.com/globus/django-globus-portal-framework'
         if str(sapie.http_status).startswith('5'):
             error = etext.format('Globus Search', gs)
         else:
@@ -674,6 +674,38 @@ def process_field_mappers_2019_08_27(field_mappers, result):
                         'search.'.format(overwrites, mapper))
         processed_result.update(field)
     return processed_result
+#
+#             continue
+#         default_content = content[0]
+#
+#         for mapper in field_mappers:
+#             field = {}
+#             if isinstance(mapper, str):
+#                 field = {mapper: default_content.get(mapper)}
+#             elif isinstance(mapper, collections.abc.Iterable) and len(mapper) == 2:
+#                 field_name, map_approach = mapper
+#                 if isinstance(map_approach, str):
+#                     field = {field_name: default_content.get(map_approach)}
+#                 elif callable(map_approach):
+#                     try:
+#                         field = {field_name: map_approach(content)}
+#                     except Exception as e:
+#                         log.exception(e)
+#                         log.error('Error rendering content for "{}"'.format(
+#                             field_name
+#                         ))
+#                         field = {field_name: None}
+#
+#             overwrites = [name for name in field.keys()
+#                           if name in result.keys()]
+#             if overwrites:
+#                 log.warning('{} defined by {} overwrite previous fields in '
+#                             'search.'.format(overwrites, mapper))
+#
+#             result.update(field)
+#         structured_results.append(result)
+#     return structured_results
+# >>>>>>> main
 
 
 def get_pagination(total_results, offset,
