@@ -61,8 +61,10 @@ def check_search_indexes(app_configs, **kwargs):
         if not idata.get('uuid'):
             id = None
             try:
-                id = globus_sdk.SearchClient().get_index(index_name).data['id']
-            except globus_sdk.exc.SearchAPIError:
+                sc = globus_sdk.SearchClient()
+                r = sc.get_index(index_name)
+                id = r.data['id']
+            except globus_sdk.SearchAPIError:
                 pass
             errors.append(Error(
                 'Could not find "uuid" for settings.SEARCH_INDEXES.{}'

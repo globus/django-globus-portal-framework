@@ -12,19 +12,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
 
-from globus_portal_framework.gclients import (revoke_globus_tokens,
-                                              get_user_groups)
-
 from globus_portal_framework.apps import get_setting
-from globus_portal_framework.gsearch import (get_search_query,
-                                             get_search_filters)
 from globus_portal_framework import (
-    preview, helper_page_transfer, get_helper_page_url,
-    get_subject, post_search, PreviewException, PreviewURLNotFound,
-    ExpiredGlobusToken, GroupsException, check_exists, get_template,
+    gsearch, gclients, gtransfer,
+    PreviewException, PreviewURLNotFound,
+    ExpiredGlobusToken, GroupsException,
 )
-
-from globus_portal_framework.gsearch import get_template_path
 
 log = logging.getLogger(__name__)
 
@@ -35,12 +28,13 @@ def index_selection(request):
         'allowed_groups': getattr(settings,
                                   'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', [])
     }
-    return render(request, get_template_path('index-selection.html'), context)
+    return render(request, gsearch.get_template_path('index-selection.html'),
+                  context)
 
 
 def search_about(request, index):
-    tvers = get_template_path('search-about.html', index=index)
-    return render(request, get_template(index, tvers), {})
+    tvers = gsearch.get_template_path('search-about.html', index=index)
+    return render(request, gsearch.get_template(index, tvers), {})
 
 
 def search(request, index):
@@ -102,11 +96,12 @@ def search(request, index):
     http://myhost/?q=foo*&page=2&filter.my.special.filter=goodresults
     """
     context = {}
-    query = get_search_query(request)
+    query = gsearch.get_search_query(request)
     if query:
-        filters = get_search_filters(request)
-        context['search'] = post_search(index, query, filters, request.user,
-                                        request.GET.get('page', 1))
+        filters = gsearch.get_search_filters(request)
+        context['search'] = gsearch.post_search(
+            index, query, filters, request.user, request.GET.get('page', 1)
+        )
         request.session['search'] = {
             'full_query': urlparse(request.get_full_path()).query,
             'query': query,
@@ -116,30 +111,30 @@ def search(request, index):
         error = context['search'].get('error')
         if error:
             messages.error(request, error)
-    tvers = get_template_path('search.html', index=index)
-    return render(request, get_template(index, tvers), context)
+    tvers = gsearch.get_template_path('search.html', index=index)
+    return render(request, gsearch.get_template(index, tvers), context)
 
 
 def search_debug(request, index):
-    query = get_search_query(request)
-    filters = get_search_filters(request)
-    results = post_search(index, query, filters, request.user, 1)
+    query = gsearch.get_search_query(request)
+    filters = gsearch.get_search_filters(request)
+    results = gsearch.post_search(index, query, filters, request.user, 1)
     context = {
         'search': results,
         'facets': dumps(results['facets'], indent=2)
     }
-    tvers = get_template_path('search-debug.html', index=index)
-    return render(request, get_template(index, tvers), context)
+    tvers = gsearch.get_template_path('search-debug.html', index=index)
+    return render(request, gsearch.get_template(index, tvers), context)
 
 
 def search_debug_detail(request, index, subject):
-    sub = get_subject(index, subject, request.user)
+    sub = gsearch.get_subject(index, subject, request.user)
     debug_fields = {name: dumps(data, indent=2) for name, data in sub.items()}
     dfields = OrderedDict(debug_fields)
     dfields.move_to_end('all')
     sub['django_portal_framework_debug_fields'] = dfields
-    tvers = get_template_path('search-debug-detail.html', index=index)
-    return render(request, get_template(index, tvers), sub)
+    tvers = gsearch.get_template_path('search-debug-detail.html', index=index)
+    return render(request, gsearch.get_template(index, tvers), sub)
 
 
 def detail(request, index, subject):
@@ -164,14 +159,15 @@ def detail(request, index, subject):
                 }
     }
     """
-    tvers = get_template_path('detail-overview.html', index=index)
-    template = get_template(index, tvers)
-    return render(request, template, get_subject(index, subject, request.user))
+    tvers = gsearch.get_template_path('detail-overview.html', index=index)
+    template = gsearch.get_template(index, tvers)
+    return render(request, template, gsearch.get_subject(index, subject,
+                                                         request.user))
 
 
 @csrf_exempt
 def detail_transfer(request, index, subject):
-    context = get_subject(index, subject, request.user)
+    context = gsearch.get_subject(index, subject, request.user)
     task_url = 'https://www.globus.org/app/activity/{}/overview'
     if request.user.is_authenticated:
         try:
@@ -188,15 +184,15 @@ def detail_transfer(request, index, subject):
             ep, path = parsed.netloc, parsed.path
             # Remove line in version 4 after issue #29 is resolved
             ep = ep.replace(':', '')
-            check_exists(request.user, ep, path, raises=True)
+            gtransfer.check_exists(request.user, ep, path, raises=True)
             if request.method == 'POST':
-                task = helper_page_transfer(request, ep, path,
+                task = gtransfer.helper_page_transfer(request, ep, path,
                                             helper_page_is_dest=True)
                 context['transfer_link'] = task_url.format(task['task_id'])
             this_url = reverse('detail-transfer', args=[index, subject])
             full_url = request.build_absolute_uri(this_url)
             # This url will serve as both the POST destination and Cancel URL
-            context['helper_page_link'] = get_helper_page_url(
+            context['helper_page_link'] = gtransfer.get_helper_page_url(
                 full_url, full_url, folder_limit=1, file_limit=0)
         except globus_sdk.TransferAPIError as tapie:
             context['detail_error'] = tapie
@@ -211,12 +207,12 @@ def detail_transfer(request, index, subject):
                           ''.format(tapie))
         except ValueError as ve:
             log.error(ve)
-    tvers = get_template_path('detail-transfer.html', index=index)
-    return render(request, get_template(index, tvers), context)
+    tvers = gsearch.get_template_path('detail-transfer.html', index=index)
+    return render(request, gsearch.get_template(index, tvers), context)
 
 
 def detail_preview(request, index, subject, endpoint=None, url_path=None):
-    context = get_subject(index, subject, request.user)
+    context = gsearch.get_subject(index, subject, request.user)
     try:
         scope = request.GET.get('scope')
         if not any((endpoint, url_path, scope)):
@@ -226,14 +222,15 @@ def detail_preview(request, index, subject, endpoint=None, url_path=None):
         url = 'https://{}/{}'.format(endpoint, url_path)
         log.debug('Previewing with url: {}'.format(url))
         context['preview_data'] = \
-            preview(request.user, url, scope, get_setting('PREVIEW_DATA_SIZE'))
+            gtransfer.preview(request.user, url, scope,
+                              get_setting('PREVIEW_DATA_SIZE'))
     except PreviewException as pe:
         if pe.code in ['UnexpectedError', 'ServerError']:
             log.exception(pe)
         context['detail_error'] = pe
         log.debug('User error: {}'.format(pe))
-    tvers = get_template_path('detail-preview.html', index=index)
-    return render(request, get_template(index, tvers), context)
+    tvers = gsearch.get_template_path('detail-preview.html', index=index)
+    return render(request, gsearch.get_template(index, tvers), context)
 
 
 def logout(request, next='/'):
@@ -244,7 +241,7 @@ def logout(request, next='/'):
     instead.
     """
     if request.user.is_authenticated:
-        revoke_globus_tokens(request.user)
+        gclients.revoke_globus_tokens(request.user)
         django_logout(request)
     return redirect(request.GET.get('next', next))
 
@@ -268,14 +265,15 @@ def allowed_groups(request):
     context = {'allowed_groups': copy.deepcopy(portal_groups)}
     if request.user.is_authenticated:
         try:
-            user_groups = {g['id']: g for g in get_user_groups(request.user)}
+            user_groups = {g['id']: g
+                           for g in gclients.get_user_groups(request.user)}
             for group in context['allowed_groups']:
                 if user_groups.get(group['uuid']):
                     group['is_member'] = True
         except GroupsException as ge:
             log.exception(ge)
             messages.error(request, 'Error: Unable to fetch Globus Groups')
-    tvers = get_template_path('allowed-groups.html')
+    tvers = gsearch.get_template_path('allowed-groups.html')
     return render(request, tvers, context)
 
 
