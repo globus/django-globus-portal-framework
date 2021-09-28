@@ -1,8 +1,13 @@
-# Changes in Globus Portal Framework
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.3.23](https://github.com/globusonline/django-globus-portal-framework/compare/v0.3.22...v0.3.23) (2021-09-28)
 
 
-Below are major changes for each version Release. For detailed information,
-see the list of commits from the last version or use `git log`.
+### Bug Fixes
+
+* pinned Globus SDK v2 ([63e9b86](https://github.com/globusonline/django-globus-portal-framework/commit/63e9b862434bd359f9e986442da467aa5a967ab3))
 
 ## 0.3.22 - 2021-09-03
 
