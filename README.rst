@@ -23,24 +23,18 @@ workflow.
 Installation
 ------------
 
-Django Globus Portal Framework is not yet on PyPi, and requires installation through
-github. You can install the version you want via tags.
-
-Get the latest features on the main branch:
+You can install Django Globus Portal Framework using Pip:
 
 .. code-block::
 
-  pip install -U -e git+https://github.com/globus/django-globus-portal-framework@main#egg=django-globus-portal-framework
+  pip install django-globus-portal-framework
 
-For older stable releases, you can specify the tag:
+For our latest development version, you can install the pre-release
 
 .. code-block::
 
-  pip install -U -e git+https://github.com/globus/django-globus-portal-framework@v0.3.22#egg=django-globus-portal-framework
+  pip install -U --pre django-globus-portal-framework
 
-
-Documentation
--------------
 
 Checkout the `docs on S3 here <https://django-globus-portal-framework.s3.us-east-2.amazonaws.com/index.html>`_.
 
