@@ -23,3 +23,4 @@ testupload: release
 .PHONY: clean
 clean:
 	rm -rf dist build *.egg-info
+	rm -f globus_portal_framework/local_settings.py

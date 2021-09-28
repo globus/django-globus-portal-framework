@@ -1,4 +1,4 @@
-include README.md
+include README.rst
 include LICENSE
 include requirements.txt
 
@@ -17,3 +17,4 @@ recursive-include globus_portal_framework *.woff
 recursive-include globus_portal_framework *.woff2
 
 exclude globus_portal_framework/local_settings.py
+global-exclude local_settings.py
