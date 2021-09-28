@@ -1,6 +1,9 @@
 Django Globus Portal Framework
 ==============================
 
+.. image:: https://github.com/globus/django-globus-portal-framework/actions/workflows/tests.yml/badge.svg
+    :target: https://github.com/globus/django-globus-portal-framework/actions
+
 .. image:: https://img.shields.io/pypi/v/django-globus-portal-framework.svg
     :target: https://pypi.python.org/pypi/django-globus-portal-framework
 
