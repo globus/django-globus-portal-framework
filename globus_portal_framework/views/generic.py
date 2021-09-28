@@ -1,5 +1,5 @@
 import logging
-from urllib.parse import urlparse, unquote_plus
+from urllib.parse import urlparse
 from django.views.generic import View
 from django.conf import settings
 from django.shortcuts import render
@@ -10,7 +10,7 @@ from globus_portal_framework.gsearch import (
     get_pagination, get_subject,
     )
 from globus_portal_framework.gclients import (
-    load_search_client, get_user_groups
+    load_search_client
 )
 import globus_portal_framework.exc
 

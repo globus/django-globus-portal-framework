@@ -187,7 +187,7 @@ def detail_transfer(request, index, subject):
             gtransfer.check_exists(request.user, ep, path, raises=True)
             if request.method == 'POST':
                 task = gtransfer.helper_page_transfer(request, ep, path,
-                                            helper_page_is_dest=True)
+                                                      helper_page_is_dest=True)
                 context['transfer_link'] = task_url.format(task['task_id'])
             this_url = reverse('detail-transfer', args=[index, subject])
             full_url = request.build_absolute_uri(this_url)

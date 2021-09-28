@@ -55,7 +55,7 @@ coverage.xml
 
 # Django stuff:
 *.log
-globus_portal_framework/local_settings.py
+*local_settings.py
 
 # Flask stuff:
 instance/

@@ -30,8 +30,6 @@ from globus_portal_framework.constants import (
     DEFAULT_RESULT_FORMAT_VERSION,
 
     DEFAULT_FACET_MODIFIERS,
-
-    BASE_TEMPLATES,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -486,7 +484,8 @@ def process_search_data(field_mappers, results):
             field = {}
             if isinstance(mapper, str):
                 field = {mapper: default_content.get(mapper)}
-            elif isinstance(mapper, collections.abc.Iterable) and len(mapper) == 2:
+            elif isinstance(mapper, collections.abc.Iterable) \
+                    and len(mapper) == 2:
                 field_name, map_approach = mapper
                 if isinstance(map_approach, str):
                     field = {field_name: default_content.get(map_approach)}
