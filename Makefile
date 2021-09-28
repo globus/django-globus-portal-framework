@@ -2,7 +2,7 @@ PYTHON=python3
 
 .PHONY: lint test
 lint:
-	flake8 gladier
+	flake8 globus_portal_framework
 test:
 	pytest
 

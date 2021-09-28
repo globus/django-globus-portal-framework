@@ -148,7 +148,7 @@ def load_globus_client(user, client, token_name, require_authorized=False):
         raise exc.PortalAuthException(
             message='Authenticated User {} has no tokens for {}. Is {} missing '
                     'from SOCIAL_AUTH_GLOBUS_SCOPE?'.format(user, client,
-                                                             token_name))
+                                                            token_name))
 
 
 def get_default_client_loader():
