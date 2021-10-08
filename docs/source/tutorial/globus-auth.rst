@@ -8,7 +8,7 @@ implement.
 You'll need a Client ID from Globus. Follow `these instructions <https://docs.globus.org/api/auth/developer-guide/#register-app>`_
 from the Globus Auth Developer Guide.
 
-For your portal, ensure your Globus App has these settings:
+When you register your application with Globus, make sure it has the following settings:
 
 * **Redirect URL** -- ``http://localhost:8000/complete/globus/``
 * **Native App** -- `Unchecked`
@@ -54,7 +54,7 @@ settings are hidden by `...`.
   ]
 
 
-You will also need to wire up your login URLs in your ``myproject.urls.py`` file:
+You will also need to wire up your login URLs in your ``myproject/urls.py`` file:
 
 .. code-block:: bash
 
