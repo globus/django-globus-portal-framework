@@ -28,6 +28,7 @@ workflow.
    :caption: Reference:
 
    reference/settings
+   reference/settings-example
    reference/local-settings
    reference/search-indexes
    reference/facets
