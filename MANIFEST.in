@@ -12,6 +12,7 @@ recursive-include globus_portal_framework *.js.map
 recursive-include globus_portal_framework *.json
 recursive-include globus_portal_framework *.otf
 recursive-include globus_portal_framework *.svg
+recursive-include globus_portal_framework *.png
 recursive-include globus_portal_framework *.ttf
 recursive-include globus_portal_framework *.woff
 recursive-include globus_portal_framework *.woff2
