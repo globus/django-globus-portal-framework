@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/globus/django-globus-portal-framework/compare/v0.3.22...v0.4.0) (2021-10-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* Switch to newer v2 templates
+
+### Features
+
+* Add Generic Search and Detail Views ([b8ae79d](https://github.com/globus/django-globus-portal-framework/commit/b8ae79d5620097182fdf27510dfc469ae0087b85))
+* Add new v2 portal templates ([b09c957](https://github.com/globus/django-globus-portal-framework/commit/b09c957531f1b32aa04021b6ddfc682572f504c9))
+* Added empty classes to differentiate base/search/detail navs ([fdca94d](https://github.com/globus/django-globus-portal-framework/commit/fdca94d8f26052266206b665ff4ee123554b62f6))
+* Allow setting template base for backwards compatibility ([f889da7](https://github.com/globus/django-globus-portal-framework/commit/f889da7ebe07d18cf6cd24b4799d9b9c83739773))
+* CSS easier to change for site-wide branding ([06d1da2](https://github.com/globus/django-globus-portal-framework/commit/06d1da24423a5a77550f15bf66e880bb20b4b8a7))
+
+
+### Bug Fixes
+
+* "Demo" index not showing up on first time install for Globus Portal Framework ([3824ec9](https://github.com/globus/django-globus-portal-framework/commit/3824ec9dac5c635e8e8c23caa4dfbb0a0ec2bb8a))
+* Clarified error message if token for users are not found ([4813b86](https://github.com/globus/django-globus-portal-framework/commit/4813b86015e73e482197c4fb985a58b876b99a84))
+* Fix avg/sum search facets ([49a868a](https://github.com/globus/django-globus-portal-framework/commit/49a868ad127284d247ecfcde7920598eb65f6f09))
+* get_subject compatibility with Globus SDK v3 ([4810708](https://github.com/globus/django-globus-portal-framework/commit/4810708697cc47674337ae47efab4ecd41d11bf9))
+* Globus png base-nav static URL ([894b426](https://github.com/globus/django-globus-portal-framework/commit/894b4266d6cd858edca8072f1d41cb77533ae247))
+
+
+* Switch to newer v2 templates ([1c04a6f](https://github.com/globus/django-globus-portal-framework/commit/1c04a6fac1f27a043ea55ec765a4a92837c588d7))
+    * New default on per-index setting `'base_templates': 'globus-portal-framework/v2/'`
+    * Old templates can still be configured by setting `'base_templates': ''` on the index.
+
+
+
 ### [0.3.24](https://github.com/globusonline/django-globus-portal-framework/compare/v0.3.23...v0.3.24) (2021-09-28)
 
 
