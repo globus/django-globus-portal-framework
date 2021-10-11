@@ -2,6 +2,14 @@
   <tbody>
   {% block detail_overview_datacite %}
   <tr>
+    <td>Creators</td>
+    <td>
+      {% for creator in dc.creators %}
+      {{creator.creatorName}} <br>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
     <td>Contributors</td>
     <td>
       {% for contributor in dc.contributors %}
@@ -13,7 +21,7 @@
     <td>Dates</td>
     <td>
       {% for d in dc.dates %}
-      {{d.dateType}}: {{date}} <br>
+      {{d.dateType}}: {{d.date|date}} <br>
       {% endfor %}
     </td>
   </tr>
