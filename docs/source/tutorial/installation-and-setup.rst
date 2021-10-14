@@ -124,9 +124,14 @@ Now run your server to see your Globus Portal. Migrate will setup your database,
 which will be used in the next section when adding Globus Auth. The second command
 will run your Globus Portal.
 
+.. note::
+  Make sure you use http://localhost:8000 in your browser, so your URL matches
+  the callback URL for your Globus App at developers.globus.org. A mismatch will
+  cause an error when logging in.
+
 .. code-block:: bash
 
   python manage.py migrate
-  python manage.py runserver
+  python manage.py runserver localhost:8000
 
 You should now be able to view a portal at http://localhost:8000/
