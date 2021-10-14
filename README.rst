@@ -36,5 +36,5 @@ For our latest development version, you can install the pre-release
   pip install -U --pre django-globus-portal-framework
 
 
-Checkout the `docs on S3 here <https://django-globus-portal-framework.s3.us-east-2.amazonaws.com/index.html>`_.
+See the `Read The Docs page <https://django-globus-portal-framework.readthedocs.io/en/stable/>`_.
 
