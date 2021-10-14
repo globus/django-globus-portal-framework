@@ -63,7 +63,9 @@ settings below, or use our refer to our :ref:`settings_example` for a complete
   LOGIN_URL = '/login/globus'
 
   # This dictates which scopes will be requested on each user login
-  SOCIAL_AUTH_GLOBUS_SCOPE = []
+  SOCIAL_AUTH_GLOBUS_SCOPE = [
+      'urn:globus:auth:scope:search.api.globus.org:search',
+  ]
 
   # Installed apps tells Django which packages to load on startup
   INSTALLED_APPS = [

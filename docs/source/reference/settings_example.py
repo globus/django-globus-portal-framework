@@ -33,7 +33,9 @@ SOCIAL_AUTH_GLOBUS_SECRET = ''
 LOGIN_URL = '/login/globus'
 
 # This dictates which scopes will be requested on each user login
-SOCIAL_AUTH_GLOBUS_SCOPE = []
+SOCIAL_AUTH_GLOBUS_SCOPE = [
+    'urn:globus:auth:scope:search.api.globus.org:search',
+]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
