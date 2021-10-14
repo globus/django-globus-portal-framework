@@ -15,17 +15,17 @@ Run the ``django-admin`` command below to create your project layout.
 
 .. code-block:: bash
 
-  django-admin startproject myproject
-  cd myproject
+  django-admin startproject myportal
+  cd myportal
 
 This will create your basic Django project with the following project structure:
 
 .. code-block::
 
-  myproject/
+  myportal/
     db.sqlite3
     manage.py
-    myproject/
+    myportal/
       settings.py
       urls.py
 
@@ -47,7 +47,7 @@ When you register your application with Globus, make sure it has the following s
 Settings
 --------
 
-Next, you will need to modify your ``myproject/settings.py`` file to enable user
+Next, you will need to modify your ``myportal/settings.py`` file to enable user
 auth and Globus Portal Framework components. You can copy-paste the individual
 settings below, or use our refer to our :ref:`settings_example` for a complete
 ``settings.py`` file reference.
@@ -103,7 +103,7 @@ settings below, or use our refer to our :ref:`settings_example` for a complete
   ]
 
 
-Add the base URLs for Globus Portal Framework in your ``myproject/urls.py`` file.
+Add the base URLs for Globus Portal Framework in your ``myportal/urls.py`` file.
 These will provide a starting point for your Globus Portal. You may keep or discard
 any existing paths in your ``urlpatterns``.
 
