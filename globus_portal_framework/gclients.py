@@ -1,5 +1,6 @@
 import requests
 from datetime import timedelta
+from packaging.version import Version
 from django.utils import timezone
 from django.conf import settings
 from django.utils.module_loading import import_string
@@ -12,6 +13,10 @@ import logging
 
 log = logging.getLogger(__name__)
 
+GLOBUS_SDK_VERSION = Version(globus_sdk.version.__version__)
+
+# This is legacy code for pre SDK-v3.3.x versions, it will be removed in the
+# next version of DGPF.
 CUSTOM_ENVS = {
     'groups': {
         # Globus SDK v2
@@ -22,20 +27,19 @@ CUSTOM_ENVS = {
     }
 }
 
-# At this point, 'groups' is still a beta service for Globus.
-# This will likely be folded into the Globus SDK at some point, but needs
-# to be hardcoded here in the mean time.
+# This is present in the latest v3 version of the Globus SDK
+# and will be removed in the next version. 
 GROUPS_SCOPE = ('urn:globus:auth:scope:groups.api.globus.org:'
                 'view_my_groups_and_memberships')
 GLOBUS_GROUPS_V2_MY_GROUPS = '/v2/groups/my_groups'
 
 
 def get_globus_environment():
-    """Get the current Globus Environment. Used primarily for checking whether
-    the user has set GLOBUS_SDK_ENVIRONMENT=preview from the Globus SDK, but
-    may also be used for other Globus Environments. See here for more info:
-    Globus Preview: https://docs.globus.org/how-to/preview/
-    Globus SDK: https://globus-sdk-python.readthedocs.io/en/stable/config.html?highlight=preview#environment-variables  # noqa
+    """
+    This is needed to support prior versions of the Globus SDK < 3.3.x, please
+    use the following for determining service urls instead:
+
+    https://globus-sdk-python.readthedocs.io/en/stable/config.html#config-related-functions  # noqqa
     """
     try:
         return globus_sdk.config.get_globus_environ()
@@ -44,9 +48,10 @@ def get_globus_environment():
 
 
 def get_service_url(service_name):
-    """Get the URL based on the current Globus Environment. Is a wrapper around
-    The Globus SDK .get_service_url(), but also provides lookup for custom beta
-    services such as Globus Groups."""
+    """This is needed for backwards compatibility with earlier versions of the
+    Globus SDK. Use the following supported function in the Globus SDK instead:
+    https://globus-sdk-python.readthedocs.io/en/stable/config.html#globus_sdk.config.get_service_url  # noqa
+    """
     env = get_globus_environment()
     if service_name in CUSTOM_ENVS:
         if env not in CUSTOM_ENVS[service_name]:
@@ -54,7 +59,10 @@ def get_service_url(service_name):
                    'configured environment: "{}"'.format(service_name, env))
             raise exc.GlobusPortalException('InvalidEnv', err)
         return CUSTOM_ENVS[service_name][env]
-    return globus_sdk.config.get_service_url(env, service_name)
+    if GLOBUS_SDK_VERSION.major == 3 and GLOBUS_SDK_VERSION.minor in [0, 1, 2]:
+        return globus_sdk.config.get_service_url(env, service_name)
+    elif GLOBUS_SDK_VERSION.major == 3 and GLOBUS_SDK_VERSION.minor >= 3:
+        return globus_sdk.config.get_service_url(service_name)
 
 
 def validate_token(tok):
