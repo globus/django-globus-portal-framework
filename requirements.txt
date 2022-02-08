@@ -1,5 +1,5 @@
 django<4.0.0
 globus_sdk<4.0.0
-social-auth-app-django<5.0.0>=3.0.0
+social-auth-app-django<6.0.0>=3.0.0
 python-jose[cryptography]>=3.0.1
 packaging>=21.0
