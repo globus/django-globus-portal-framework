@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.3](https://github.com/globus/django-globus-portal-framework/compare/v0.4.2...v0.4.3) (2022-02-08)
+
+
+### Bug Fixes
+
+* Login for Globus SDK v3.3.x ([20e8231](https://github.com/globus/django-globus-portal-framework/commit/20e82311436a64d06facf01b27cb75095ec978b4))
+
 ### [0.4.2](https://github.com/globus/django-globus-portal-framework/compare/v0.4.1...v0.4.2) (2021-10-15)
 
 ### [0.4.1](https://github.com/globus/django-globus-portal-framework/compare/v0.4.0...v0.4.1) (2021-10-15)
