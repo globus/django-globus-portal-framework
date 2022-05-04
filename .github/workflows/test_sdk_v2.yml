@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Tests
+name: Test SDK v2
 
 on:
   push:
@@ -30,10 +30,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         pip install -r requirements.txt -r test-requirements.txt
-    - name: Lint with flake8
-      run: |
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        pip install globus-sdk==2.0.1
     - name: Test with pytest
       run: |
         pytest
