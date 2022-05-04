@@ -228,7 +228,7 @@ def test_introspect(get_json):
     goidc = GlobusOpenIdConnect()
     goidc.introspect_token('mock_token')
     get_json.assert_called_with(
-        'https://auth.globus.org//v2/oauth2/token/introspect',
+        'https://auth.globus.org/v2/oauth2/token/introspect',
         auth=('mock_client_id', 'mock_client_secret'),
         data={'token': 'mock_token', 'include': 'session_info,identities_set'},
         method='POST'
@@ -239,7 +239,7 @@ def test_get_identities(get_json):
     goidc = GlobusOpenIdConnect()
     goidc.get_globus_identities('mock_token', ['id1, id2'])
     get_json.assert_called_with(
-        'https://auth.globus.org//v2/api/identities',
+        'https://auth.globus.org/v2/api/identities',
         headers={'Authorization': 'Bearer mock_token'},
         method='GET',
         params={'ids': 'id1, id2', 'include': 'identity_provider'}

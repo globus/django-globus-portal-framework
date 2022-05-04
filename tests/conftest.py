@@ -30,24 +30,20 @@ def mock_app(monkeypatch):
 
 
 @pytest.fixture
-def globus_api_error(monkeypatch):
-    monkeypatch.setattr(globus_sdk.GlobusAPIError,
-                        '_get_request_authorization_scheme', Mock())
-
-    response = Mock()
-    response.headers = []
-    response.status_code = 401
-    gapie = globus_sdk.GlobusAPIError(response)
-    return gapie
+def globus_api_error(monkeypatch) -> globus_sdk.GlobusAPIError:
+    monkeypatch.setattr(globus_sdk, 'GlobusAPIError', mocks.MockGlobusAPIError)
+    return globus_sdk.GlobusAPIError
+    # response = Mock()
+    # response.headers = []
+    # response.status_code = 401
+    # gapie = globus_sdk.GlobusAPIError(response)
+    # return gapie
 
 
 @pytest.fixture
-def search_api_error(globus_api_error):
-    response = Mock()
-    response.headers = []
-    response.status_code = 401
-    gapie = globus_sdk.SearchAPIError(response)
-    return gapie
+def search_api_error(monkeypatch) -> globus_sdk.SearchAPIError:
+    monkeypatch.setattr(globus_sdk, 'SearchAPIError', mocks.MockGlobusAPIError)
+    return globus_sdk.SearchAPIError
 
 
 @pytest.fixture

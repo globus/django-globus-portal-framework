@@ -37,11 +37,12 @@ class MockGlobusClient:
         self.kwargs = kwargs
 
 
-class MockTransferAPIError(Exception):
+class MockGlobusAPIError(Exception):
     """Mock Globus exception"""
-    def __init__(self, code='', message=''):
+    def __init__(self, code='', message='', http_status=400):
         self.code = code
         self.message = message
+        self.http_status = 400
 
 
 class MockTransferClient(MockGlobusClient):
