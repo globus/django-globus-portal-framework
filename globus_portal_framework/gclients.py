@@ -100,7 +100,7 @@ def revoke_globus_tokens(user):
             ac.oauth2_revoke_token(at)
             if rt:
                 ac.oauth2_revoke_token(rt)
-        except globus_sdk.exc.GlobusAPIError as gapie:
+        except globus_sdk.GlobusAPIError as gapie:
             log.exception(gapie)
 
     # Gather info on what was revoked
