@@ -18,6 +18,10 @@ GLOBUS_SDK_VERSION = Version(globus_sdk.version.__version__)
 # This is legacy code for pre SDK-v3.3.x versions, it will be removed in the
 # next version of DGPF.
 CUSTOM_ENVS = {
+    'auth': {
+        'default': 'https://auth.globus.org',
+        'production': 'https://auth.globus.org'
+    },
     'groups': {
         # Globus SDK v2
         'default': 'https://groups.api.globus.org',
@@ -96,7 +100,7 @@ def revoke_globus_tokens(user):
             ac.oauth2_revoke_token(at)
             if rt:
                 ac.oauth2_revoke_token(rt)
-        except globus_sdk.exc.GlobusAPIError as gapie:
+        except globus_sdk.GlobusAPIError as gapie:
             log.exception(gapie)
 
     # Gather info on what was revoked
