@@ -30,8 +30,6 @@ workflow.
    reference/settings
    reference/settings-example
    reference/local-settings
-   reference/search-indexes
-   reference/facets
    reference/deployment
 
 
