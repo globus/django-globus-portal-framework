@@ -11,6 +11,7 @@ other configurations are also possible.
 
    search/search-setup
    search/templates
+   search/search-fields
    search/custom-views
    search/facet-modifiers
 
