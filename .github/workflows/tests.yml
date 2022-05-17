@@ -38,7 +38,8 @@ jobs:
       run: |
         pytest
     - name: Test Docs
-      if: ${{ matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' }}
+      # Only test on python 3.10
+      if: ${{ matrix.python-version == '3.10'}}
       run: |
         pip install -r docs/requirements.txt
         cd docs
