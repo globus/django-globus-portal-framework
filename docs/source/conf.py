@@ -10,11 +10,15 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import pathlib
+import sys
+from django.conf import settings
+path = pathlib.Path(__file__).parent.parent.parent
+sys.path.insert(0, str(path))
 
-
+# Required before doing DGPF imports
+settings.configure()
+import globus_portal_framework
 # -- Project information -----------------------------------------------------
 
 project = 'Django Globus Portal Framework'
@@ -22,7 +26,7 @@ copyright = '2021, Nickolaus Saint'
 author = 'Nickolaus Saint'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.4.0a1'
+release = globus_portal_framework.__version__
 
 
 # -- General configuration ---------------------------------------------------
