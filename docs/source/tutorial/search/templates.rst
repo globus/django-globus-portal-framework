@@ -1,73 +1,19 @@
-Customizing Fields and Templates
---------------------------------
+Templates
+---------
 
-Fields and templates go hand in hand. Fields are top-level entries within
-individual search records, used within your portal, that are provided as context
-within Django Templates in order to be rendered to the user. In addition to
-selecting metadata in search records, fields can include a function to provide
-custom formatting or fetch additional data. Here is an example:
+Templates in Globus Portal Framework are an extension of the `Django Template
+system <https://docs.djangoproject.com/en/4.0/topics/templates/>`_, consisting 
+of a basic set of included templates to make starting a portal quick and easy. 
+A list of all `Globus Portal Framework templates <https://github.com/globus/django-globus-portal-framework/tree/main/globus_portal_framework/templates>`_
+can be found under the Github template repo.
 
-.. code-block:: python
-
-  # settings.py
-  import datetime
-
-  def format_my_dates(search_result):
-      # My dates are all UTC timestamps, Ex. 1552508657
-      return datetime.datetime.frometimestamp(search_result[0]['my_date'])
-
-  SEARCH_INDEXES = {
-      'myindex': {
-          'name': 'My Cool Index',
-          'uuid': 'f707d9b0-1462-4ab5-a7c2-064fac0e8006',
-          'fields': [
-              # Fetches 'my_general_metadata' from your search record
-              'my_general_metadata',
-              # Calls a function with your search record as a parameter
-              ('formatted_dates', format_my_dates),
-          ],
-          'template_override_dir': 'myindex',
-      }
-  }
-
-The two fields, `my_general_metadata` and `formatted_dates` can then be used in templates.
-A small example is below. `myproject/myproject/perfdata/components/search-results.html`
+Your settings.py file should already have been configured during the tutorial,
+and should look something like this: 
 
 .. code-block:: python
 
-  <h2>Search Results</h2>
-  {% for result in search.search_results %}
-    <h5>{{result.my_general_metadata.title}}</h5>
-    {{result.date|date}}
-  {% endfor %}
-
-
-Configuring Your Portal
-=======================
-
-"perfdata" is an active Globus Search index in the example below. You will
-need to add some configuration to your `settings.py` file in order for
-templates to work. You will also need to ensure you place your template HTML in
-the correct directory for Django to pick it up and render it.
-
-In `settings.py`
-
-.. code-block:: python
-
-  SEARCH_INDEXES = {
-      'perfdata': {
-          'name': 'Performance Data',
-          'uuid': '5e83718e-add0-4f06-a00d-577dc78359bc',
-          'fields': [
-              # List any data you want to use in your search results
-              'perfdata',
-              ('title', lambda result: result[0]['perfdata']['titles'][0]['value']),
-          ],
-          'template_override_dir': 'perfdata',
-      }
-  }
-
-  TEMPLATES = [
+    # settings.py
+    TEMPLATES = [
       {
           'BACKEND': 'django.template.backends.django.DjangoTemplates',
           'DIRS': [BASE_DIR / 'myproject' / 'templates',],
@@ -81,11 +27,12 @@ In `settings.py`
               ],
           },
       },
-  ]
+    ]
 
-`TEMPLATES` specifies the Django folder where your templates are stored. For each index,
-you can also define `template_override_dir` for overriding templates for `only that index`. It's
-possible to have the following layout:
+Templates follow a strict directory layout, file paths must match exactly for
+templates to be rendered correctly. Ensure ``myproject`` above matches your
+project name, and your ``templates`` directory is created in the correct location.
+Globus Portal Framework templates match the following directory structure: 
 
 .. code-block::
 
@@ -93,62 +40,95 @@ possible to have the following layout:
       manage.py
       myproject/
           templates/
-              perfdata/
+            globus-portal-framework/
+              v2/
+                components/
+                    detail-nav.html
+                    search-facets.html
+                    search-results.html
+                search.html
+                detail-overview.html
+                detail-transfer.html
+
+Customizing Search Results
+==========================
+
+Let's override the search-results.html template to show a list of fields available
+under each search result. 
+
+.. code-block:: python
+
+  # myportal/templates/globus-portal-framework/v2/components/search-results.html
+  <h2>Search Results</h2>
+  {% for result in search.search_results %}
+    <h5>{{result.subject}}</h5>
+    <ul>
+      {% for field in result.keys %}
+      <li>{{field}}</li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+
+In most cases, your development server should automatically reload the changes
+when you navigate to the search page for your project. The template above will be
+used to render your search results.
+
+
+Advanced: Multiple Indices
+==========================
+
+If you have multiple search indices and want to re-use the same search views with
+different templates, you can set the ``template_override_dir`` for a given index.
+
+.. code-block:: python
+
+  SEARCH_INDEXES = {
+      'myindex': {
+          ...
+          'template_override_dir': 'myproject',
+      }
+  }
+
+You need to create a directory for the ``template_override_dir`` name you choose,
+and place all of your templates within that directory. Your structure should look
+like this:
+
+.. code-block::
+
+  myproject/
+      manage.py
+      myproject/
+          templates/
+            myproject/  # <-- Create this folder, move all index-specific templates under it
+              globus-portal-framework/
+                v2/
                   components/
                       detail-nav.html
                       search-facets.html
                       search-results.html
                   search.html
                   detail-overview.html
-              detail-transfer.html
+                  detail-transfer.html
 
+For any views where multi-index templates are supported, Globus Portal Framework will first
+attempt to find the index specific template, then will back-off to the 'standard' template
+without your project prefix. For example, if you define two templates called
+"myportal/templates/globus-portal-framework/v2/components/search-results.html" and
+"myportal/templates/myportal/globus-portal-framework/v2/components/search-results.html", when your user visits
+the "myportal" index Globus Portal Framework will first try to load
+"myportal/templates/myportal/globus-portal-framework/v2/components/search-results.html", then fall back to the
+other template if it does not exist.
 
-Create a template to override how search results are displayed. You must name it exactly the same as the template you want to override.
+You can extend this behavior yourself with the "index_template" templatetag.
 
-`myproject/myproject/perfdata/components/search-results.html`
+.. code-block::
 
-.. code-block:: html
+  {# Include at the top of the page #}
+  {% load index_template %}
 
-  <h2>Search Results</h2>
-  <div id="search-result" class="search-result">
-    {% for result in search.search_results %}
-    <div class="result-item">
+  {# Use this to check for a 'template override' for this search index #}
+  {% index_template 'globus-portal-framework/v2/components/search-results.html' as it_search_results %}
+  {% include it_search_results %}
 
-      <h3 class="search-title mt-3">
-        <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title}}</a>
-      </h3>
-      <div class="result-fields">
-        Description: {% for desc in result.perfdata.descriptions %}
-                        {{desc.value}}
-                        {% endfor %}
-        <br>
-        {% if result.perfdata.filesystem %}
-        Filesystem: {{result.perfdata.filesystem.value}}
-        <br>
-        {% endif %}
-        {% if result.perfdata.maximum_file_size %}
-        Maximum File Size: {{result.perfdata.maximum_file_size.value}}
-        <br>
-        {% endif %}
-        {% if result.perfdata.organization %}
-        Organization: {{result.perfdata.organization.value}}
-        <br>
-        {% endif %}
-        Date: {{result.perfdata.publication_year.value}}
-        <br>
-        Contributors: {% for contributor in result.perfdata.contributors %}
-        {{contributor.contributor_name}}{% if not forloop.last %};{% endif %}
-        {% endfor %}
-        <br>
-        Formats:
-        {% for format in result.perfdata.formats %}
-        <button class="btn btn-primary btn-sm ml-1 py-0" style="background-color: #337ab7">
-          {{format.value}}
-        </button>
-        {% endfor %}
-        <br>
-      </div>
-
-    </div>
-    {% endfor %}
-  </div>
+You can always view the `DGPF template source <https://github.com/globus/django-globus-portal-framework/blob/main/globus_portal_framework/templates/globus-portal-framework/v2/search.html>`_
+for a reference.
