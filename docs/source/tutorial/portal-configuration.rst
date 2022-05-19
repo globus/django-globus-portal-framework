@@ -13,6 +13,7 @@ other configurations are also possible.
    search/templates
    search/custom-views
    search/facet-modifiers
+   search/search-settings-reference
 
 
 .. toctree::

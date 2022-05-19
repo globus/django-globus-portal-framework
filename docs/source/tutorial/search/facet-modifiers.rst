@@ -1,3 +1,5 @@
+.. _facet_modifiers:
+
 Facet Modifiers
 ===============
 
