@@ -22,7 +22,7 @@ Then, at the bottom of ``settings.py``:
 
   # Override any settings here if a local_settings.py file exists
   try:
-      from globus_portal_framework.local_settings import *  # noqa
+      from .local_settings import *  # noqa
   except ImportError:
       pass
 
