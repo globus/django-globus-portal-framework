@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.5](https://github.com/globus/django-globus-portal-framework/compare/v0.4.4...v0.4.5) (2022-06-03)
+
+
+### Bug Fixes
+
+* New lazy-imports feature in globus-sdk 3.9 causing error on startup ([d7b909c](https://github.com/globus/django-globus-portal-framework/commit/d7b909c72459bd5faca74c5e1d2bee71e2976be4))
+
 ### [0.4.4](https://github.com/globus/django-globus-portal-framework/compare/v0.4.3...v0.4.4) (2022-05-05)
 
 
