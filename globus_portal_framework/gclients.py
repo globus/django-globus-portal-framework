@@ -15,6 +15,13 @@ log = logging.getLogger(__name__)
 
 GLOBUS_SDK_VERSION = Version(globus_sdk.version.__version__)
 
+if GLOBUS_SDK_VERSION.major >= 3:
+    # Skip any versions less than 3.9
+    if GLOBUS_SDK_VERSION.major == 3 and GLOBUS_SDK_VERSION.minor < 9:
+        pass
+    else:
+        globus_sdk._force_eager_imports()
+
 # This is legacy code for pre SDK-v3.3.x versions, it will be removed in the
 # next version of DGPF.
 CUSTOM_ENVS = {
