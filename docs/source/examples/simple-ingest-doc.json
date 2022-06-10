@@ -1,0 +1,17 @@
+{
+    "ingest_type": "GMetaList",
+    "ingest_data": {
+      "gmeta": [
+        {
+          "id": "metadata",
+          "subject": "https://example.com/my-search-result",
+          "visible_to": ["public"],
+          "content": {
+            "author": "Marie Curie",
+            "elements": ["Ra", "Po"],
+            "url": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata"
+          }
+        }
+      ]
+    }
+  }
