@@ -39,7 +39,7 @@ CUSTOM_ENVS = {
 }
 
 # This is present in the latest v3 version of the Globus SDK
-# and will be removed in the next version. 
+# and will be removed in the next version.
 GROUPS_SCOPE = ('urn:globus:auth:scope:groups.api.globus.org:'
                 'view_my_groups_and_memberships')
 GLOBUS_GROUPS_V2_MY_GROUPS = '/v2/groups/my_groups'
@@ -50,7 +50,7 @@ def get_globus_environment():
     This is needed to support prior versions of the Globus SDK < 3.3.x, please
     use the following for determining service urls instead:
 
-    https://globus-sdk-python.readthedocs.io/en/stable/config.html#config-related-functions  # noqqa
+    https://globus-sdk-python.readthedocs.io/en/stable/config.html#config-related-functions  # noqa
     """
     try:
         return globus_sdk.config.get_globus_environ()

@@ -104,7 +104,8 @@ class SearchView(View):
                     index_info.get('fields', []), search_result.data['gmeta']),
                 'facets': get_facets(
                     search_result, index_info.get('facets', []), self.filters,
-                    index_info.get('filter_match'), index_info.get('facet_modifiers')),
+                    index_info.get('filter_match'),
+                    index_info.get('facet_modifiers')),
                 'pagination': get_pagination(
                     search_result.data['total'], search_result.data['offset']),
                 'count': search_result.data['count'],
