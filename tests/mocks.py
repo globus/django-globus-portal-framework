@@ -2,12 +2,9 @@ from datetime import datetime
 import pytz
 import pathlib
 from django.contrib.auth.models import User
-from django.urls import path, include
 from social_django.models import UserSocialAuth
-from globus_portal_framework.urls import register_custom_index
 import globus_sdk
 
-from globus_portal_framework.views import logout
 import json
 
 mocks_path = pathlib.Path(__file__).parent / 'data'
@@ -98,51 +95,3 @@ def mock_user(username, resource_servers):
     user.save()
     soc_auth.save()
     return user
-
-
-# def get_logged_in_client(username, tokens):
-#     c = Client()
-#     user = mock_user(username, tokens)
-#     # Password is set in mocks, and is always 'globusrocks' for this func
-#     c.login(username=username, password='globusrocks')
-#     return c
-
-#
-# def globus_client_is_loaded_with_authorizer(client):
-#     return isinstance(client.kwargs.get('authorizer'),
-#                       globus_sdk.AccessTokenAuthorizer)
-
-
-def rebuild_index_urlpatterns(old_urlpatterns, indices):
-    """
-    This fixes pre-complied paths not matching new test paths. Since paths
-    are compiled at import time, if you override settings with new
-    SEARCH_INDEXES, your new search indexes won't have urls that match due to
-    the regexes already being compiled. The problem stems from the UrlConverter
-    containing explicit names of the SEARCH_INDEXES which don't handle change
-    well. Use this function to rebuild the names to pick up on your test index
-    names.
-    :param old_urlpatterns: patterns you want to rebuild
-    :param indices: The list of new search indices you're using
-        Example: ['mytestindex', 'myothertestindex']
-    :return: urlpatterns
-    """
-    urlpatterns = [
-        path('logout/', logout, name='logout'),
-        path('', include('social_django.urls', namespace='social')),
-        # FIXME Remove after merging #55 python-social-auth-upgrade
-        path('', include('django.contrib.auth.urls'))
-    ]
-
-    register_custom_index('custom_index', indices)
-
-    for url in old_urlpatterns:
-        if '<index:index>' in str(url.pattern):
-            new_pattern = str(url.pattern).split('/')
-            new_pattern[0] = '<custom_index:index>'
-            new_pattern = '/'.join(new_pattern)
-            urlpatterns.append(path(new_pattern, url.callback, name=url.name))
-        else:
-            urlpatterns.append(url)
-
-    return urlpatterns
