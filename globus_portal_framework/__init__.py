@@ -47,5 +47,3 @@ __all__ = [
     'get_helper_page_url', 'is_file',
 
 ]
-
-default_app_config = 'globus_portal_framework.apps.GlobusPortalFrameworkConfig'
