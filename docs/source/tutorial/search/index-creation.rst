@@ -1,15 +1,23 @@
-Creating your Search Index
-==========================
+.. _tutorial_index_creation:
+
+
+Index Creation and Ingest
+=========================
 
 The `Globus Search <https://docs.globus.org/api/search/>`_ Index stores the metadata 
-for your search potral. Globus Portal Framework queries and presents this information
-in a way that's convenient for users.
+for your search potral, and Globus Portal Framework queries and presents this information
+in a way that's convenient for users. No search metadata is stored directly on the portal,
+rather the portal is only a graphical interface for constructing search queries for users
+and presenting the information in a digestable fashion.
+
+Before any work can be done on a portal, the search index must first be created in Globus
+Search and metadata ingested into it. Once the search index can be queried for information,
+the portal can be configured to display results for users.
 
 Creating the Index
 ^^^^^^^^^^^^^^^^^^
 
-Creating and ingesting to your index are both tasks that happen independent of running
-a portal. There are a few different tutorials on creating a search index and ingesting
+There are a few different tutorials on creating a search index and ingesting
 data into it. If you would like an interactive guide and learn more, there are
 a few different tutorials to choose from:
 
@@ -27,21 +35,25 @@ index settings. Use the following to get started:
   pipx install globus-cli
   globus search index create myindex "A description of my index"
 
+Take note of the UUID returned by this command, this will be used later to point your portal
+at your new search index.
+
 
 Ingesting Metadata
 ^^^^^^^^^^^^^^^^^^
 
-Metadata within Globus Search is unstructured and can be tailored to the specific needs
-of the project. Creating a schema which will apply to all of your search results is optional,
-but highly recommended. Below are tools for getting started.
+.. note::
+  See the reference ingest document for a real-world example. The document below is 
+  oversimplified for readablility.
 
-In simple terms, a search result is a JSON document with a "subject" containing user defined
-content. An example is below:
+Metadata within Globus Search is unstructured and can be tailored to the specific needs
+of the project. In simple terms, a search result is a JSON document with a "subject" 
+containing user defined content. An example is below:
 
 .. literalinclude:: ../../examples/simple-ingest-doc.json
    :language: python
 
-And the document can be ingested into your index above with the following: 
+The document can be ingested into your index above with the following: 
 
 .. code-block:: bash
 
@@ -69,28 +81,36 @@ for more info.
 Portal Configuration
 ^^^^^^^^^^^^^^^^^^^^
 
-
-
-``SEARCH_INDEXES`` defines one or more search indices in your settings.py file. Use the ``uuid``
-you created with the ``globus search index create`` command above here:
+``SEARCH_INDEXES`` defines one or more search indices in your ``myportal/settings.py`` file. Use the ``uuid``
+from the index create command above in :ref:`_tutorial_index_creation`:
 
 .. code-block:: python
 
   SEARCH_INDEXES = {
-      'index-slug': {
+      'my-index-slug': {
           'name': 'My Search Index',
           'uuid': 'my-search-index-uuid',
-          'facets': [
-            {
-              'name': 'Elements',
-              'field_name': 'elements'
-            }
           ],
       }
   }
 
-At a minimum, you must set your index ``uuid`` and ``slug`` above. ``name`` and ``facets`` are optional
-additions to make your portal look nicer.
+The configuration above consists of three pieces of information:
+
+* ``my-index-slug`` -- The slug for your index. This will map to the url and can be any reasonable value.
+* ``name`` -- The name for your index. This shows up in some templates and can be any value.
+* ``uuid`` -- The Globus Search index uuid. Can be found with ``globus search index list``
+
+You should now have enough information to run your new portal.
+
+.. code-block:: bash
+
+  python manage.py runserver
+
+The name should show up on the index selection page, and the search record should now show up on the
+search page. Ingesting more search documents *with different subjects* will cause more results to show up
+on the portal search page.
+
+Next, we will add facets to this portal.
 
 Authenticated Search
 ^^^^^^^^^^^^^^^^^^^^

@@ -9,7 +9,8 @@ other configurations are also possible.
    :maxdepth: 1
    :caption: Search:
 
-   search/search-setup
+   search/index-creation
+   search/basic-config-facets
    search/templates
    search/search-fields
    search/custom-views
