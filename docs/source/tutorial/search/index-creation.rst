@@ -1,4 +1,4 @@
-.. _tutorial_index_creation:
+.. _index_creation:
 
 
 Index Creation and Ingest
@@ -18,14 +18,17 @@ Creating the Index
 ^^^^^^^^^^^^^^^^^^
 
 There are a few different tutorials on creating a search index and ingesting
-data into it. If you would like an interactive guide and learn more, there are
-a few different tutorials to choose from:
-
+data into it. If you would a deeper dive beyond the basics, see the resouces
+below:
 
 * `Metadata Search and Discovery <https://github.com/globus/globus-jupyter-notebooks/blob/master/Metadata_Search_and_Discovery.ipynb>`_
+    * A fast and friendly tutorial on the basics of Globus Search
     * Run interactively on `jupyter.demo.globus.org <https://jupyter.demo.globus.org>`_!
-* `Gladier Flows Tutorial <https://github.com/globus/globus-jupyter-notebooks/blob/master/Gladier%20Flows%20Tutorial.ipynb>`_
+* `Gladier Flows Tutorial <https://github.com/globus/globus-jupyter-notebooks/blob/master/Gladier_Flows_Tutorial.ipynb>`_
+    * An automated approach to ingesting metadata into an index
+    * Run interactively on `jupyter.demo.globus.org <https://jupyter.demo.globus.org>`_!
 * `Searchable Files Demo <https://github.com/globus/searchable-files-demo>`_
+    * A deeper dive into maintaing a Globus Search index
 
 The `Globus CLI <https://docs.globus.org/cli/#installation>`_ can now be used to manage 
 index settings. Use the following to get started:
@@ -35,7 +38,15 @@ index settings. Use the following to get started:
   pipx install globus-cli
   globus search index create myindex "A description of my index"
 
-Take note of the UUID returned by this command, this will be used later to point your portal
+Should return something that looks like:
+
+.. code-block::
+
+  Index ID:     3e2525cc-e8c1-49cd-bef5-a9566770d74c
+  Display Name: myindex
+  Status:       open
+
+Take note of the Index ID UUID returned by this command, this will be used later to point your portal
 at your new search index.
 
 
@@ -48,12 +59,12 @@ Ingesting Metadata
 
 Metadata within Globus Search is unstructured and can be tailored to the specific needs
 of the project. In simple terms, a search result is a JSON document with a "subject" 
-containing user defined content. An example is below:
+containing user defined content. See the ``simple-ingest-doc.json`` below:
 
 .. literalinclude:: ../../examples/simple-ingest-doc.json
-   :language: python
+   :language: json
 
-The document can be ingested into your index above with the following: 
+The document can be ingested into your index above with the following:
 
 .. code-block:: bash
 
@@ -82,7 +93,7 @@ Portal Configuration
 ^^^^^^^^^^^^^^^^^^^^
 
 ``SEARCH_INDEXES`` defines one or more search indices in your ``myportal/settings.py`` file. Use the ``uuid``
-from the index create command above in :ref:`_tutorial_index_creation`:
+from the index create command above in :ref:`_index_creation`.
 
 .. code-block:: python
 
@@ -90,7 +101,6 @@ from the index create command above in :ref:`_tutorial_index_creation`:
       'my-index-slug': {
           'name': 'My Search Index',
           'uuid': 'my-search-index-uuid',
-          ],
       }
   }
 
@@ -104,11 +114,11 @@ You should now have enough information to run your new portal.
 
 .. code-block:: bash
 
-  python manage.py runserver
+  python manage.py runserver localhost:8000
 
-The name should show up on the index selection page, and the search record should now show up on the
-search page. Ingesting more search documents *with different subjects* will cause more results to show up
-on the portal search page.
+The name should show up on the index selection page at ``http://localhost:8000``, and the search record should 
+now show up on the ``http://localhost:8000/my-index-slug/``. The existing record can be edited by
+re-ingesting the same subject with different content, or new records can be created by changing the subject.
 
 Next, we will add facets to this portal.
 

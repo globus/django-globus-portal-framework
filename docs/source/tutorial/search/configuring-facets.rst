@@ -1,5 +1,5 @@
-Basic Config -- Facets
-^^^^^^^^^^^^^^^^^^^^^^
+Configuring Facets
+==================
 
 To configure facets, add a new field called ``facets`` to ``SEARCH_INDEXES``.
 A basic example is below:
@@ -12,8 +12,8 @@ A basic example is below:
           'uuid': 'my-search-index-uuid',
           'facets': [
             {
-              'name': 'Elements',
-              'field_name': 'elements'
+              'name': 'Tags',
+              'field_name': 'tags'
             }
           ],
       }
@@ -26,9 +26,10 @@ search records matched in the query. Given a record with content that looks like
 .. code-block:: json
 
     {
-        "author": "Marie Curie",
-        "elements": ["Ra", "Po"],
-        "url": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata"
+      "title": "File Number 1",
+      "url": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata/file1.txt",
+      "author": "Data Researcher",
+      "tags": ["file", "globus", "tutorial"]
     }
 
 The default search page should show the ``Elements`` facet on the left side with two possible values,
@@ -41,8 +42,8 @@ the number for each value.
 
 See :ref:`_search_settings_reference` for more information on different facet types and options.
 
-Selecting Facets -- Filters
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Filters
+^^^^^^^
 
 By default, Django Globus Portal Framework shows facets on the left side of the search page with
 check marks. Checking any item on the left will cause the portal to filter on the information given.

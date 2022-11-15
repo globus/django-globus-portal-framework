@@ -10,7 +10,8 @@ other configurations are also possible.
    :caption: Search:
 
    search/index-creation
-   search/basic-config-facets
+   search/configuring-facets
+   search/configuring-fields
    search/templates
    search/search-fields
    search/custom-views

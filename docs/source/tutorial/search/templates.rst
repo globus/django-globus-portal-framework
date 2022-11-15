@@ -7,28 +7,6 @@ of a basic set of included templates to make starting a portal quick and easy.
 A list of all `Globus Portal Framework templates <https://github.com/globus/django-globus-portal-framework/tree/main/globus_portal_framework/templates>`_
 can be found under the Github template repo.
 
-Your settings.py file should already have been configured during the tutorial,
-and should look something like this: 
-
-.. code-block:: python
-
-    # settings.py
-    TEMPLATES = [
-      {
-          'BACKEND': 'django.template.backends.django.DjangoTemplates',
-          'DIRS': [BASE_DIR / 'myproject' / 'templates',],
-          'APP_DIRS': True,
-          'OPTIONS': {
-              'context_processors': [
-                  ...
-                  'globus_portal_framework.context_processors.globals',
-                  'social_django.context_processors.backends',
-                  'social_django.context_processors.login_redirect',
-              ],
-          },
-      },
-    ]
-
 Templates follow a strict directory layout, file paths must match exactly for
 templates to be rendered correctly. Ensure ``myproject`` above matches your
 project name, and your ``templates`` directory is created in the correct location.
@@ -36,42 +14,115 @@ Globus Portal Framework templates match the following directory structure:
 
 .. code-block::
 
-  myproject/
+  myportal/
       manage.py
-      myproject/
+      myportal/
           templates/
             globus-portal-framework/
               v2/
-                components/
-                    detail-nav.html
-                    search-facets.html
-                    search-results.html
-                search.html
                 detail-overview.html
-                detail-transfer.html
+                components/
+                    search-results.html
+
+If you want to browse the original templates, you can find them by browsing the
+`source template directory <https://github.com/globus/django-globus-portal-framework/tree/main/globus_portal_framework/templates/globus-portal-framework/v2>`_
+on github.
 
 Customizing Search Results
 ==========================
 
-Let's override the search-results.html template to show a list of fields available
-under each search result. 
+Override `search-results.html` by creating the following file. Make sure the template
+directory matches exactly.
+
+.. code-block:: html
+
+  {# myportal/templates/globus-portal-framework/v2/components/search-results.html #}
+  <div>
+    {% for result in search.search_results %}
+    <div class="card my-3">
+      <div class="card-header">
+        <h3 class="search-title">
+          <a href="{% url 'detail' globus_portal_framework.index result.subject %}">{{result.title|default:'Result'}}</a>
+        </h3>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm borderless">
+          <tbody>
+          <tr>
+            {% for item in result.search_highlights %}
+            <th>{{item.title}}</th>
+            {% endfor %}
+          </tr>
+          <tr>
+            {% for item in result.search_highlights %}
+            {% if item.type == date %}
+            <th>{{item.value | date}}</th>
+            {% else %}
+            <th>{{item.value}}</th>
+            {% endif %}
+            {% endfor %}
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+Reloading the page should result in empty search results. Don't worry, we will fix those in a
+minute!
+
+.. note::
+
+  If your new templates don't show up, double check your ``TEMPLATES`` setting. You
+  can add a template directly with ``'DIRS': [BASE_DIR / 'myportal' / 'templates']``.
+
+
+Let's review some template context above:
+
+* ``myportal/templates/globus-portal-framework/v2/components/search-results.html`` -- is the path
+  you need to override the base template. This tells Django to replace the existing template
+  with the new `search-results.html` file
+* ``search.search_results`` -- is context provided by the search view. It contains information on
+  the response from the Globus Search query
+* ``{% url 'detail' globus_portal_framework.index result.subject %}`` -- builds the detail page
+  for viewing specific information about a search result
+* ``result (temp var)`` -- contains both raw search information, in addition to any fields defined
+  in ``SEARCH_RESULTS.myindex.fields``.
+* ``result.search_highlights`` -- is a field that doesn't exist yet, let's create it!
+
+Now to fix search results to make them show up properly. The new field ``search_highlights`` is needed
+to pick relavent information to show on the search page. Add the following to your ``fields.py`` file:
 
 .. code-block:: python
 
-  # myportal/templates/globus-portal-framework/v2/components/search-results.html
-  <h2>Search Results</h2>
-  {% for result in search.search_results %}
-    <h5>{{result.subject}}</h5>
-    <ul>
-      {% for field in result.keys %}
-      <li>{{field}}</li>
-      {% endfor %}
-    </ul>
-  {% endfor %}
+  def search_highlights(result):
+      """Prepare the most useful pieces of information for users on the search results page."""
+      highlight_names = ["author", "date", "tags"]
+      search_highlights = list()
+      for name, value in result[0].items():
+          # Skip value if it's not in the list
+          if name not in highlight_names:
+              continue
 
-In most cases, your development server should automatically reload the changes
-when you navigate to the search page for your project. The template above will be
-used to render your search results.
+          # Parse the value if needed
+          if name == "date":
+              highlight_value, highlight_type = datetime.isoparse(highlight_value), "date"
+          else:
+              highlight_value, highlight_type = value, "str"
+
+          # Add the value to the list
+          search_highlights.append(
+              {
+                  "name": name,
+                  "title": name.capitalize(),
+                  "value": value,
+                  "type": highlight_type,
+              }
+          )
+      return search_highlights
+
+Remember to enable your field in ``settings.py``
 
 
 Advanced: Multiple Indices

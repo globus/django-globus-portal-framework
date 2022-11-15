@@ -1,11 +1,8 @@
 Search Fields
 -------------
 
-Search Fields take raw search metadata from Globus Search and expose them for
-use by templates. Commonly, raw data from Globus Search needs a bit more processing
-before it can be viewed in templates. An example is datetimes. These can be returned
-in any number of different ways from Globus Search, but they need to be represented as
-python Datetimes to easily render them in templates. 
+
+
 
 Search Fields allow you to add a tiny snippet of code for processing a specific search field,
 so you don't need to modify the whole Django View. Create a view using the following: 

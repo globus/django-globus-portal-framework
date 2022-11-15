@@ -1,17 +1,19 @@
 {
     "ingest_type": "GMetaList",
     "ingest_data": {
-      "gmeta": [
-        {
-          "id": "metadata",
-          "subject": "https://example.com/my-search-result",
-          "visible_to": ["public"],
-          "content": {
-            "author": "Marie Curie",
-            "elements": ["Ra", "Po"],
-            "url": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata"
-          }
-        }
-      ]
+        "gmeta": [
+            {
+                "id": "metadata",
+                "subject": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata/file1.txt",
+                "visible_to": ["public"],
+                "content": {
+                    "title": "File Number 1",
+                    "url": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata/file1.txt",
+                    "author": "Data Researcher",
+                    "tags": ["file", "empty", "tutorial"],
+                    "date": "2022-11-15T12:31:28.560098"
+                }
+            }
+        ]
     }
-  }
+}
