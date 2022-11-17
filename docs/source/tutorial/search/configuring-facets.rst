@@ -20,7 +20,7 @@ A basic example is below:
   }
 
 
-Now, the next time the portal is run the new ``Elements`` facet will show up for any
+Now, the next time the portal is run the new ``Tags`` facet will show up for any
 search records matched in the query. Given a record with content that looks like the following:
 
 .. code-block:: json
@@ -29,15 +29,16 @@ search records matched in the query. Given a record with content that looks like
       "title": "File Number 1",
       "url": "globus://ddb59af0-6d04-11e5-ba46-22000b92c6ec/share/godata/file1.txt",
       "author": "Data Researcher",
-      "tags": ["file", "globus", "tutorial"]
+      "tags": ["globus", "tutorial", "file"],
+      "date": "2022-11-15T12:31:28.560098"
     }
 
-The default search page should show the ``Elements`` facet on the left side with two possible values,
-``Ra`` and ``Po``. Each additional search record will add to this list, and repeating numbers will increment
-the number for each value.
+The default search page should show the ``Tags`` facet on the left side with each value,
+``globus``, ``tutorial``, and ``file``. Each additional search record will add to this
+list, and repeating numbers will increment the number for each value.
 
 .. note::
-    Only results with matching fields (``elements`` above) will show up in results. By default,
+    Only results with matching fields (``tags`` above) will show up in results. By default,
     facets which match no records are not shown
 
 See :ref:`_search_settings_reference` for more information on different facet types and options.

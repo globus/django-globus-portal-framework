@@ -13,7 +13,7 @@ be rendered if given the right field names. Some of these include:
 * Globus App Link -- A link to the file on https://app.globus.org.
 * HTTPS URL -- A direct-download link to the file.
 
-First, let's take a look at the metadata for the file once more:
+First, let's take a look at the metadata once more:
 
 .. literalinclude:: ../../examples/simple-ingest-doc.json
    :language: json
@@ -33,14 +33,23 @@ Configure fields for your search index by adding ``fields`` to your ``SEARCH_IND
   from myportal import fields
 
   SEARCH_INDEXES = {
-      'index-slug': {
-          'name': 'My Search Index',
-          'uuid': 'my-search-index-uuid',
-          'fields': [
+      "index-slug": {
+          "uuid": "my-search-index-uuid",
+          ...  # Previous fields hidden for brevity
+          "fields": [
               # Calls a function with your search record as a parameter
-              ('title', fields.title),
-              ('globus_app_link', fields.globus_app_link),
-              ('https_url', fields.https_url)
+              ("title", fields.title),
+              ("globus_app_link", fields.globus_app_link),
+              ("https_url", fields.https_url)
           ],
       }
   }
+
+You should notice the following changes the next time you run your server:
+
+* `The Search Page <http://localhost:8000/my-index-slug/?q=*>`_
+   * "File Number 1" now shows up as the title
+* `The Detail Page <http://localhost:8000/my-index-slug/detail/globus%253A%252F%252Fddb59af0-6d04-11e5-ba46-22000b92c6ec%252Fshare%252Fgodata%252Ffile1.txt/>`_
+   * The "Transfer/Sync" buttons are now functional
+
+Continue on to cover custom Templates.

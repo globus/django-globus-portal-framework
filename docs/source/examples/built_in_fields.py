@@ -9,7 +9,7 @@ def title(result):
 
 def globus_app_link(result):
     """A Globus Webapp link for the transfer/sync button on the detail page"""
-    url = result[0]["files"][0]["url"]
+    url = result[0]["url"]
     parsed = urlsplit(url)
     query_params = {
         "origin_id": parsed.netloc,
@@ -22,5 +22,5 @@ def globus_app_link(result):
 
 def https_url(result):
     """Add a direct download link to files over HTTPS"""
-    path = urlsplit(result[0]["files"][0]["url"]).path
+    path = urlsplit(result[0]["url"]).path
     return urlunsplit(("https", "g-71c9e9.10bac.8443.data.globus.org", path, "", ""))
