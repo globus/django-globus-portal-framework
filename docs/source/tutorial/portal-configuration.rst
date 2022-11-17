@@ -13,7 +13,6 @@ other configurations are also possible.
    search/configuring-facets
    search/configuring-fields
    search/templates
-   search/search-fields
    search/custom-views
    search/facet-modifiers
    search/search-settings-reference

@@ -41,7 +41,7 @@ list, and repeating numbers will increment the number for each value.
     Only results with matching fields (``tags`` above) will show up in results. By default,
     facets which match no records are not shown
 
-See :ref:`_search_settings_reference` for more information on different facet types and options.
+See :ref:`search_settings_reference` for more information on different facet types and options.
 
 Filters
 ^^^^^^^

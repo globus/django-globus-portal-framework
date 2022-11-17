@@ -93,7 +93,7 @@ Portal Configuration
 ^^^^^^^^^^^^^^^^^^^^
 
 ``SEARCH_INDEXES`` defines one or more search indices in your ``myportal/settings.py`` file. Use the ``uuid``
-from the index create command above in :ref:`_index_creation`.
+from the index create command above in :ref:`index_creation`.
 
 .. code-block:: python
 
