@@ -1,5 +1,5 @@
 Templates
----------
+=========
 
 Templates in Globus Portal Framework are an extension of the `Django Template
 system <https://docs.djangoproject.com/en/4.0/topics/templates/>`_, consisting 
@@ -10,7 +10,7 @@ can be found under the Github template repo.
 Templates follow a strict directory layout, file paths must match exactly for
 templates to be rendered correctly. Ensure ``myproject`` above matches your
 project name, and your ``templates`` directory is created in the correct location.
-Globus Portal Framework templates match the following directory structure: 
+Globus Portal Framework templates match the following directory structure:
 
 .. code-block::
 
@@ -29,10 +29,16 @@ If you want to browse the original templates, you can find them by browsing the
 on github.
 
 Customizing Search Results
-==========================
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Override `search-results.html` by creating the following file. Make sure the template
 directory matches exactly.
+
+.. note::
+
+  If no changes to the search page take effect, double check your ``TEMPLATES`` setting in
+  your ``settings.py`` file. Ensure a template path is set, or add one with
+  ``'DIRS': [BASE_DIR / 'myportal' / 'templates']``.
 
 .. code-block:: html
 
@@ -55,8 +61,8 @@ directory matches exactly.
           </tr>
           <tr>
             {% for item in result.search_highlights %}
-            {% if item.type == date %}
-            <th>{{item.value | date}}</th>
+            {% if item.type == "date" %}
+            <th>{{item.value | date:"DATETIME_FORMAT"}}</th>
             {% else %}
             <th>{{item.value}}</th>
             {% endif %}
@@ -71,12 +77,6 @@ directory matches exactly.
 
 Reloading the page should result in empty search results. Don't worry, we will fix those in a
 minute!
-
-.. note::
-
-  If your new templates don't show up, double check your ``TEMPLATES`` setting. You
-  can add a template directly with ``'DIRS': [BASE_DIR / 'myportal' / 'templates']``.
-
 
 Let's review some template context above:
 
@@ -96,20 +96,22 @@ to pick relavent information to show on the search page. Add the following to yo
 
 .. code-block:: python
 
-  def search_highlights(result):
-      """Prepare the most useful pieces of information for users on the search results page."""
-      highlight_names = ["author", "date", "tags"]
-      search_highlights = list()
-      for name, value in result[0].items():
-          # Skip value if it's not in the list
-          if name not in highlight_names:
-              continue
+  import datetime
+  from typing import List, Mapping, Any
 
-          # Parse the value if needed
+  def search_highlights(result: List[Mapping[str, Any]]) -> List[Mapping[str, dict]]:
+      """Prepare the most useful pieces of information for users on the search results page."""
+      search_highlights = list()
+      for name in ["author", "date", "tags"]:
+          value = result[0].get(name)
+          value_type = "str"
+
+          # Parse a date if it's a date. All dates expected isoformat
           if name == "date":
-              highlight_value, highlight_type = datetime.isoparse(highlight_value), "date"
-          else:
-              highlight_value, highlight_type = value, "str"
+              value = datetime.datetime.fromisoformat(value)
+              value_type = "date"
+          elif name == "tags":
+              value = ", ".join(value)
 
           # Add the value to the list
           search_highlights.append(
@@ -117,13 +119,105 @@ to pick relavent information to show on the search page. Add the following to yo
                   "name": name,
                   "title": name.capitalize(),
                   "value": value,
-                  "type": highlight_type,
+                  "type": value_type,
               }
           )
       return search_highlights
 
-Remember to enable your field in ``settings.py``
 
+And add the new setting in ``settings.py``
+
+.. code-block:: python
+
+    "fields": [
+          ...
+          ("search_highlights", fields.search_highlights),
+      ],
+
+Search results will now look much nicer!
+
+
+Customizing the Detail Page
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Modifying the result detail page will be similar to adding search highlights above with some
+differences. The approach begins the same way, by creating a file that shadows the name of
+the original.
+
+.. code-block:: html
+
+  {% extends 'globus-portal-framework/v2/detail-overview.html' %}
+
+  {% block detail_search_content %}
+
+  <h3 class="text-center mb-5">General Info</h3>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'globus-portal-framework/v2/components/detail-dc-metadata.html' %}
+    </div>
+    <div class="col-md-6">
+      {% include 'globus-portal-framework/v2/components/detail-general-metadata.html' %}
+    </div>
+  </div>
+
+  {% endblock %}
+
+
+Make sure the filename is ``myportal/templates/globus-portal-framework/v2/components/search-results.html``
+Let's review some differences in this template:
+
+* ``extends`` - This template builds on the existing template instead of replacing it
+* ``block`` - Tells Django to replace this specific content with our own
+* ``include`` - Include some additional templates to render some specific data
+
+   * `DC Metadata <https://github.com/globus/django-globus-portal-framework/blob/main/globus_portal_framework/templates/globus-portal-framework/v2/components/detail-dc-metadata.html>`_ - A template to render metadata in Datacite Format
+   * `General Metadata <https://github.com/globus/django-globus-portal-framework/blob/main/globus_portal_framework/templates/globus-portal-framework/v2/components/detail-general-metadata.html>`_ - A template to render any project-specific metadata
+
+The dc and general project metadata templates help render commonly desired fields for the detail
+page. Their use is entierly optional. They require fields named `dc` and `project_metadata` respectively,
+see the following new fields below.
+
+.. code-block:: python
+
+  def dc(result):
+      """Render metadata in datacite format, Must confrom to the datacite spec"""
+      date = datetime.datetime.fromisoformat(result[0]['date'])
+      return {
+          "formats": ["text/plain"],
+          "creators": [{"creatorName": result[0]['author']}],
+          "contributors": [{"contributorName": result[0]['author']}],
+          "subjects": [{"subject": s for s in result[0]['tags']}],
+          "publicationYear": date.year,
+          "publisher": "Organization",
+          "dates": [{"date": date,
+                    "dateType": "Created"}],
+          "titles": [{"title": result[0]['title']}],
+          "version": "1",
+          "resourceType": {
+              "resourceTypeGeneral": "Dataset",
+              "resourceType": "Dataset"
+          }
+      }
+
+
+  def project_metadata(result):
+      """Render any project-specific metadata for this project. Does not conform to
+      a spec and can be of any type, although values should be generally human readable."""
+      project_metadata_names = ['times_accessed', 'original_collection_name']
+      return {k: v for k, v in result[0].items() if k in project_metadata_names}
+
+Add the fields to settings.py.
+
+
+.. code-block:: python
+
+    "fields": [
+          ...
+          ("dc", fields.dc),
+          ("project_metadata", fields.dc),
+      ],
+
+  And the detail page will now be much nicer.
 
 Advanced: Multiple Indices
 ==========================
