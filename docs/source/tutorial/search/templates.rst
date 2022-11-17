@@ -8,7 +8,7 @@ A list of all `Globus Portal Framework templates <https://github.com/globus/djan
 can be found under the Github template repo.
 
 Templates follow a strict directory layout, file paths must match exactly for
-templates to be rendered correctly. Ensure ``myproject`` above matches your
+templates to be rendered correctly. Ensure ``myportal`` above matches your
 project name, and your ``templates`` directory is created in the correct location.
 Globus Portal Framework templates match the following directory structure:
 
@@ -230,7 +230,7 @@ different templates, you can set the ``template_override_dir`` for a given index
   SEARCH_INDEXES = {
       'myindex': {
           ...
-          'template_override_dir': 'myproject',
+          'template_override_dir': 'myportal',
       }
   }
 
@@ -240,11 +240,11 @@ like this:
 
 .. code-block::
 
-  myproject/
+  myportal/
       manage.py
-      myproject/
+      myportal/
           templates/
-            myproject/  # <-- Create this folder, move all index-specific templates under it
+            myportal/  # <-- Create this folder, move all index-specific templates under it
               globus-portal-framework/
                 v2/
                   components/
