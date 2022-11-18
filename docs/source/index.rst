@@ -19,7 +19,6 @@ workflow.
    :caption: Installation:
 
    tutorial/installation-and-setup
-   tutorial/globus-auth
    tutorial/portal-configuration
 
 
