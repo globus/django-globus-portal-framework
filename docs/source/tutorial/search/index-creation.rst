@@ -18,7 +18,7 @@ Creating the Index
 ^^^^^^^^^^^^^^^^^^
 
 There are a few different tutorials on creating a search index and ingesting
-data into it. If you would a deeper dive beyond the basics, see the resouces
+data into it. If you want a deeper dive beyond the basics, see the resouces
 below:
 
 * `Metadata Search and Discovery <https://github.com/globus/globus-jupyter-notebooks/blob/master/Metadata_Search_and_Discovery.ipynb>`_
@@ -72,7 +72,7 @@ The document can be ingested into your index above with the following:
 
 Working from inside out, everything under the ``content`` block is completely defined by the
 user. Each new ingested field Globus Search detects will be scanned and indexed, and can be
-search upon immediately after ingest. ``visible_to`` defines access, and ``subject`` is a
+searched upon immediately after ingest. ``visible_to`` defines access, and ``subject`` is a
 unique identifier for the search result. ``id`` defines different independent sub-categories
 under ``subject``. 
 
@@ -85,39 +85,41 @@ under ``subject``.
   must also be strings. Non-string values will raise an error if the types change.
 
 That's it for the actual metadata. The outer envelope of the sample above ``ingest_data`` and ``gmeta`` 
-define the document as a search ingest document. See the `ingest documentation <https://docs.globus.org/api/search/ingest/#gmetaentry_subjects_and_entries>`_
+defines the document as a search ingest document. See the `ingest documentation <https://docs.globus.org/api/search/ingest/#gmetaentry_subjects_and_entries>`_
 for more info.
 
 
 Portal Configuration
 ^^^^^^^^^^^^^^^^^^^^
 
-``SEARCH_INDEXES`` defines one or more search indices in your ``myportal/settings.py`` file. Use the ``uuid``
-from the index create command above in :ref:`index_creation`.
+Copy-paste the following ``SEARCH_INDEXES`` dictionary in ``myportal/settings.py`` to define one or more search indices. Use the UUID
+of the index you created in :ref:`index_creation`.
 
 .. code-block:: python
 
+  # List of search indices managed by the portal
   SEARCH_INDEXES = {
       'my-index-slug': {
           'name': 'My Search Index',
-          'uuid': 'my-search-index-uuid',
+          'uuid': 'my-index-uuid',
       }
   }
 
 The configuration above consists of three pieces of information:
 
-* ``my-index-slug`` -- The slug for your index. This will map to the url and can be any reasonable value.
+* ``my-index-slug`` -- The slug for your index. This will map to the browser url and can be any reasonable value.
 * ``name`` -- The name for your index. This shows up in some templates and can be any value.
-* ``uuid`` -- The Globus Search index uuid. Can be found with ``globus search index list``
+* ``uuid`` -- The UUID of your index. This can be found with the ``globus search index list`` command line with the `Globus CLI <https://docs.globus.org/cli/#installation>`_.
 
-You should now have enough information to run your new portal.
+You should now have enough information to run your new portal. If the Django server is already running, 
+make sure to refresh your webpage, otherwise start the server.
 
 .. code-block:: bash
 
   python manage.py runserver localhost:8000
 
-The name should show up on the index selection page at ``http://localhost:8000``, and the search record should 
-now show up on the ``http://localhost:8000/my-index-slug/``. The existing record can be edited by
+Your index name should show up on the index selection page at ``http://localhost:8000``, and the search record should 
+now show up at ``http://localhost:8000/my-index-slug/``. The existing record can be edited by
 re-ingesting the same subject with different content, or new records can be created by changing the subject.
 
 Next, we will add facets to this portal.
@@ -127,7 +129,7 @@ Authenticated Search
 
 If search records contain anything other than ``public`` inside ``visible_to``, users
 will need to login to view records.  Make sure you
-have Globus Auth setup, and you have a search scope set in your settings.py file.
+have Globus Auth setup, and you have a search scope set in your ``myportal/settings.py`` file.
 
 .. code-block::
 

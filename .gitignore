@@ -105,3 +105,6 @@ ENV/
 
 # Pycharm
 .idea
+
+# MacOS hidden store file 
+.DS_Store
