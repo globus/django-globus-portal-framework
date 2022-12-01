@@ -1,8 +1,8 @@
 Configuring Facets
 ==================
 
-To configure facets, add a new field called ``facets`` to ``SEARCH_INDEXES``.
-A basic example is below:
+Facets are used to filter and query your search index. To configure them, add a new field 
+called ``facets`` to ``SEARCH_INDEXES``. A basic example is below:
 
 .. code-block:: python
 
@@ -14,13 +14,13 @@ A basic example is below:
             {
               'name': 'Tags',
               'field_name': 'tags'
-            }
+            },
           ],
       }
   }
 
 
-Now, the next time the portal is run the new ``Tags`` facet will show up for any
+Now, the next time the portal is ran, the new ``Tags`` facet will show up for any
 search records matched in the query. Given a record with content that looks like the following:
 
 .. code-block:: json
@@ -38,8 +38,12 @@ The default search page should show the ``Tags`` facet on the left side with eac
 list, and repeating numbers will increment the number for each value.
 
 .. note::
-    Only results with matching fields (``tags`` above) will show up in results. By default,
-    facets which match no records are not shown
+    Only results with matching fields (``tags`` above) will show up in the results. By default,
+    facets which match no record are not shown. 
+
+New sets of ``{'name': ..., 'field_name': ...},`` can be added to the list of ``facets`` in order
+to provide more filtering options. In all cases, while ``name`` can be any string value, ``field_name`` 
+must be a component found in the ``content`` section of at least one of the ingested search records.
 
 See :ref:`search_settings_reference` for more information on different facet types and options.
 

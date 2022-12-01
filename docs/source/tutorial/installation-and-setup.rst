@@ -49,7 +49,7 @@ Settings
 
 Next, you will need to modify your ``myportal/settings.py`` file to enable user
 auth and Globus Portal Framework components. You can copy-paste the individual
-settings below, or use our refer to our :ref:`settings_example` for a complete
+settings below, or use our :ref:`settings_example` for a complete
 ``settings.py`` file reference.
 
 .. code-block:: python
