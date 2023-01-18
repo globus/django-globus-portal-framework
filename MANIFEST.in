@@ -18,4 +18,5 @@ recursive-include globus_portal_framework *.woff
 recursive-include globus_portal_framework *.woff2
 
 exclude globus_portal_framework/local_settings.py
+prune tests/
 global-exclude local_settings.py

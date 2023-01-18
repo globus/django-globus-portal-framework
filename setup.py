@@ -1,5 +1,5 @@
 import os.path
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 
 # single source of truth for package version
@@ -25,7 +25,7 @@ setup(name='django-globus-portal-framework',
       author='Globus Team',
       author_email='support@globus.org',
       url='https://github.com/globus/django-globus-portal-framework',
-      packages=find_packages(exclude=['local*']),
+      packages=find_namespace_packages(include=['globus_portal_framework*']),
       install_requires=install_requires,
       include_package_data=True,
       keywords=['globus', 'django'],
