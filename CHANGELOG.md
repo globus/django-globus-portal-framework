@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.6](https://github.com/globus/django-globus-portal-framework/compare/v0.4.5...v0.4.6) (2023-01-18)
+
+
+### Features
+
+* Support Django 4 ([269bb7c](https://github.com/globus/django-globus-portal-framework/commit/269bb7ca4070470bbdf3b5093cee53441dd94b14))
+
+
+### Bug Fixes
+
+* facet modifiers for generic views ([fedc610](https://github.com/globus/django-globus-portal-framework/commit/fedc6107baf05ac44613c351d134f6002aec7206))
+
 ### [0.4.5](https://github.com/globus/django-globus-portal-framework/compare/v0.4.4...v0.4.5) (2022-06-03)
 
 
