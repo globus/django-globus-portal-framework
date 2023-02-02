@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.7](https://github.com/globus/django-globus-portal-framework/compare/v0.4.6...v0.4.7) (2023-02-02)
+
+
+### Bug Fixes
+
+* Correct a handful of docstrings and add missing ones ([9bbaed1](https://github.com/globus/django-globus-portal-framework/commit/9bbaed1b734eb02df1d8e3717ff47bb6f8c1609b))
+
+
 ### [0.4.6](https://github.com/globus/django-globus-portal-framework/compare/v0.4.5...v0.4.6) (2023-01-18)
 
 
