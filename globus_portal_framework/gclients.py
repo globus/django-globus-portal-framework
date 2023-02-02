@@ -79,7 +79,8 @@ def get_service_url(service_name):
 def validate_token(tok):
     """Validate if the given token is active.
 
-    Returns true if active, raises ExpiredGlobusToken exception if not"""
+    :returns: True if active
+    :raises globus_sdk.ExpiredGlobusToken: if token has expired."""
     ac = globus_sdk.ConfidentialAppAuthClient(
         settings.SOCIAL_AUTH_GLOBUS_KEY,
         settings.SOCIAL_AUTH_GLOBUS_SECRET
@@ -90,8 +91,8 @@ def validate_token(tok):
 def revoke_globus_tokens(user):
     """
     Revoke all of a user's Globus tokens.
-    :param user:
-    :return:
+    :param user: A django user object, typically on the request of a view (request.user)
+    :return: None
     """
     tokens = user.social_auth.get(provider='globus').extra_data
     ac = globus_sdk.ConfidentialAppAuthClient(
@@ -119,6 +120,20 @@ def revoke_globus_tokens(user):
 
 
 def load_globus_access_token(user, token_name):
+    """
+    Load a globus user access token using a provided lookup by resource server.
+    Scopes MUST have already been configured in settings.py, and additionally
+    a user must have already gone through an auth flow and logged into Globus.
+
+    An example of this may look like the following:
+
+    def myview(request):
+        token = load_globus_access_token(request.user, 'transfer.api.globus.org')
+
+    :param user: A Django User object. Usually this comes from request.user on a view
+    :param token_name: The name of a token by resource server
+    :raises ValueError: If no tokens match the token name given
+    """
     if not user:
         return None
     if user.is_authenticated:
@@ -175,19 +190,31 @@ def get_default_client_loader():
 
 
 def load_auth_client(user):
+    """
+    Load a Globus Auth Client for a logged in user.
+    :returns: A live globus_sdk.AuthClient
+    """
     load_client = get_default_client_loader()
     return load_client(user, globus_sdk.AuthClient, 'auth.globus.org',
                        require_authorized=True)
 
 
 def load_search_client(user=None):
-    """Load a globus_sdk.SearchClient, with a token authorizer if the user is
-    logged in or a generic one otherwise."""
+    """Load an authorized globus_sdk.SearchClient, for a given logged-in user.
+    If user is None, a generic unauthorized search client is loaded instead.
+    Unauthorized search clients can still make requests, but may only view
+    public records for a search index."""
     load_client = get_default_client_loader()
     return load_client(user, globus_sdk.SearchClient, 'search.api.globus.org')
 
 
 def load_transfer_client(user):
+    """
+    Load a Globus Transfer Client for a logged in user. Note: A Transfer scope
+    must be set in the settings.py file, and a user must be logged in with the
+    newest scopes.
+    :returns: A live authorized globus_sdk.TransferClient
+    """
     load_client = get_default_client_loader()
     return load_client(user, globus_sdk.TransferClient,
                        'transfer.api.globus.org', require_authorized=True)
