@@ -1,6 +1,9 @@
 Django Globus Portal Framework
 ==============================
 
+.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.7600075.svg
+    :target: https://zenodo.org/record/7600075#.Y9vaEezMLMI
+
 .. image:: https://github.com/globus/django-globus-portal-framework/actions/workflows/tests.yml/badge.svg
     :target: https://github.com/globus/django-globus-portal-framework/actions
 
