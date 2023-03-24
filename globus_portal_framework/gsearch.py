@@ -444,9 +444,10 @@ def get_subject(index, subject, user=None):
     try:
         idata = get_index(index)
         if version.parse(globus_sdk.version.__version__).major < 3:
-            params = dict(result_format_version='2017-09-01')
+            params = dict(result_format_version=DEFAULT_RESULT_FORMAT_VERSION)
         else:
-            params = dict(query_params=dict(result_format_version='2017-09-01'))
+            rfv = dict(result_format_version=DEFAULT_RESULT_FORMAT_VERSION)
+            params = dict(query_params=rfv)
         result = client.get_subject(idata['uuid'], unquote(subject), **params)
         return process_search_data(idata.get('fields', {}), [result.data])[0]
     except globus_sdk.SearchAPIError:
@@ -462,20 +463,24 @@ def process_search_data(field_mappers, results):
     in from a simple query to Globus Search. See here:
     https://docs.globus.org/api/search/schemas/GMetaResult/
     :return: A list of search results:
-
-
     """
     structured_results = []
-    for entry in results:
-        content = entry['content']
+    for gmeta_result in results:
+        if gmeta_result.get('@version') != DEFAULT_RESULT_FORMAT_VERSION:
+            log.warning('Unsupported result format version '
+                        '{}'.format(gmeta_result['@version']))
+            continue
+
+        entries = gmeta_result['entries']
+        content = [e['content'] for e in entries]
         result = {
-            'subject': quote_plus(entry['subject']),
+            'subject': quote_plus(gmeta_result['subject']),
             'all': content
         }
 
         if len(content) == 0:
             log.warning('Subject {} contained no content, skipping...'.format(
-                entry['subject']
+                gmeta_result['subject']
             ))
             continue
         default_content = content[0]
