@@ -13,6 +13,8 @@ from globus_portal_framework.gclients import (
     load_search_client
 )
 import globus_portal_framework.exc
+from globus_portal_framework.constants import DEFAULT_RESULT_FORMAT_VERSION
+
 
 log = logging.getLogger(__name__)
 
@@ -124,7 +126,7 @@ class SearchView(View):
             'offset': self.offset,
             'sort': self.sort,
             'limit': self.results_per_page,
-            'result_format_version': '2017-09-01',
+            'result_format_version': DEFAULT_RESULT_FORMAT_VERSION,
         }
         try:
             index_info = self.get_index_info(index)
