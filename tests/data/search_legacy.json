@@ -1,13 +1,13 @@
 {
     "@datatype": "GSearchResult",
-    "@version": "2019-08-27",
+    "@version": "2017-09-01",
     "count": 1,
     "gmeta": [
         {
             "@datatype": "GMetaResult",
-            "@version": "2019-08-27",
-            "entries": [{
-                "content": {
+            "@version": "2017-09-01",
+            "content": [
+                {
                     "globus_group": "ce3ef838-44c1-473e-aecb-c3ecfe6698db",
                     "remote_file_manifest": [
                         {
@@ -29,10 +29,8 @@
                             "md5":"febe6995bad457991331348f7b9c85fa"
                         }
                     ]
-                },
-                "entry_id": null,
-                "matched_principal_sets": []
-            }],
+                }
+            ],
             "subject": "globus://ddb59aef-6d04-11e5-ba46-22000b92c6ec:/share/godata/"
         }
     ],

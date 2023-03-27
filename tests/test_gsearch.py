@@ -170,42 +170,48 @@ def test_process_search_data_with_no_records():
 
 
 def test_process_search_data_zero_length_content(mock_data):
-    sub = mock_data['search']['gmeta'][0]
-    sub['content'] = []
-    mappers, results = [], [sub]
+    gmeta = mock_data['search']['gmeta'][0]
+    gmeta['entries'] = []
+    mappers, results = [], [gmeta]
     data = process_search_data(mappers, results)
     assert data == []
 
 
-def test_process_search_data_with_one_entry(mock_data):
-    sub = mock_data['search']['gmeta'][0]
+def test_process_search_data_skips_legacy(mock_data):
+    sub = mock_data['search_legacy']['gmeta'][0]
     mappers, results = [], [sub]
-    data = process_search_data(mappers, results)[0]
-    assert quote_plus(sub['subject']) == data['subject']
-    assert sub['content'] == data['all']
+    assert process_search_data(mappers, results) == []
+
+
+def test_process_search_data_with_one_entry(mock_data):
+    # First search record
+    gmeta = mock_data['search']['gmeta'][0]
+    processsed_content = process_search_data([], [gmeta])
+    assert processsed_content
+    assert quote_plus(gmeta['subject']) == processsed_content[0]['subject']
+    assert gmeta['entries'][0]['content'] == processsed_content[0]['all'][0]
 
 
 def test_process_search_data_string_field(mock_data):
-    sub = mock_data['search']['gmeta'][0]
-    sub['content'][0]['foo'] = 'bar'
-    mappers, results = ['foo'], [sub]
-    data = process_search_data(mappers, results)[0]
+    gmeta = mock_data['search']['gmeta'][0]
+    gmeta['entries'][0]['content']['foo'] = 'bar'
+    data = process_search_data(['foo'], [gmeta])[0]
     assert data['foo'] == 'bar'
 
 
 def test_process_search_data_func_field(mock_data):
-    sub = mock_data['search']['gmeta'][0]
-    sub['content'][0]['foo'] = 'bar'
+    gmeta = mock_data['search']['gmeta'][0]
+    gmeta['entries'][0]['content']['foo'] = 'bar'
     mappers = [('foo', lambda x: x[0].get('foo').replace('b', 'c'))]
-    results = [sub]
+    results = [gmeta]
     data = process_search_data(mappers, results)[0]
     assert data['foo'] == 'car'
 
 
 def test_process_search_data_string_field_missing(mock_data):
-    sub = mock_data['search']['gmeta'][0]
-    sub['content'][0]['foo'] = 'bar'
-    mappers, results = ['foo'], [sub]
+    gmeta = mock_data['search']['gmeta'][0]
+    gmeta['entries'][0]['content']['foo'] = 'bar'
+    mappers, results = ['foo'], [gmeta]
     data = process_search_data(mappers, results)[0]
     assert data['foo'] == 'bar'
 

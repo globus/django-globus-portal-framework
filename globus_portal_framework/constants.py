@@ -62,7 +62,7 @@ VALID_SEARCH_FACET_KEYS = [
     'missing'
 ]
 # https://docs.globus.org/api/search/search/#request_documents
-DEFAULT_RESULT_FORMAT_VERSION = '2017-09-01'
+DEFAULT_RESULT_FORMAT_VERSION = '2019-08-27'
 
 BASE_TEMPLATES = 'globus-portal-framework/v2/'
 
