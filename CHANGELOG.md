@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.8](https://github.com/globus/django-globus-portal-framework/compare/v0.4.7...v0.4.8) (2023-03-29)
+
+
+### Bug Fixes
+
+* Generic views not inline with the default portal search settings ([f372a75](https://github.com/globus/django-globus-portal-framework/commit/f372a753b43e42fb44dd5643476c7885e987a8f9))
+* Upgrade internals from legacy search result format to 2019-08-27 ([c58b293](https://github.com/globus/django-globus-portal-framework/commit/c58b2930606aec0c08d807a341a5181e75ded3d0))
+
+
 ### [0.4.7](https://github.com/globus/django-globus-portal-framework/compare/v0.4.6...v0.4.7) (2023-02-02)
 
 
