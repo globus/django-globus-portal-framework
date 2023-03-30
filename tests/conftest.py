@@ -12,6 +12,12 @@ def search_client(monkeypatch):
 
 
 @pytest.fixture
+def groups_client(monkeypatch):
+    monkeypatch.setattr(globus_sdk, 'GroupsClient', Mock())
+    return globus_sdk.GroupsClient
+
+
+@pytest.fixture
 def search_client_inst(search_client):
     """Return a search client instance"""
     return search_client.return_value

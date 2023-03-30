@@ -3,26 +3,30 @@ Globus Auth OpenID Connect backend, docs at:
     https://docs.globus.org/api/auth
 """
 import logging
+import urllib
 from social_core.backends.globus import (
     GlobusOpenIdConnect as GlobusOpenIdConnectBase
 )
 from social_core.exceptions import AuthForbidden
-from globus_portal_framework.gclients import (
-    get_service_url, GROUPS_SCOPE, GLOBUS_GROUPS_V2_MY_GROUPS
-)
+import globus_sdk
+from globus_sdk.scopes import GroupsScopes
+from globus_sdk import config as globus_sdk_config
 
 log = logging.getLogger(__name__)
 
 
 class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
-    OIDC_ENDPOINT = get_service_url('auth')
+
+    OIDC_ENDPOINT = globus_sdk_config.get_service_url('auth')
     GLOBUS_APP_URL = 'https://app.globus.org'
     # Fixed by https://github.com/python-social-auth/social-core/pull/577
     JWT_ALGORITHMS = ['RS512']
 
     def introspect_token(self, auth_token):
+        url = urllib.parse.urljoin(self.OIDC_ENDPOINT,
+                                   'v2/oauth2/token/introspect')
         return self.get_json(
-            self.OIDC_ENDPOINT + '/v2/oauth2/token/introspect',
+            url,
             method='POST',
             data={"token": auth_token,
                   "include": "session_info,identities_set"},
@@ -30,8 +34,10 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         )
 
     def get_globus_identities(self, auth_token, identities_set):
+        url = urllib.parse.urljoin(self.OIDC_ENDPOINT,
+                                   '/v2/api/identities')
         return self.get_json(
-            self.OIDC_ENDPOINT + '/v2/api/identities',
+            url,
             method='GET',
             headers={'Authorization': 'Bearer ' + auth_token},
             params={'ids': ','.join(identities_set),
@@ -128,25 +134,22 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         groups a user belongs. The API is PUBLIC, and no special allowlists
         are needed to use it.
         """
+        groups_scopes = (GroupsScopes.all,
+                         GroupsScopes.view_my_groups_and_memberships)
         groups_token = None
         for item in other_tokens:
-            if item.get('scope') == GROUPS_SCOPE:
+            if item.get('scope') in groups_scopes:
                 groups_token = item.get('access_token')
 
         if groups_token is None:
             raise ValueError(
-                'You must set the {} scope on {} in order to set an allowed '
-                'group'.format(GROUPS_SCOPE,
-                               'settings.SOCIAL_AUTH_GLOBUS_SCOPE')
+                f'You must set one of {groups_scopes} scopes on '
+                'settings.SOCIAL_AUTH_GLOBUS_SCOPE in order to set an allowed'
             )
 
-        # Get the allowed group
-        return self.get_json(
-            '{}{}'.format(get_service_url('groups'),
-                          GLOBUS_GROUPS_V2_MY_GROUPS),
-            method='GET',
-            headers={'Authorization': 'Bearer ' + groups_token}
-        )
+        authorizer = globus_sdk.AccessTokenAuthorizer(groups_token)
+        groups_client = globus_sdk.GroupsClient(authorizer=authorizer)
+        return groups_client.get_user_groups()
 
     def auth_params(self, state=None):
         params = super(GlobusOpenIdConnect, self).auth_params(state)

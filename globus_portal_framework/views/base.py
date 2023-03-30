@@ -265,8 +265,15 @@ def allowed_groups(request):
     context = {'allowed_groups': copy.deepcopy(portal_groups)}
     if request.user.is_authenticated:
         try:
-            user_groups = {g['id']: g
-                           for g in gclients.get_user_groups(request.user)}
+            groups_client = gclients.load_globus_client(
+                    request.user,
+                    globus_sdk.GroupsClient,
+                    'groups.api.globus.org',
+                    require_authorized=True
+            )
+            user_groups = {
+                g['id']: g for g in groups_client.get_user_groups(request.user)
+            }
             for group in context['allowed_groups']:
                 if user_groups.get(group['uuid']):
                     group['is_member'] = True

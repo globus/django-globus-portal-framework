@@ -183,25 +183,24 @@ def test_without_allowed_groups(settings, user_details):
 
 
 def test_with_one_group(settings, mock_group_tokens, groups,
-                        user_details, get_json):
+                        user_details, groups_client):
     settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
        {'name': 'Portal Users Group',
         'uuid': 'test-group-1-uuid'}
     ]
-    # mock GlobusOpenIdConnect routine to fetch groups
-    get_json.return_value = groups
+    groups_client.return_value.get_user_groups.return_value = groups
     goidc = GlobusOpenIdConnect()
     response = {'other_tokens': mock_group_tokens}
     assert goidc.auth_allowed(response, user_details) is True
 
 
-def test_with_no_groups(settings, mock_group_tokens, user_details, get_json):
+def test_with_no_groups(settings, mock_group_tokens, user_details, groups_client):
     settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
        {'name': 'Portal Users Group',
         'uuid': 'test-group-1-uuid'}
     ]
     # Globus returns no groups
-    get_json.return_value = []
+    groups_client.return_value.get_user_groups.return_value = []
     goidc = GlobusOpenIdConnect()
     response = {'other_tokens': mock_group_tokens}
     with pytest.raises(social_core.exceptions.AuthForbidden):
@@ -209,11 +208,12 @@ def test_with_no_groups(settings, mock_group_tokens, user_details, get_json):
 
 
 def test_with_wrong_identity(settings, mock_group_tokens, user_details, groups,
-                             get_json):
+                             groups_client):
     settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
        {'name': 'Portal Users Group',
         'uuid': 'test-group-1-uuid'}
     ]
+    groups_client.return_value.get_user_groups.return_value = groups
     get_json.return_value = groups
     response = {'other_tokens': mock_group_tokens}
     goidc = GlobusOpenIdConnect()

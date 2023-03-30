@@ -3,8 +3,9 @@ from django.core.checks import Error, Warning, register
 from django.conf import settings
 import globus_sdk
 
-from globus_portal_framework.constants import FILTER_TYPES
-from globus_portal_framework.gclients import get_globus_environment
+from globus_portal_framework.constants import (
+    FILTER_TYPES, DEFAULT_RESULT_FORMAT_VERSION
+)
 
 log = logging.getLogger(__name__)
 log.debug('Debugging is active.')
@@ -92,17 +93,16 @@ def check_search_indexes(app_configs, **kwargs):
                 Warning('SEARCH_INDEXES.{}.filter_match is invalid.'
                         ''.format(index_name),
                         obj=settings,
-                        hint='Must be one of {}'.format(
-                            tuple(FILTER_TYPES.keys()))
+                        hint=f'Must be one of {tuple(FILTER_TYPES.keys())}'
                         ))
     return errors
 
 
 @register()
 def check_globus_env(app_configs, **kwargs):
-    env = get_globus_environment()
-    # 'default' is used in Globus SDK v2, 'production' in v3
-    if env not in ['default', 'production']:
-        return [Warning('Environment set to "{}", unset with '
-                        '"unset GLOBUS_SDK_ENVIRONMENT"'.format(env))]
+    env = os.getenv('GLOBUS_SDK_ENVIRONMENT')
+    if env and env != 'production':
+        return [Info(f'GLOBUS_SDK_ENVIRONMENT set to "{env}".',
+                     hint='Non-production services may contain experimental '
+                          'features.')]
     return []
