@@ -160,10 +160,9 @@ def test_allowed_groups(client):
 
 
 @pytest.mark.django_db
-def test_allowed_groups_with_user(user, client, monkeypatch):
-    get = mock.Mock()
-    get.return_value.json.return_value = []
-    monkeypatch.setattr(requests, 'get', get)
+def test_allowed_groups_with_user(groups_client, user, client, mock_data, globus_response):
+    globus_response.data = mock_data['get_user_groups']
+    groups_client.return_value.get_user_groups.return_value = mock_data['get_user_groups']
     client.force_login(user)
     r = client.get(reverse('allowed-groups'))
     assert r.status_code == 200

@@ -1,7 +1,5 @@
 import pytest
-from unittest import mock
 from datetime import timedelta
-import requests
 import globus_sdk
 
 from django.contrib.auth.models import AnonymousUser
@@ -12,18 +10,10 @@ from globus_portal_framework.gclients import (
     revoke_globus_tokens, get_user_groups
 )
 from globus_portal_framework import (
-    ExpiredGlobusToken, GroupsException, PortalAuthException
+    ExpiredGlobusToken, PortalAuthException
 )
 
 from tests.mocks import mock_user
-
-
-@pytest.fixture
-def requests_get(monkeypatch):
-    """NOTE! This should go away in the next version, it was only used when
-    Groups had to be a request outside of the Globus SDK"""
-    monkeypatch.setattr(requests, 'get', mock.Mock())
-    return requests.get
 
 
 def test_load_globus_client_with_anonymous_user(search_client):
@@ -121,39 +111,8 @@ def test_revocation_globus_err(mock_app, globus_api_error):
 
 
 @pytest.mark.django_db
-def test_get_groups_old_token_name(requests_get, user, client):
+def test_get_groups(groups_client, user, client):
     # get user with public groups scope
     client.force_login(user)
     get_user_groups(user)
-    assert user.is_authenticated is True
-    assert requests_get.called
-    assert requests_get.return_value.json.called
-
-
-@pytest.mark.django_db
-def test_get_groups_token_name(requests_get, user, client):
-    # get user with public groups scope
-    client.force_login(user)
-    get_user_groups(user)
-    assert user.is_authenticated is True
-    assert requests_get.called
-    assert requests_get.return_value.json.called
-
-
-@pytest.mark.django_db
-def test_get_groups_bad_token_name(requests_get, client):
-    # get user with public groups scope
-    user = mock_user('eda_the_owl_lady', ['groups.are.not.my.style'])
-    client.force_login(user)
-    with pytest.raises(ValueError):
-        get_user_groups(user)
-
-
-@pytest.mark.django_db
-def test_get_groups_err_response(requests_get, user, client):
-    # get user with public groups scope
-    client.force_login(user)
-    requests_get.return_value.raise_for_status.side_effect = \
-        requests.HTTPError()
-    with pytest.raises(GroupsException):
-        get_user_groups(user)
+    assert groups_client.return_value.get_my_groups.called
