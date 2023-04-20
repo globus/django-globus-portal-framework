@@ -82,7 +82,7 @@ def get_helper_page_url(callback_url, cancel_url='', folder_limit=5,
         params['cancelurl'] = cancel_url
     return requests.Request(
         'GET',
-        'https://www.globus.org/app/browse-endpoint',
+        'https://app.globus.org/file-manager',
         params=params
     ).prepare().url
 
