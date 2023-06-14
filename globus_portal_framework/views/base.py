@@ -168,7 +168,7 @@ def detail(request, index, subject):
 @csrf_exempt
 def detail_transfer(request, index, subject):
     context = gsearch.get_subject(index, subject, request.user)
-    task_url = 'https://www.globus.org/app/activity/{}/overview'
+    task_url = 'https://app.globus.org/activity/{}/overview'
     if request.user.is_authenticated:
         try:
             # Hacky, we need to formalize remote file manifests
