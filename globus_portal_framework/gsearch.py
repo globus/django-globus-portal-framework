@@ -69,7 +69,7 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
     }
 
     See Search docs here:
-    https://docs.globus.org/api/search/schemas/GSearchRequest/
+    https://docs.globus.org/api/search/reference/get_query/
     :param index: index key name defined in settings.SEARCH_INDEXES, eg 'foo'
     :param query: The query string to search with, eg 'apples' or '*'
     :param filters: List of search filters. Typically, this is taken from the
