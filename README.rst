@@ -41,3 +41,9 @@ For our latest development version, you can install the pre-release
 
 See the `Read The Docs page <https://django-globus-portal-framework.readthedocs.io/en/stable/>`_.
 
+Issues
+------
+
+All features are currently tracked internally by Shortcut.
+
+If you encounter a bug or would like to request a feature, please open a Github Issue.
