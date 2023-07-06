@@ -1,6 +1,9 @@
 Django Globus Portal Framework
 ==============================
 
+.. image:: https://zenodo.org/badge/118486682.svg
+   :target: https://zenodo.org/badge/latestdoi/118486682
+
 .. image:: https://github.com/globus/django-globus-portal-framework/actions/workflows/tests.yml/badge.svg
     :target: https://github.com/globus/django-globus-portal-framework/actions
 
@@ -20,7 +23,7 @@ Please head to our `Read The Docs page <https://django-globus-portal-framework.r
 
 * Use of this framework requires an account you can use to log in to the Globus Web App. There are many ways to sign in to Globus, including Google and ORCID iD.
 * Once signed in to Globus, head to https://app.globus.org/settings/developers and create a project and application to generate a key and secret. You will most likely want "Register a portal, science gateway, or other application".
-* You will also need a search index to ingest your metadata into. Please see the `Globus Search API <https://docs.globus.org/api/search/>`_ to do so.
+* The Read-the-Docs link above will cover basic operations for starting a portal. For extended documentation about the Globus Search service, please see the `Globus Search API Documentation <https://docs.globus.org/api/search/>`_
 
 Installation
 ------------
