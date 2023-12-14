@@ -27,8 +27,6 @@ from globus_portal_framework.constants import (
 
     VALID_SEARCH_FACET_KEYS, VALID_SEARCH_KEYS,
 
-    DEFAULT_RESULT_FORMAT_VERSION,
-
     DEFAULT_FACET_MODIFIERS,
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
@@ -96,8 +94,6 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
         'limit': get_setting('SEARCH_RESULTS_PER_PAGE')
     })
     search_data.update(search_kwargs or {})
-    search_data['result_format_version'] = search_data.get(
-        'result_format_version', DEFAULT_RESULT_FORMAT_VERSION)
     try:
         result = client.post_search(index_data['uuid'], search_data)
         return {
@@ -443,12 +439,7 @@ def get_subject(index, subject, user=None):
     client = load_search_client(user)
     try:
         idata = get_index(index)
-        if version.parse(globus_sdk.version.__version__).major < 3:
-            params = dict(result_format_version=DEFAULT_RESULT_FORMAT_VERSION)
-        else:
-            rfv = dict(result_format_version=DEFAULT_RESULT_FORMAT_VERSION)
-            params = dict(query_params=rfv)
-        result = client.get_subject(idata['uuid'], unquote(subject), **params)
+        result = client.get_subject(idata['uuid'], unquote(subject))
         return process_search_data(idata.get('fields', {}), [result.data])[0]
     except globus_sdk.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
@@ -466,10 +457,6 @@ def process_search_data(field_mappers, results):
     """
     structured_results = []
     for gmeta_result in results:
-        if gmeta_result.get('@version') != DEFAULT_RESULT_FORMAT_VERSION:
-            log.warning('Unsupported result format version '
-                        '{}'.format(gmeta_result['@version']))
-            continue
 
         entries = gmeta_result['entries']
         content = [e['content'] for e in entries]
