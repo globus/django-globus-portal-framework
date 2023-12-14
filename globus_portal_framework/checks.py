@@ -5,7 +5,7 @@ from django.conf import settings
 import globus_sdk
 
 from globus_portal_framework.constants import (
-    FILTER_TYPES, DEFAULT_RESULT_FORMAT_VERSION
+    FILTER_TYPES
 )
 
 log = logging.getLogger(__name__)
@@ -32,17 +32,6 @@ def check_search_indexes(app_configs, **kwargs):
                 obj=settings,
                 hint=hint,
                 id='globus_portal_framework.settings.E001'
-                )
-            )
-        rf_version = idata.get('result_format_version')
-        if rf_version and rf_version != DEFAULT_RESULT_FORMAT_VERSION:
-            errors.append(Warning(
-                'Globus Portal Framework does not support '
-                f'result_format_version=="{rf_version}"',
-                obj=settings,
-                hint=('Suggested you unset settings.SEARCH_INDEXES.'
-                      f'{index_name}.result_format_version'),
-                id='globus_portal_framework.settings.E002'
                 )
             )
         fm = idata.get('filter_match', None)

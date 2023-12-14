@@ -177,12 +177,6 @@ def test_process_search_data_zero_length_content(mock_data):
     assert data == []
 
 
-def test_process_search_data_skips_legacy(mock_data):
-    sub = mock_data['search_legacy']['gmeta'][0]
-    mappers, results = [], [sub]
-    assert process_search_data(mappers, results) == []
-
-
 def test_process_search_data_with_one_entry(mock_data):
     # First search record
     gmeta = mock_data['search']['gmeta'][0]
