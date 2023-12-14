@@ -17,7 +17,6 @@ match directly with Globus Search fields, and match directly with Globus Search.
 * sort
 * boosts
 * bypass_visible_to
-* result_format_version
 
 See more information in the `Globus Search documentation <https://docs.globus.org/api/search/reference/post_query/#gsearchrequest>`_
 
@@ -33,7 +32,6 @@ sort                   Sort results of a Globus Search
 boosts                 Increase or decrease values of fields
 filter_match           Default filtering on 'term' facets. 'match-any' or 'match-all' supported
 template_override_dir  Directory for using different custom templates per-index on a multi-index portal
-result_format_version  Version of Search Result documents to return
 bypass_visible_to      Show all search records regardless visible_to permission (index admins only)
 =====================  ===========
 
