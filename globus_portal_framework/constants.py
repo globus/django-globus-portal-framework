@@ -54,15 +54,13 @@ DATETIME_PARTIAL_FORMATS = {
 
 VALID_SEARCH_KEYS = [
     'q', 'limit', 'offset', 'facets', 'filters', 'boosts', 'sort',
-    'query_template', 'advanced', 'bypass_visible_to', 'result_format_version',
+    'query_template', 'advanced', 'bypass_visible_to',
 ]
 
 VALID_SEARCH_FACET_KEYS = [
     'name', 'type', 'field_name', 'size', 'histogram_range', 'date_interval',
     'missing'
 ]
-# https://docs.globus.org/api/search/search/#request_documents
-DEFAULT_RESULT_FORMAT_VERSION = '2019-08-27'
 
 BASE_TEMPLATES = 'globus-portal-framework/v2/'
 
