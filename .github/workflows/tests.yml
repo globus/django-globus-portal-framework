@@ -5,9 +5,9 @@ name: Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, v0.4.x ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, v0.4.x ]
   schedule:
     - cron: '0 2 * * *' # Every day at 2am
 
