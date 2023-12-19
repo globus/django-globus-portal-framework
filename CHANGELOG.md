@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.9](https://github.com/globus/django-globus-portal-framework/compare/v0.4.8...v0.4.9) (2023-12-19)
+
+### Changes
+
+* Remove `result_format_version` from search requests
+    * This parameter will no longer be accepted by the Globus Search API on March 30th 2024
+
 ### [0.4.8](https://github.com/globus/django-globus-portal-framework/compare/v0.4.7...v0.4.8) (2023-03-29)
 
 
