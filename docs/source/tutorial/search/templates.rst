@@ -129,10 +129,13 @@ And add the new setting in ``settings.py``
 
 .. code-block:: python
 
-    "fields": [
-          ...
-          ("search_highlights", fields.search_highlights),
-      ],
+    SEARCH_INDEXES = {
+        "myportal": {
+            "fields": [
+              ("search_highlights", fields.search_highlights),
+            ]
+        }
+    }
 
 Search results will now look much nicer!
 
@@ -163,7 +166,8 @@ the original.
   {% endblock %}
 
 
-Make sure the filename is ``myportal/templates/globus-portal-framework/v2/components/search-results.html``
+Make sure the filename is ``myportal/templates/globus-portal-framework/v2/detail-overview.html`` to
+override the `detail-overview.html in DGPF <https://github.com/globus/django-globus-portal-framework/blob/main/globus_portal_framework/templates/globus-portal-framework/v2/detail-overview.html>`_.
 Let's review some differences in this template:
 
 * ``extends`` - This template builds on the existing template instead of replacing it
@@ -211,13 +215,32 @@ Add the fields to settings.py.
 
 .. code-block:: python
 
-    "fields": [
-          ...
-          ("dc", fields.dc),
-          ("project_metadata", fields.dc),
-      ],
+  SEARCH_INDEXES = {
+      "myportal": {
+          "fields": [
+              ...
+              ("dc", fields.dc),
+              ("project_metadata", fields.dc),
+          ]
+      }
+  }
 
-  And the detail page will now be much nicer.
+`The Detail Page <https://github.com/globus/django-globus-portal-framework/blob/main/globus_portal_framework/templates/globus-portal-framework/v2/detail-overview.html>`_,
+will now be populated with the values above. You may also use the fields in your own snippets on that page:
+
+.. code-block:: html
+
+  <h3>Subject: {{dc.subject}}</h3>
+  <table>
+    <tr>
+      <th>Times Accessed</th>
+      <th>Original Collection Name</th>
+    </tr>
+    <tr>
+      <td>{{project_metadata.times_accessed</td>
+      <td>{{project_metadata.original_collection_name</td>
+    </tr>
+  </table>
 
 Advanced: Multiple Indices
 ==========================
@@ -257,14 +280,16 @@ like this:
 
 For any views where multi-index templates are supported, Globus Portal Framework will first
 attempt to find the index specific template, then will back-off to the 'standard' template
-without your project prefix. For example, if you define two templates called
-"myportal/templates/globus-portal-framework/v2/components/search-results.html" and
-"myportal/templates/myportal/globus-portal-framework/v2/components/search-results.html", when your user visits
-the "myportal" index Globus Portal Framework will first try to load
-"myportal/templates/myportal/globus-portal-framework/v2/components/search-results.html", then fall back to the
-other template if it does not exist.
+without your project prefix. For example, if you define two templates:
 
-You can extend this behavior yourself with the "index_template" templatetag.
+1. "myportal/templates/myportal/globus-portal-framework/v2/components/search-results.html"
+1. "myportal/templates/globus-portal-framework/v2/components/search-results.html"
+
+The first template takes priority. If the first does not exist, it will use the second as a
+fallback. This allows the for defining more general functionality which can be used across
+many indices, and only overrided when needed.
+
+Use the "index_template" templatetag to enable this behavior.
 
 .. code-block::
 
@@ -274,6 +299,9 @@ You can extend this behavior yourself with the "index_template" templatetag.
   {# Use this to check for a 'template override' for this search index #}
   {% index_template 'globus-portal-framework/v2/components/search-results.html' as it_search_results %}
   {% include it_search_results %}
+
+The ``index_template`` tag will attempt to find the current index and load the template
+``templates/<current_index>/globus-portal-framework/v2/components/search-results.html`` if one exists.
 
 You can always view the `DGPF template source <https://github.com/globus/django-globus-portal-framework/blob/main/globus_portal_framework/templates/globus-portal-framework/v2/search.html>`_
 for a reference.
