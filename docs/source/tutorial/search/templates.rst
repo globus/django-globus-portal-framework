@@ -88,7 +88,7 @@ Let's review some template context above:
 * ``{% url 'detail' globus_portal_framework.index result.subject %}`` -- builds the detail page
   for viewing specific information about a search result
 * ``result (temp var)`` -- contains both raw search information, in addition to any fields defined
-  in ``SEARCH_RESULTS.myindex.fields``.
+  in ``SEARCH_RESULTS.myportal.fields``.
 * ``result.search_highlights`` -- is a field that doesn't exist yet, let's create it!
 
 Now to fix search results to make them show up properly. The new field ``search_highlights`` is needed
@@ -228,7 +228,7 @@ different templates, you can set the ``template_override_dir`` for a given index
 .. code-block:: python
 
   SEARCH_INDEXES = {
-      'myindex': {
+      'myportal': {
           ...
           'template_override_dir': 'myportal',
       }
