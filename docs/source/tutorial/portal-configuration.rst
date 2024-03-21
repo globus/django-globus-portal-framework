@@ -25,3 +25,4 @@ other configurations are also possible.
 
    portal/custom-urls
    portal/requiring-login
+   portal/restricting-login
