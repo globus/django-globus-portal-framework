@@ -55,6 +55,15 @@ Auth Settings
       'urn:globus:auth:scope:groups.api.globus.org:view_my_groups_and_memberships'
   ]
 
+  # Restrict login by members of configured Globus Groups.
+  # Any member of any group can login.
+  SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS = [
+    {
+        'name': 'My Group 1',
+        'uuid': '30be6d85-1983-4d3d-902a-778b1d817aab',
+    }
+  ]
+
 
 Search Settings
 ---------------

@@ -56,6 +56,7 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
         kwargs = exception.args[0]
         allowed_user_member_groups = kwargs.get('allowed_user_member_groups')
         if not allowed_user_member_groups:
+            # Ideally, this would be configurable
             return HttpResponseRedirect(reverse('allowed-groups'))
 
         req_ids = [g['identity_id'] for g in allowed_user_member_groups]

@@ -3,6 +3,10 @@
 {% load static %}
 {% load index_template %}
 
+{%block headextras%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/search.css' %}" />
+{% endblock %}
+
 {%block title%}Request Groups Access{%endblock%}
 
 {%block body%}

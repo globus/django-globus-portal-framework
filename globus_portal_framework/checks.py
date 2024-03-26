@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 from django.core.checks import Error, Warning, Info, register
 from django.conf import settings
 import globus_sdk
@@ -53,3 +54,31 @@ def check_globus_env(app_configs, **kwargs):
                      hint='Non-production services may contain experimental '
                           'features.')]
     return []
+
+
+@register()
+def check_allowed_groups(app_configs, **kwargs):
+    if not getattr(settings, 'SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS', None):
+        return []
+
+    if not isinstance(settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS, list):
+        return [Error('SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS must be a list',
+                obj=settings, id='globus_portal_framework.settings.E002')]
+
+    errors = []
+    for idx, group in enumerate(settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS):
+        for attr in ('name', 'uuid'):
+            if attr not in group:
+                e = Error(f'Entry {idx} in SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS missing required attribute "{attr}"',
+                          obj=settings, id='globus_portal_framework.settings.E003')
+                errors.append(e)
+
+        if 'uuid' in group:
+            try:
+                uuid.UUID(group['uuid'])
+            except ValueError:
+                e = Error(f'Entry {idx} in SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS: {group["uuid"]} is not a UUID!',
+                          obj=settings, id='globus_portal_framework.settings.E004')
+                errors.append(e)
+
+    return errors

@@ -272,7 +272,7 @@ def allowed_groups(request):
                     require_authorized=True
             )
             user_groups = {
-                g['id']: g for g in groups_client.get_user_groups(request.user)
+                g['id']: g for g in groups_client.get_my_groups()
             }
             for group in context['allowed_groups']:
                 if user_groups.get(group['uuid']):
