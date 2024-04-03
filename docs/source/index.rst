@@ -29,6 +29,7 @@ workflow.
    reference/settings
    reference/settings-example
    reference/urls
+   reference/views
    reference/local-settings
    reference/deployment
    reference/migration

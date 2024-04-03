@@ -68,29 +68,32 @@ def search(request, index):
     'search-results.html' and 'search-facets.html' template components. The
     context required for searches is shown here:
 
-    {
-        'search': {
-            'facets': [
-                {'buckets': [{'field_name': 'mdf.resource_type',
-                            'value': 'record'}],
-                'name': 'Resource Type'},
-                <More Facets>...
-            ],
-            'pagination': {'current_page': 1, 'pages': [{'number': 1}]},
-            'search_results': [
-            {
-                'subject': '<Globus Search Subject>',
-                'fields': {
-                    'titles': {'field_name': 'titles',
-                                                    'value': '<Result Title>'},
-                    'version': {'field_name': 'version', 'value': '0.3.2'},
-                    '<field_name>': {'field_name': '<display_name>',
-                                     'value': '<field_value>'},
-                    'foo_field': {'field_name': 'foo', 'value': 'bar'}
-                }
-            }, <More Search Results>...]
+
+    .. code-bock:: python
+
+        {
+            'search': {
+                'facets': [
+                    {'buckets': [{'field_name': 'mdf.resource_type',
+                                'value': 'record'}],
+                    'name': 'Resource Type'},
+                    <More Facets>...
+                ],
+                'pagination': {'current_page': 1, 'pages': [{'number': 1}]},
+                'search_results': [
+                {
+                    'subject': '<Globus Search Subject>',
+                    'fields': {
+                        'titles': {'field_name': 'titles',
+                                                        'value': '<Result Title>'},
+                        'version': {'field_name': 'version', 'value': '0.3.2'},
+                        '<field_name>': {'field_name': '<display_name>',
+                                        'value': '<field_value>'},
+                        'foo_field': {'field_name': 'foo', 'value': 'bar'}
+                    }
+                }, <More Search Results>...]
+            }
         }
-    }
 
     Example request:
     http://myhost/?q=foo*&page=2&filter.my.special.filter=goodresults

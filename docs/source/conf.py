@@ -12,12 +12,18 @@
 #
 import pathlib
 import sys
+import os
+import django
 from django.conf import settings
 path = pathlib.Path(__file__).parent.parent.parent
 sys.path.insert(0, str(path))
 
 # Required before doing DGPF imports
+
 settings.configure()
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "globus_portal_framework.settings")
+django.setup()
 import globus_portal_framework
 # -- Project information -----------------------------------------------------
 
@@ -35,6 +41,7 @@ release = globus_portal_framework.__version__
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
     'sphinx_rtd_theme',
 ]
 
