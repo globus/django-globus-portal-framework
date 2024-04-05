@@ -3,7 +3,7 @@ Globus Auth OpenID Connect backend, docs at:
     https://docs.globus.org/api/auth
 """
 import logging
-import urllib
+import typing as t
 from social_core.backends.globus import (
     GlobusOpenIdConnect as GlobusOpenIdConnectBase
 )
@@ -22,113 +22,57 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
     # Fixed by https://github.com/python-social-auth/social-core/pull/577
     JWT_ALGORITHMS = ['RS512']
 
-    def introspect_token(self, auth_token):
-        url = urllib.parse.urljoin(self.OIDC_ENDPOINT,
-                                   'v2/oauth2/token/introspect')
-        return self.get_json(
-            url,
-            method='POST',
-            data={"token": auth_token,
-                  "include": "session_info,identities_set"},
-            auth=self.get_key_and_secret()
-        )
+    def auth_allowed(self, response: t.Mapping[str, dict], details: t.Mapping[str, dict]) -> bool:
+        """
+        Overrided auth_allowed here:
+        https://github.com/python-social-auth/social-core/blob/master/social_core/backends/base.py#L155
 
-    def get_globus_identities(self, auth_token, identities_set):
-        url = urllib.parse.urljoin(self.OIDC_ENDPOINT,
-                                   '/v2/api/identities')
-        return self.get_json(
-            url,
-            method='GET',
-            headers={'Authorization': 'Bearer ' + auth_token},
-            params={'ids': ','.join(identities_set),
-                    'include': 'identity_provider'},
-        )
+        Additionally checks for Globus Group access.
+        """
+        allowed = super(GlobusOpenIdConnect, self).auth_allowed(response, details)
+        # Super currently checks manual whitelists. Ensure that check is still done,
+        # and abort if the check fails.
+        if not allowed:
+            return allowed
 
-    def get_user_details(self, response):
-        # If SOCIAL_AUTH_GLOBUS_SESSIONS is not set, fall back to default
-        if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnectBase, self).get_user_details(
-                response)
-
-        auth_token = response.get('access_token')
-        introspection = self.introspect_token(auth_token)
-        identities_set = introspection.get('identities_set')
-
-        # Find the latest authentication
-        ids = introspection.get('session_info').get('authentications').items()
-
-        identity_id = None
-        idp_id = None
-        auth_time = 0
-        for auth_key, auth_info in ids:
-            at = auth_info.get('auth_time')
-            if at > auth_time:
-                identity_id = auth_key
-                idp_id = auth_info.get('idp')
-                auth_time = at
-
-        # Get user identities
-        user_identities = self.get_globus_identities(auth_token, identities_set)
-        for item in user_identities.get('identities'):
-            if item.get('id') == identity_id:
-                fullname, first_name, last_name = self.get_user_names(
-                    item.get('name'))
-                return {
-                    'username': item.get('username'),
-                    'email': item.get('email'),
-                    'fullname': fullname,
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'identity_id': identity_id,
-                    'idp_id': idp_id,
-                    'identities': user_identities
-                }
-
-        return None
-
-    def get_user_id(self, details, response):
-        if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnect, self).get_user_id(details,
-                                                                response)
-        return details.get('idp_id') + '_' + details.get('identity_id')
-
-    def auth_allowed(self, response, details):
-        if not self.setting('SESSIONS'):
-            return super(GlobusOpenIdConnect, self).auth_allowed(response,
-                                                                 details)
-
-        allowed_groups = [g['uuid']
-                          for g in self.setting('ALLOWED_GROUPS', [])]
+        allowed_groups = self.setting('ALLOWED_GROUPS', [])
         if not allowed_groups:
-            log.info('settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS is not '
-                     'set, all users are allowed.')
-            return True
+            log.debug('settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS is not '
+                      'set, all users are allowed.')
+            return allowed
 
-        identity_id = details.get('identity_id')
+        identity_id = response.get('sub')
         username = details.get('username')
         user_groups = self.get_user_globus_groups(response.get('other_tokens'))
-        # Fetch all groups where the user is a member.
-        allowed_user_groups = [group for group in user_groups
-                               if group['id'] in allowed_groups]
-        allowed_user_member_groups = []
-        for group in allowed_user_groups:
-            gname, gid = group.get('name'), group['id']
-            for membership in group['my_memberships']:
-                if identity_id == membership['identity_id']:
-                    log.info('User {} ({}) granted access via group {} ({})'
-                             .format(username, identity_id, gname, gid))
-                    return True
-                else:
-                    allowed_user_member_groups.append(membership)
-        log.debug('User {} ({}) is not a member of any allowed groups. '
-                  'However, they may be able to login with {}'.format(
-                      username, identity_id, allowed_user_member_groups)
-                  )
+
+        allowed_user_member_groups = self.match_identity_to_groups(identity_id, user_groups, allowed_groups)
+        if allowed_user_member_groups:
+            group_names = [f"{g['name']} ({g['id']})" for g in allowed_user_member_groups]
+            groups_fmt = ", ".join(group_names)
+            log.info(f"User {username} ({identity_id}) granted access via groups: {groups_fmt}")
+            return True
+        log.debug(f"User {username} ({identity_id}) denied access (not member of any configured group)")
+        # Note: Typically this should return False, but instead it throws it's own AuthForbidden
+        # exception, which can be handled elsewhere in middlewhere to redict to the groups page
+        # where a user can login.
         raise AuthForbidden(
             self, {'allowed_user_member_groups': allowed_user_member_groups}
         )
 
-    def get_user_globus_groups(self, other_tokens):
+    def match_identity_to_groups(self, identity_id: str, user_groups: t.List[t.Mapping[str, dict]], allowed_groups: t.List[t.Mapping[str, dict]]) -> t.List[t.Mapping[str, dict]]:
+        """
+        :param identity_id: The logged in users identity uuid (sub in OpenID)
+        :param user_groups: All groups the identity_id is a member of
+        :param allowed_groups: The configured groups where a user is allowed
+        :returns: subset of allowed_groups where any user identity is a member
+        """
+        # Reduce groups to intersecting user_groups and portal defined allowed groups
+        allowed_group_ids = [g['uuid'] for g in allowed_groups]
+        intersecting_allowed_groups = [group for group in user_groups
+                                       if group['id'] in allowed_group_ids]
+        return intersecting_allowed_groups
+
+    def get_user_globus_groups(self, other_tokens: t.Mapping[str, dict]):
         """
         Given the 'other_tokens' key provided by user details, fetch all
         groups a user belongs. The API is PUBLIC, and no special allowlists
@@ -149,19 +93,8 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
 
         authorizer = globus_sdk.AccessTokenAuthorizer(groups_token)
         groups_client = globus_sdk.GroupsClient(authorizer=authorizer)
-        return groups_client.get_user_groups()
+        return groups_client.get_my_groups().data
 
     def auth_params(self, state=None):
         params = super(GlobusOpenIdConnect, self).auth_params(state)
-
-        # If Globus sessions are enabled, force Globus login, and specify a
-        # required identity if already known
-        if not self.setting('SESSIONS'):
-            return params
-        params['prompt'] = 'login'
-        session_message = self.strategy.session_pop('session_message')
-        if session_message:
-            params['session_message'] = session_message
-            params['session_required_identities'] = self.strategy.session_pop(
-                'session_required_identities')
         return params
