@@ -21,9 +21,6 @@ sys.path.insert(0, str(path))
 # Required before doing DGPF imports
 
 settings.configure()
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "globus_portal_framework.settings")
-django.setup()
 import globus_portal_framework
 # -- Project information -----------------------------------------------------
 
