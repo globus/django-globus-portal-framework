@@ -1,8 +1,8 @@
 import typing as t
 from datetime import timedelta
+import django
 from django.utils import timezone
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.utils.module_loading import import_string
 import globus_sdk
 
@@ -23,7 +23,7 @@ def validate_token(tok):
     return ac.oauth2_validate_token(tok).get('active', False)
 
 
-def revoke_globus_tokens(user: User):
+def revoke_globus_tokens(user: "django.contrib.auth.models.User"):
     """
     Revoke all of a user's Globus tokens.
     :param user: A django user object, typically on the request of a view
@@ -55,7 +55,7 @@ def revoke_globus_tokens(user: User):
              f'tokens for user {user}')
 
 
-def load_globus_access_token(user: User, token_name: str):
+def load_globus_access_token(user: "django.contrib.auth.models.User", token_name: str):
     """
     Load a globus user access token using a provided lookup by resource server.
     Scopes MUST have already been configured in settings.py, and additionally
@@ -94,7 +94,7 @@ def load_globus_access_token(user: User, token_name: str):
                 )
 
 
-def load_globus_client(user: User, client: globus_sdk.ServiceClient, token_name: str, require_authorized: bool = False) -> ServiceClient:
+def load_globus_client(user: "django.contrib.auth.models.User", client: globus_sdk.BaseClient, token_name: str, require_authorized: bool = False) -> globus_sdk.BaseClient:
     """Load a globus client with a given user and the name of the token. If
     the user is Anonymous (Not logged in), then an unauthenticated client is
     returned. If the client is logged in and the token is not found, a
@@ -127,7 +127,7 @@ def get_default_client_loader():
     return import_string(get_setting('GLOBUS_CLIENT_LOADER'))
 
 
-def load_auth_client(user: User) -> globus_sdk.AuthClient:
+def load_auth_client(user: "django.contrib.auth.models.User") -> globus_sdk.AuthClient:
     """
     Load a Globus Auth Client for a logged in user.
     :returns: A live globus_sdk.AuthClient
@@ -137,7 +137,7 @@ def load_auth_client(user: User) -> globus_sdk.AuthClient:
                        require_authorized=True)
 
 
-def load_search_client(user: User = None) -> globus_sdk.SearchClient:
+def load_search_client(user: "django.contrib.auth.models.User" = None) -> globus_sdk.SearchClient:
     """Load an authorized globus_sdk.SearchClient, for a given logged-in user.
     If user is None, a generic unauthorized search client is loaded instead.
     Unauthorized search clients can still make requests, but may only view
@@ -146,7 +146,7 @@ def load_search_client(user: User = None) -> globus_sdk.SearchClient:
     return load_client(user, globus_sdk.SearchClient, 'search.api.globus.org')
 
 
-def load_transfer_client(user: User) -> globus_sdk.TransferClient:
+def load_transfer_client(user: "django.contrib.auth.models.User") -> globus_sdk.TransferClient:
     """
     Load a Globus Transfer Client for a logged in user. Note: A Transfer scope
     must be set in the settings.py file, and a user must be logged in with the
@@ -158,7 +158,7 @@ def load_transfer_client(user: User) -> globus_sdk.TransferClient:
                        'transfer.api.globus.org', require_authorized=True)
 
 
-def get_user_groups(user: User) -> t.Mapping[str, dict]:
+def get_user_groups(user: "django.contrib.auth.models.User") -> t.Mapping[str, dict]:
     """Get all user groups from the groups.api.globus.org service."""
     groups_client = load_globus_client(user,
                                        globus_sdk.GroupsClient,
