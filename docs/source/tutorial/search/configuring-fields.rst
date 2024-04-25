@@ -1,3 +1,6 @@
+.. _configuring_fields:
+
+
 Built-in Fields
 ===============
 
