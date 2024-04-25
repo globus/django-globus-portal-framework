@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.10](https://github.com/globus/django-globus-portal-framework/compare/v0.4.9...v0.4.10) (2024-04-25)
+
+### Features
+
+* Add support for Django 5 ([53cf6b5](https://github.com/globus/django-globus-portal-framework/commit/53cf6b5897c93520005b91a7e5e94be9910b3a66))
+* Add support for python 3.11 ([173533b](https://github.com/globus/django-globus-portal-framework/commit/173533b730a5038da8f8f35a71aba297a49d5f2c))
+* Allow logging in with Globus Groups ([27be3e0](https://github.com/globus/django-globus-portal-framework/commit/27be3e032162d4c505cca310f049dcceb57297df))
+* Change templates to use CDNs instead of vendored libs ([f85d206](https://github.com/globus/django-globus-portal-framework/commit/f85d2061da2423788ac6f2d7fb816493f9f9caca))
+
+
+### Bug Fixes
+
+* updates Globus webapp links to use app. subdomain ([fc240c2](https://github.com/globus/django-globus-portal-framework/commit/fc240c266cc03dd7c03909ab94ef0c082f0cea28))
+* Drop support for (long ago sunset) Globus SDK v2 ([65b4273](https://github.com/globus/django-globus-portal-framework/commit/65b4273e99041aab0050f615ba28b9d3eeb1417d))
+
 ### [0.4.9](https://github.com/globus/django-globus-portal-framework/compare/v0.4.8...v0.4.9) (2023-12-19)
 
 ### Changes
