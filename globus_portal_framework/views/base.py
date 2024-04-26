@@ -168,7 +168,7 @@ def detail(request, index, subject):
 @csrf_exempt
 def detail_transfer(request, index, subject):
     context = gsearch.get_subject(index, subject, request.user)
-    task_url = 'https://www.globus.org/app/activity/{}/overview'
+    task_url = 'https://app.globus.org/activity/{}/overview'
     if request.user.is_authenticated:
         try:
             # Hacky, we need to formalize remote file manifests
@@ -265,8 +265,15 @@ def allowed_groups(request):
     context = {'allowed_groups': copy.deepcopy(portal_groups)}
     if request.user.is_authenticated:
         try:
-            user_groups = {g['id']: g
-                           for g in gclients.get_user_groups(request.user)}
+            groups_client = gclients.load_globus_client(
+                    request.user,
+                    globus_sdk.GroupsClient,
+                    'groups.api.globus.org',
+                    require_authorized=True
+            )
+            user_groups = {
+                g['id']: g for g in groups_client.get_my_groups()
+            }
             for group in context['allowed_groups']:
                 if user_groups.get(group['uuid']):
                     group['is_member'] = True

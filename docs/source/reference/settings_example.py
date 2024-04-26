@@ -37,6 +37,18 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:search.api.globus.org:search',
 ]
 
+# List of search indices managed by the portal. These appear as URLs under the
+# slug given. For example, "my-index-slug" would show up as:
+# https://myportal/my-index-slug/?q=*
+# For more info, see docs:
+# https://django-globus-portal-framework.readthedocs.io/en/latest/tutorial/search/index-creation.html#portal-configuration  # noqa
+SEARCH_INDEXES = {
+    'my-index-slug': {
+        'name': 'My Search Index',
+        'uuid': 'my-index-uuid',
+    }
+}
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

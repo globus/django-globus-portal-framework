@@ -17,11 +17,13 @@ Django Globus Portal Framework
     :alt: License
     :target: https://opensource.org/licenses/Apache-2.0
 
-Globus Portal Framework is a collection of tools for quickly bootstrapping a
-portal for Globus Search. Use the guide below to get your portal running with
-Globus Auth and your custom search data. After that, you can make your data
-more accessible with Globus Transfer, or extend it how you want with your custom
-workflow.
+The Django Globus Portal Framework is a collection of tools that enable you to rapidly create an easily accessible portal for your data. Globus provides robust Auth and Search services, both powerful tools to help manage who has access to your data and metadata. Tailoring your portal to your data can be done simply by modifying existing bulit-in Bootstrap templates, allowing many levels of customization to suit the required needs.
+
+Please head to our `Read The Docs page <https://django-globus-portal-framework.readthedocs.io/en/stable/>`_ for installation and usage instructions. If you're just getting started, here is how we recommend you begin:
+
+* Use of this framework requires an account you can use to log in to the Globus Web App. There are many ways to sign in to Globus, including Google and ORCID iD.
+* Once signed in to Globus, head to https://app.globus.org/settings/developers and create a project and application to generate a key and secret. You will most likely want "Register a portal, science gateway, or other application".
+* The Read-the-Docs link above will cover basic operations for starting a portal. For extended documentation about the Globus Search service, please see the `Globus Search API Documentation <https://docs.globus.org/api/search/>`_
 
 Installation
 ------------
@@ -41,3 +43,9 @@ For our latest development version, you can install the pre-release
 
 See the `Read The Docs page <https://django-globus-portal-framework.readthedocs.io/en/stable/>`_.
 
+Issues
+------
+
+All features are currently tracked internally by Shortcut.
+
+If you encounter a bug or would like to request a feature, please open a Github Issue.
