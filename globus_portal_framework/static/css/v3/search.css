@@ -1,0 +1,321 @@
+/* General */
+html,
+body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    color: #333;
+}
+
+.badge-primary {
+    background-color: #337ab7;
+}
+
+
+/*************************
+ Main
+*************************/
+/* search bar */
+
+#search-form {
+    display: flex;
+    flex-direction: row;
+    border: none;
+}
+
+#search-form #search-input,
+#search-form #search-btn {
+    font-size: 17px;
+    height: 42px;
+    text-indent: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#search-form #search-btn {
+    color: #22bbff;
+    background-color: #00264c;
+}
+
+.title {
+    color: white;
+    font-weight: bold;
+    font-size: xx-large;
+}
+
+#search-form #search-input {
+    flex-grow: 2;
+    margin-right: -42px;
+    border: none;
+    border-style: solid;
+    border-color: #22bbff;
+    border-width: 1px;
+    border-radius: 10px;
+}
+
+#results #search-result .result-item em {
+    font-weight: bold;
+}
+
+/* Media Queries */
+@media (min-width: 768px) {
+    #search-form .input-group-btn {
+        display: none;
+    }
+
+    #search-form #search-input {
+        border-radius: 10px;
+    }
+}
+
+/* sidebar */
+#sidebar .card {
+    border-style: solid;
+    border-color: #cccccc;
+    border-width: 1px;
+}
+
+#sidebar .card-body {
+    color: #222222;
+}
+
+#sidebar .card-header {
+    color: #00264c;
+    font-size: 18px;
+    background-color: #eaeaea;
+    border: 0;
+}
+
+#sidebar .badge-secondary {
+    background-color: #777777;
+    font-size: 12px;
+}
+
+legend {
+    font-size: 16px;
+}
+
+fieldset.facet-fieldset legend {
+    border-bottom: 1px solid #ccc;
+}
+
+.fieldset-container {
+    max-height: 300px;
+}
+
+.navbar {
+    padding: 0px;
+    margin: 0px;
+    height: 116px;
+}
+
+.navbar-brand {
+    height: 116px;
+    padding-right: 0px;
+    padding-left: 0px;
+    padding-top: 15px;
+    padding-bottom: 10px;
+    margin: 0px;
+    margin-left: 50px;
+}
+
+.top-nav {
+    background-color: #00264c;
+}
+
+.nav-link-search {
+    width: 100px;
+    padding: 0px;
+    margin: 0px;
+    border-radius: 0;
+}
+
+.login {
+    height: 116px;
+    background-color: #004177;
+    color: white;
+}
+
+.navbar-image {
+    height: 100%;
+    color: green;
+}
+
+#navbarSupportedContent {
+    height: 86px;
+}
+
+.inverse {
+    filter: invert(100%);
+}
+
+.subnav {
+    background-image: url("/static/globus-portal-framework/images/bg-header.svg");
+    background-repeat: repeat-x;
+    background-size: cover;
+    height: 120px;
+    position: relative;
+}
+
+.subnav-button {
+    color: white;
+    margin-bottom: 0;
+    margin-top: 50%;
+}
+
+.active {
+    color: #004177 !important;
+    background-color: white !important;
+    font-size: 20px;
+    box-shadow: none !important;
+}
+
+.squared {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom: 0;
+    background-color: #00264c;
+    font-size: 20px;
+    margin-left: 10px;
+}
+
+.tag {
+    color: white;
+    font-size: 30px;
+    height: 29px;
+    padding-left: 50px;
+    padding-top: 20px;
+    position: relative;
+    top: 35px;
+}
+
+.nav-tabs {
+    height: 120px;
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+#globe {
+    height: 50px;
+    width: 50px;
+}
+
+.list-group-item {
+    font-size: 16px;
+    color: #222222;
+}
+
+#results-header {
+    color: #00264c;
+    font-size: 28px;
+}
+
+#datasets-header {
+    color: #777777;
+    font-size: 16px;
+}
+
+#about {
+    font-size: 16px;
+}
+
+#content .card {
+    border: 0;
+    padding-bottom: 25px;
+}
+
+#content .card-header {
+    font-size: 18px;
+    color: #0076bf !important;
+    background-color: white;
+    border-left-color: #22bbff;
+    border-left-width: 3px;
+    border-bottom-color: #cccccc;
+    border-bottom-width: 1px;
+    border-right: 0;
+    border-top: 0;
+    border-style: solid;
+}
+
+#content .card-header a {
+    text-decoration: none;
+    color: #0076bf;
+}
+
+#content .card-body {
+    border-left-width: 3px;
+    border-left-color: #cccccc;
+    border-left-style: solid;
+    border-right-width: 0px;
+    border-top-width: 0px;
+    border-bottom-width: 0px;
+    padding-bottom: 0;
+}
+
+#content .card-body th {
+    color: #777777;
+    font-size: 14px;
+}
+
+#content .card-body td {
+    color: #222222;
+    font-size: 14px;
+}
+
+.table {
+    color: #222222;
+    font-size: 16px;
+}
+
+.fa-mag-glass {
+    content: '';
+    background: url("/static/globus-portal-framework/images/mag_glass.svg");
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}
+
+.borderless td,
+.borderless th {
+    border: none;
+}
+
+#logo {
+    height: 100%;
+}
+
+#caption-top {
+    caption-side: top;
+}
+
+#details .card-header {
+    font-size: 18px;
+    color: #0076bf !important;
+    background-color: white;
+    border-left-color: #22bbff;
+    border-left-width: 3px;
+    border-bottom-color: #cccccc;
+    border-bottom-width: 1px;
+    border-right: 0;
+    border-top: 0;
+    border-style: solid;
+}
+
+#details {
+    border-top: 0;
+}
+
+#details .card-body {
+    border-left-width: 3px;
+    border-left-color: #cccccc;
+    border-left-style: solid;
+    border-right-width: 0px;
+    border-top-width: 0px;
+    border-bottom-width: 0px;
+    padding-bottom: 0;
+}
+
+#details .card {
+    border: 0;
+    padding-bottom: 25px;
+}

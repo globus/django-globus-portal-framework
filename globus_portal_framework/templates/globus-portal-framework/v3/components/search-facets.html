@@ -1,0 +1,37 @@
+{% load static %}
+
+{% for facet in search.facets %}
+<fieldset class="facet-fieldset">
+  <legend>{{facet.name}}</legend>
+  <div class="fieldset-container mb-4">
+    {% if facet.buckets %}
+    {% for field in facet.buckets %}
+    <div class="facet-field mr-3">
+      <input type="checkbox" class="facet-checkbox mr-1" name="{{field.search_filter_query_key}}"
+        value="{{field.value}}" {# Reset page to 1 if user facets on a paginated search #} onchange="customSearch(1);"
+        autocomplete="off" {% if field.checked %} checked {% endif %}>
+      {% if field.filter_type == 'year' %}
+      {{field.datetime|date:'Y'}}
+      {% elif field.filter_type == 'month' %}
+      {{field.datetime|date:'F Y'}}
+      {% elif field.filter_type == 'day' %}
+      {{field.datetime|date:'M d Y'}}
+      {% elif field.filter_type in 'hour minute second' %}
+      {{field.datetime|date:'M d Y H:i:s T'}}
+      {% else %}
+      {{field.value}}
+      {% endif %}
+      <span style="float: right">({{field.count}})</span>
+    </div>
+    {% empty %}
+    <div class="facet-field mr-3">No Data</div>
+    {% endfor %}
+    {% elif facet.value %}
+    <div class="facet-field mr-3">
+      {% if facet.type == 'avg' %} Average {% elif facet.type == 'sum' %} Sum {% endif %}
+      <span style="float: right">({{facet.value}})</span>
+    </div>
+    {% endif %}
+  </div>
+</fieldset>
+{% endfor %}

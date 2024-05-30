@@ -1,0 +1,62 @@
+{%extends "detail-base.html"%}
+{% load index_template %}
+
+
+{% block detail_body %}
+
+{# Silence regular messages so we can display them closer to the transfer button #}
+{% block detail_messages %}
+{% endblock %}
+
+<div class="row">
+  <div class="col-md-12">
+
+    {% if transfer_link %}
+    <div class="alert alert-success mt-3" role="alert">
+      <p>Your file is being transferred, you can check the status
+        <a target="_blank" href="{{transfer_link}}">here</a>.
+      </p>
+    </div>
+    {% endif %}
+
+    <div class="card mt-4">
+      <div class="card-header">{{title|default:'Result'}}</div>
+      <div class="card-body">
+        {% for man in remote_file_manifest %}
+        <h5 class="mb-0">Filename:</h5><p>{{man.filename}}</p>
+        <h5 class="mb-0">Length: </h5><p>{{man.length}}</p>
+        <h5 class="mb-0">URL: </h5><p>{{man.url}}</p>
+        <h5 class="mb-0">MD5: </h5><p>{{man.md5}}</p>
+        <h5 class="mb-0">SHA256: </h5><p>{{man.sha256}}</p>
+        <br>
+        {% empty %}
+        <h5>No files have been listed for this search entry.</h5>
+        {% endfor %}
+      </div>
+
+      <div class="card-footer">
+        {% if helper_page_link and request.user.is_authenticated %}
+        <a href="{{helper_page_link}}" class="btn btn-primary">Transfer File</a>
+        {% elif not request.user.is_authenticated %}
+        <a href="#" class="btn btn-primary disabled">Login to Transfer this File</a>
+        {% elif detail_error.code == 'EndpointPermissionDenied' %}
+          {% index_template "components/permission-error.html" as it_pe %}
+          {% include it_pe %}
+        {% elif detail_error %}
+        <div class="alert alert-error" role="alert">
+          {{ detail_error.error}}
+        </div>
+        {% else %}
+        <button class="btn btn-primary" disabled>Transfer File</button>
+        {% endif %}
+
+        <div class="mt-3">
+        {% index_template "components/messages.html" as it_messages %}
+        {% include it_messages %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

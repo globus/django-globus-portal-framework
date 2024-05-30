@@ -1,0 +1,16 @@
+
+{% block detail_general_metadata %}
+{% for key, value in project_metadata.items %}
+<br/>
+<table class="table">
+  <h3>{{key}}</h3>
+  <table class="table no-border">
+    <tbody>
+      <tr class="no-border">
+        <td>{{value}}</td>
+      </tr>
+    </tbody>
+  </table>
+</table>
+{% endfor %}
+{% endblock %}
