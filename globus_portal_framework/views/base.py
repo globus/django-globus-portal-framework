@@ -34,7 +34,7 @@ def index_selection(request):
 
 def search_about(request, index):
     tvers = gsearch.get_template_path('search-about.html', index=index)
-    return render(request, gsearch.get_template(index, tvers), {"active": "about"})
+    return render(request, gsearch.get_template(index, tvers), {})
 
 
 def search(request, index):
@@ -95,7 +95,7 @@ def search(request, index):
     Example request:
     http://myhost/?q=foo*&page=2&filter.my.special.filter=goodresults
     """
-    context = {"active": "search"}
+    context = {}
     query = gsearch.get_search_query(request)
     if query:
         filters = gsearch.get_search_filters(request)
