@@ -9,7 +9,7 @@ from globus_portal_framework.exc import (
 
 from globus_portal_framework.gclients import (
     load_auth_client, load_transfer_client, load_search_client,
-    load_globus_client, load_globus_access_token, validate_token,
+    load_globus_client, load_globus_access_token,
 )
 
 from globus_portal_framework.gsearch import (
@@ -35,7 +35,7 @@ __all__ = [
     'GroupsException', 'PortalAuthException',
 
     'load_auth_client', 'load_transfer_client', 'load_search_client',
-    'load_globus_client', 'load_globus_access_token', 'validate_token',
+    'load_globus_client', 'load_globus_access_token',
 
     'post_search', 'get_subject', 'get_index', 'get_template',
     'process_search_data', 'get_pagination',

@@ -12,18 +12,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def validate_token(tok):
-    """Validate if the given token is active.
-
-    :returns: True if active
-    :raises globus_sdk.ExpiredGlobusToken: if token has expired."""
-    ac = globus_sdk.ConfidentialAppAuthClient(
-        settings.SOCIAL_AUTH_GLOBUS_KEY,
-        settings.SOCIAL_AUTH_GLOBUS_SECRET
-    )
-    return ac.oauth2_validate_token(tok).get('active', False)
-
-
 def revoke_globus_tokens(user):
     """
     Revoke all of a user's Globus tokens.
