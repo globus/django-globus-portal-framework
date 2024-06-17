@@ -9,7 +9,7 @@ from globus_portal_framework import (
     PreviewPermissionDenied, PreviewServerError, PreviewException,
     PreviewBinaryData, PreviewNotFound, ExpiredGlobusToken,
 
-    load_transfer_client, load_globus_access_token, validate_token
+    load_transfer_client, load_globus_access_token
 )
 
 log = logging.getLogger(__name__)
@@ -196,8 +196,6 @@ def preview(user, url, scope, chunk_size=512):
                 # formats), this should always work.
                 return '\n'.join(chunk.split('\n')[:-1])
             elif r.status_code == 401:
-                if not validate_token(token):
-                    raise ExpiredGlobusToken(token_name=scope)
                 raise PreviewPermissionDenied()
             elif r.status_code == 403:
                 raise PreviewPermissionDenied()
