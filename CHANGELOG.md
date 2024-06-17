@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.11](https://github.com/globus/django-globus-portal-framework/compare/v0.4.10...v0.4.11) (2024-06-17)
+
+### Features
+
+* Add new V3 Templates. Templates will become default in v0.5.x. ([704a86a17786a104372604ed507c22a3d2759758](https://github.com/globus/django-globus-portal-framework/commit/704a86a17786a104372604ed507c22a3d2759758))
+
+
+### Bug Fixes
+
+* Remove un-used validate_token() function ([20e59ff](https://github.com/globus/django-globus-portal-framework/commit/20e59ff11c0f25cbc49215467606f0ef218cf13a))
+
 ## [0.4.10](https://github.com/globus/django-globus-portal-framework/compare/v0.4.9...v0.4.10) (2024-04-25)
 
 ### Features
