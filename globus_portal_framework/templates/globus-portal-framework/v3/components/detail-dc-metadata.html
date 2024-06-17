@@ -1,0 +1,62 @@
+<table class="table table-striped table-bordered">
+  <tbody>
+  {% block detail_overview_datacite %}
+  <tr>
+    <td>Creators</td>
+    <td>
+      {% for creator in dc.creators %}
+      {{creator.creatorName}} <br>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
+    <td>Contributors</td>
+    <td>
+      {% for contributor in dc.contributors %}
+      {{contributor.contributorName}} <br>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
+    <td>Dates</td>
+    <td>
+      {% for d in dc.dates %}
+      {{d.dateType}}: {{d.date|date}} <br>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
+    <td>Formats</td>
+    <td>
+      {% for format in dc.formats %}
+      {{format}}<br>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
+    <td>Publication Year</td>
+    <td>{{dc.publicationYear}}</td>
+  </tr>
+  <tr>
+    <td>Publisher</td>
+    <td>{{dc.publisher}}</td>
+  </tr>
+  <tr>
+    <td>Resource Type</td>
+    <td>{{dc.resourceType.resourceType}}</td>
+  </tr>
+  <tr>
+    <td>Subjects</td>
+    <td>
+      {% for sub in dc.subjects %}
+      {{sub.subject}}<br>
+      {% endfor %}
+    </td>
+  </tr>
+  <tr>
+    <td>Version</td>
+    <td>{{dc.version}}</td>
+  </tr>
+  {% endblock %}
+  </tbody>
+</table>

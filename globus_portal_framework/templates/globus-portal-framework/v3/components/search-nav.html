@@ -1,0 +1,14 @@
+{% load static is_active %}
+
+<div class="subnav mt-auto bottom-border-0">
+  <ul class="nav nav-tabs nav-search-nav justify-content-center">
+    <li class="mt-auto">
+      <a class="btn btn-primary btn-lg border-0 squared {% is_active request 'search' index=globus_portal_framework.index %}" role="button"
+        href="{% url 'search' globus_portal_framework.index %}">Search</a>
+    </li>
+    <li class="mt-auto">
+      <a class="btn btn-primary btn-lg border-0 squared {% is_active request 'search-about' index=globus_portal_framework.index %}" role="button"
+        href="{% url 'search-about' globus_portal_framework.index %}">About</a>
+    </li>
+  </ul>
+</div>

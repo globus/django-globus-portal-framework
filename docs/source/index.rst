@@ -30,6 +30,7 @@ workflow.
    reference/settings-example
    reference/local-settings
    reference/deployment
+   reference/migration
 
 
 Indices and tables
