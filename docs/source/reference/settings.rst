@@ -70,6 +70,8 @@ Search Settings
 
 * ``SEARCH_INDEXES`` -- The main listing of search indexes in your portal
 
+  * See :ref:`search_settings_reference` for configuring an index.
+
 
 .. code-block::
 
@@ -88,11 +90,19 @@ Search Settings
 Templates
 ---------
 
+Baseline Globus Portal Framework templates are shipped for built-in views (see :ref:`custom_urls` and :ref:`custom_views` for more info),
+and templates (see :ref:`templates`) can be overrided and customized as needed.
+
 .. code-block::
 
-  # Setting for which Globus Portal Framework template set you should use.
-  # Mostly for backwards compatibility, but allows for a fully custom set of
-  # templates.
+  # Setting BASE_TEMPLATES changes two things:
+  #  * The template each view renders using ``globus_portal_framework.gsearch.get_template()``
+  #  * The base templates the ``index_template`` templatetag uses when doing template includes.
+  # Globus Portal Framework Supports the following:
+  #  * "" (Empty String) -- Old pre-v0.4.x templates. Deprecated and will be removed in v0.5.x
+  #  * "globus-portal-framework/v2/" -- Standard templates for version v0.4.x
+  #  * "globus-portal-framework/v3/" -- Standard templates for version v0.5.x
+  #  * "my/custom/template/pack" -- Fully custom base templates are also allowed
   BASE_TEMPLATES = 'globus-portal-framework/v2/'
 
   # General Template settings. Full example listed for reference, but only

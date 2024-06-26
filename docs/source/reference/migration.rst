@@ -3,15 +3,20 @@
 Migration
 =========
 
-Migrating to v0.3.0
+This doc serves as a guide for upgrading to newer versions of Django Globus Portal Framework,
+and noting any breaking changes between versions developers should be aware of.
+
+Migrating to v0.5.x
 -------------------
 
-v0.3.0 introduces a fresh styling for the DGPF portal. You can migrate to the 
+v0.5.0 introduces a fresh styling for the DGPF portal. You can migrate to the
 new design by changing the following in your own `settings.py`.
 
 .. code-block:: python
 
-  # Changing base_template from v2 to v3
+  # Old templates
+  # BASE_TEMPLATES = 'globus-portal-framework/v2/'
+  # Newer templates
   BASE_TEMPLATES = 'globus-portal-framework/v3/'
 
 You can overwrite the existing templates for the v3 version by replacing the template
