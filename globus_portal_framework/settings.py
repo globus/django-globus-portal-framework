@@ -86,6 +86,8 @@ SEARCH_MAX_PAGES = 10
 DEFAULT_QUERY = '*'
 DEFAULT_FILTER_MATCH = FILTER_MATCH_ALL
 
+GLOBUS_NON_USERS_ALLOWED_PUBLIC_ACCESS = True
+
 PREVIEW_DATA_SIZE = 2048
 
 ###############################################################################
