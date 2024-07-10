@@ -7,6 +7,8 @@ import globus_sdk
 from globus_portal_framework import ExpiredGlobusToken, exc
 from globus_portal_framework.apps import get_setting
 
+import social_django
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -44,6 +46,19 @@ def revoke_globus_tokens(user):
              f'tokens for user {user}')
 
 
+def is_globus_user(user):
+    """
+    Check if a Django User has a Globus Association in Python Social Auth.
+
+    :returns: True if Globus association is present. False otherwise.
+    """
+    try:
+        user.social_auth.get(provider='globus').extra_data
+        return True
+    except social_django.models.UserSocialAuth.DoesNotExist:
+        return False
+
+
 def load_globus_access_token(user, token_name):
     """
     Load a globus user access token using a provided lookup by resource server.
@@ -63,6 +78,13 @@ def load_globus_access_token(user, token_name):
     if not user:
         return None
     if user.is_authenticated:
+        if is_globus_user(user) is False:
+            if get_setting("GLOBUS_NON_USERS_ALLOWED_PUBLIC_ACCESS") is True:
+                log.info(f'User {user} is utilizing Globus Services as a non-globus user.')
+                return None
+            else:
+                raise exc.NonGlobusUserException(f'User {user} does not have'
+                ' a Globus association in social_django.models.UserSocialAuth')
         tok_list = user.social_auth.get(provider='globus').extra_data
         if token_name == 'auth.globus.org':
             return tok_list['access_token']
