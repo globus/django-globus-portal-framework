@@ -29,6 +29,22 @@ class PortalAuthException(GlobusPortalException):
         self.index = ''
 
 
+class NonGlobusUserException(Exception):
+    """A Django user does not a have an association with Globus in the
+    social_django.models.UserSocialAuth Python Social Auth models.
+    This exception is raised when an attempt at accessing a Globus Client
+    for an authenticated Django user and GLOBUS_NON_USERS_ALLOWED_PUBLIC_ACCESS
+    is False.
+    """
+    def __init__(self, code='', message=''):
+        self.code = code or 'NonGlobusUserException'
+        self.message = (
+            message or 'Django user does not have a Globus User'
+            'association in social_django.models.UserSocialAuth.'
+        )
+        self.index = ''
+
+
 class GroupsException(GlobusPortalException):
     def __init__(self, code='', message=''):
         self.code = code or 'GroupsException'
