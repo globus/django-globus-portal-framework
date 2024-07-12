@@ -54,6 +54,9 @@ def is_globus_user(user):
 
     :returns: True if Globus association is present. False otherwise.
     """
+    if user.is_anonymous:
+        return False
+
     try:
         user.social_auth.get(provider="globus").extra_data
         return True
