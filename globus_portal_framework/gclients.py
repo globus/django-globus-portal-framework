@@ -14,15 +14,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def validate_token(tok):
-    # Do not use. Will be removed in a future version.
-    ac = globus_sdk.ConfidentialAppAuthClient(
-        settings.SOCIAL_AUTH_GLOBUS_KEY,
-        settings.SOCIAL_AUTH_GLOBUS_SECRET
-    )
-    return ac.oauth2_validate_token(tok).get('active', False)
-
-
 def revoke_globus_tokens(user: "django.contrib.auth.models.User"):
     """
     Revoke all of a user's Globus tokens.
