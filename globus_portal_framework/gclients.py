@@ -9,6 +9,8 @@ import globus_sdk
 from globus_portal_framework import ExpiredGlobusToken, exc
 from globus_portal_framework.apps import get_setting
 
+import social_django
+
 import logging
 
 log = logging.getLogger(__name__)
@@ -46,6 +48,22 @@ def revoke_globus_tokens(user: "django.contrib.auth.models.User"):
              f'tokens for user {user}')
 
 
+def is_globus_user(user):
+    """
+    Check if a Django User has a Globus Association in Python Social Auth.
+
+    :returns: True if Globus association is present. False otherwise.
+    """
+    if user.is_anonymous:
+        return False
+
+    try:
+        user.social_auth.get(provider="globus").extra_data
+        return True
+    except social_django.models.UserSocialAuth.DoesNotExist:
+        return False
+
+
 def load_globus_access_token(user: "django.contrib.auth.models.User", token_name: str):
     """
     Load a globus user access token using a provided lookup by resource server.
@@ -65,23 +83,33 @@ def load_globus_access_token(user: "django.contrib.auth.models.User", token_name
     if not user:
         return None
     if user.is_authenticated:
-        tok_list = user.social_auth.get(provider='globus').extra_data
-        if token_name == 'auth.globus.org':
-            return tok_list['access_token']
-        if tok_list.get('other_tokens'):
-            service_tokens = {t['resource_server']: t
-                              for t in tok_list['other_tokens']}
+        if is_globus_user(user) is False:
+            if get_setting("GLOBUS_NON_USERS_ALLOWED_PUBLIC_ACCESS") is True:
+                log.info(
+                    f"User {user} is utilizing Globus Services as a non-globus user."
+                )
+                return None
+            else:
+                raise exc.NonGlobusUserException(
+                    f"User {user} does not have"
+                    " a Globus association in social_django.models.UserSocialAuth"
+                )
+        tok_list = user.social_auth.get(provider="globus").extra_data
+        if token_name == "auth.globus.org":
+            return tok_list["access_token"]
+        if tok_list.get("other_tokens"):
+            service_tokens = {t["resource_server"]: t for t in tok_list["other_tokens"]}
             service_token = service_tokens.get(token_name)
             if service_token:
-                exp_td = timedelta(seconds=service_token['expires_in'])
+                exp_td = timedelta(seconds=service_token["expires_in"])
                 if user.last_login + exp_td < timezone.now():
                     raise ExpiredGlobusToken(token_name=token_name)
-                return service_token['access_token']
+                return service_token["access_token"]
             else:
                 raise ValueError(
-                    f'Attempted to load {token_name} for user {user}, but no '
-                    f'tokens existed with the name {token_name}, only '
-                    f'{list(service_tokens.keys())}'
+                    f"Attempted to load {token_name} for user {user}, but no "
+                    f"tokens existed with the name {token_name}, only "
+                    f"{list(service_tokens.keys())}"
                 )
 
 
