@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+---
+### [0.4.12](https://github.com/globus/django-globus-portal-framework/compare/v0.4.11...v0.4.12) (2024-10-28)
+
+
+### Features
+
+* Allow non-Globus users to access public search data ([1c2838d](https://github.com/globus/django-globus-portal-framework/commit/1c2838d06971a6fdab22f6c7c6e82cc6c9f559d7))
+
+### Bug Fixes
+
+* Fix missing 'mag_glass.svg' static file image in v3 templates ([da71a43](https://github.com/globus/django-globus-portal-framework/commit/da71a43f6d9d8955b9092926e4b8cbe91c0311c5))
+
+
 ### [0.4.11](https://github.com/globus/django-globus-portal-framework/compare/v0.4.10...v0.4.11) (2024-06-17)
 
 ### Features
