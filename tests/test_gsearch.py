@@ -192,6 +192,14 @@ def test_process_search_data_string_field(mock_data):
     data = process_search_data(['foo'], [gmeta])[0]
     assert data['foo'] == 'bar'
 
+def test_process_search_data_string_field_with_alias(mock_data):
+    gmeta = mock_data['search']['gmeta'][0]
+    gmeta['entries'][0]['content']['walrus'] = 'bar'
+    data = process_search_data(
+        [('foo', 'walrus')],  # The template field exists in data, but under a different name
+        [gmeta]
+    )[0]
+    assert data['foo'] == 'bar'
 
 def test_process_search_data_func_field(mock_data):
     gmeta = mock_data['search']['gmeta'][0]
