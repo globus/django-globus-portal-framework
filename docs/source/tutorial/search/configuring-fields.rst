@@ -1,20 +1,19 @@
 .. _configuring_fields:
 
 
-Built-in Fields
-===============
+Passing result fields to templates
+====================================
+When rendering search results, it is sometimes useful to transform them into a more human-readable format before rendering to a template. (for example: parsing dates or generating links) It may also be useful to fetch "special" fields that will enable built in functionality.  For example the Django Globus Portal Framework includes built-in search result templates which will automatically
+render if a search result contains specific field names:
 
-Search Fields take raw search metadata from Globus Search and expose them for
-use by templates. Commonly, raw data from Globus Search needs a bit more processing
-before it can be viewed in templates. Examples include parsing dates or generating links
-to the Globus Webapp. 
+* ``title`` -- A title for a given subject, shown on the search results page and the detail page.
+* ``globus_app_link`` -- A link to the file on https://app.globus.org.
+* ``https_url`` -- A direct-download link to the file.
 
-The Django Globus Portal Framework includes some built-in templates which will automatically
-be rendered if given the right field names. Some of these include: 
+You can control what fields are presented to the Django templates, and how these fields are retrieved, using *fields*. The syntax allows you to specify how to find a field either by name, or a retrieval/formatter function.
 
-* Title -- A title for a given subject, shown on the search results page and the detail page.
-* Globus App Link -- A link to the file on https://app.globus.org.
-* HTTPS URL -- A direct-download link to the file.
+.. warning::
+   Search result templates will always receive two values: 'all' (the entire parsed JSON search result) and 'subject' (the subject ID for the index). Any other template variables must be explicitly specified in the ``fields`` configuration block. This means that you must explicitly specify how to find special template fields such as 'globus_app_link'.
 
 First, let's take a look at the metadata once more:
 
@@ -42,12 +41,20 @@ search index by adding ``fields`` to your ``SEARCH_INDEXES``:
   SEARCH_INDEXES = {
       "index-slug": {
           "uuid": "my-search-index-uuid",
-          ...  # Previous fields hidden for brevity
+          **options,  # Other options hidden for brevity
           "fields": [
+              # Several syntaxes are available for retrieving a field
+
+              # Fetch the field by name
+              "title",
+
               # Calls a function with your search record as a parameter
-              ("title", fields.title),
               ("globus_app_link", fields.globus_app_link),
               ("https_url", fields.https_url)
+
+              ## Field retrieval/formatters can also be used with custom fields for custom templates
+              # Can fetch a field by alias
+              ("some_name_in_template", "original_collection_name"),
           ],
       }
   }
