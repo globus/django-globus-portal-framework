@@ -447,6 +447,28 @@ def get_subject(index, subject, user=None):
         return {'subject': subject, 'error': 'No data was found for subject'}
 
 
+def _get_dotted_path(item, key):
+    """
+    Helper function to retrieve a field under a nested key, eg ("title", "citation.title")
+    :meta private:
+    """
+    if item is None:
+        # ES schema allows for a field to simply be missing (or its nested pieces)
+        # If we get a dotted path and the segment is empty, report that fact
+        return None
+    elif not isinstance(item, dict):
+        raise ValueError('Cannot fetch key from primitive value')
+    elif key in item:
+        # Though discouraged, ES does allow a field name to contain dots. Exact top level match will be preferred.
+        return item[key]
+    else:
+        parts = key.split('.', maxsplit=1)
+        if len(parts) > 1:
+            return _get_dotted_path(item.get(parts[0]), parts[1])
+        else:
+            # Once at the right nesting level, missing values are ok
+            return item.get(key)
+
 def process_search_data(field_mappers, results):
     """
     Process results in a general search result, running the mapping function
@@ -482,15 +504,16 @@ def process_search_data(field_mappers, results):
                     and len(mapper) == 2:
                 field_name, map_approach = mapper
                 if isinstance(map_approach, str):
-                    field = {field_name: default_content.get(map_approach)}
+                    try:
+                        field = {field_name: _get_dotted_path(default_content, map_approach)}
+                    except ValueError:
+                        log.exception(f'No key at specified nesting level for field "{field_name}"')
+                        field = {field_name: None}
                 elif callable(map_approach):
                     try:
                         field = {field_name: map_approach(content)}
-                    except Exception as e:
-                        log.exception(e)
-                        log.error('Error rendering content for "{}"'.format(
-                            field_name
-                        ))
+                    except Exception:
+                        log.exception(f'Error rendering content for field "{field_name}"')
                         field = {field_name: None}
 
             overwrites = [name for name in field.keys()

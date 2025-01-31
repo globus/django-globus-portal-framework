@@ -201,6 +201,65 @@ def test_process_search_data_string_field_with_alias(mock_data):
     )[0]
     assert data['foo'] == 'bar'
 
+
+@pytest.mark.parametrize("path,search_content,expected", [
+    (
+        'citation.title',
+        {'citation': {'title': 'two' }},
+        'two',
+    ),
+    (
+        'citation.title.nested',
+        {'citation': {'title': {'nested': 'third'} }},
+        'third',
+    ),
+    (
+        # Missing values are ok in ES, so we explicitly return None here
+        'citation.missing',
+        {'citation': {'title': 'two'}},
+        None,
+    ),
+    (
+        'citation.missing.child',
+        {'citation': {'title': 'two'}},
+        None,
+    )
+])
+def test_process_search_data_string_field_with_dotted_path(path, search_content, expected):
+    gmeta = { 'subject': 'test', 'entries': [{'content': search_content}] }
+
+    data = process_search_data(
+        [('title', path)],  # The template field exists in data, but under a different name
+        [gmeta]
+    )[0]
+    assert data['title'] == expected
+
+
+@pytest.mark.parametrize("path,search_content", [
+    (
+        'citation.title.nothing',
+        {'citation': {'title': 'No nesting here' }}
+    ),
+    (
+        'citation.title',
+        {'citation': [{'title': 'Does not fetch inside lists' }]}
+    ),
+])
+def test_process_search_data_string_field_with_invalid_dotted_path(path, search_content):
+    """
+    If we try to retrieve nested data from something not a dict, then field value is set to None
+    The exception will be logged. In practice, since ES uses rigid types, there should be no mismatch between
+        search index types and dev expectations- if a field is there, we shouldn't see an exception.
+    """
+    gmeta = { 'subject': 'test', 'entries': [{'content': search_content}] }
+    data = process_search_data(
+            [('title', path)],
+            [gmeta]
+    )[0]
+    assert 'title' in data
+    assert data['title'] is None
+
+
 def test_process_search_data_func_field(mock_data):
     gmeta = mock_data['search']['gmeta'][0]
     gmeta['entries'][0]['content']['foo'] = 'bar'
