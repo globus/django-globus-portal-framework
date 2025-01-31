@@ -7,12 +7,12 @@ import math
 import collections
 import datetime
 import pathlib
-from packaging import version
-from urllib.parse import quote_plus, unquote
-import globus_sdk
+from urllib.parse import quote_plus, unquote_plus
+
 from django import template
 from django.utils.module_loading import import_string
 from django.conf import settings
+import globus_sdk
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import load_search_client, IndexNotFound, exc
@@ -433,13 +433,15 @@ def get_index(index):
 
 
 def get_subject(index, subject, user=None):
-    """Get a subject and run the result through the SEARCH_MAPPER defined
-    in settings.py. If no subject exists, return context with the 'subject'
-    and an 'error' message."""
+    """
+    Get a 'subject' and format the result consistent with the 'fields' defined
+    for this search index. If no subject exists, return context with the 'subject'
+    and an 'error' message.
+    """
     client = load_search_client(user)
     try:
         idata = get_index(index)
-        result = client.get_subject(idata['uuid'], unquote(subject))
+        result = client.get_subject(idata['uuid'], unquote_plus(subject))
         return process_search_data(idata.get('fields', {}), [result.data])[0]
     except globus_sdk.SearchAPIError:
         return {'subject': subject, 'error': 'No data was found for subject'}
