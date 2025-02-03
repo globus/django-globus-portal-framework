@@ -35,6 +35,8 @@
             <a class="btn btn-primary" target="_blank" href="https://app.globus.org/groups/{{globus_portal_framework.index_data.group}}/about">
               Request Access to {{project_title}} Group
             </a>
+        {% else %}
+          No special data access rules are defined.
         {% endif %}
       {% endblock %}
     </div>
