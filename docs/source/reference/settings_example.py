@@ -89,6 +89,8 @@ AUTHENTICATION_BACKENDS = [
 
 ROOT_URLCONF = 'myportal.urls'
 
+# Enable newest DGPF template styles
+BASE_TEMPLATES = 'globus-portal-framework/v3/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
