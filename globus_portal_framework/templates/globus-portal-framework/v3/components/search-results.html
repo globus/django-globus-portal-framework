@@ -26,12 +26,12 @@
       <table class="table table-sm borderless">
         <tbody>
           <tr>
-            {% for name in result.all.0.keys|slice:"0:5" %}
+            {% for name in result.all.0.keys %}
             <th>{{name}}</th>
             {% endfor %}
           </tr>
           <tr>
-            {% for value in result.all.0.values|slice:"0:2" %}
+            {% for value in result.all.0.values %}
             <th>Present</th>
             {% endfor %}
           </tr>
