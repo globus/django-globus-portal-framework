@@ -89,8 +89,6 @@ settings below, or use our :ref:`settings_example` for a complete
       'django.contrib.auth.backends.ModelBackend',
   ]
 
-  # Enable newest DGPF template styles
-  BASE_TEMPLATES = 'globus-portal-framework/v3/'
   # The context processor below provides some basic context to all templates
   TEMPLATES = [
     {
