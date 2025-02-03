@@ -2,6 +2,7 @@
 {% load static %}
 
 {%block headextras%}
+  {{ block.super}}
   <link rel="stylesheet" type="text/css" href="{% static 'globus-portal-framework/v3/search.css' %}" />
 {% endblock %}
 
