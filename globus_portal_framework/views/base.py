@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.template.response import TemplateResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
@@ -25,7 +24,7 @@ from globus_portal_framework import (
 log = logging.getLogger(__name__)
 
 
-def index_selection(request: HttpRequest) -> django.template.response.TemplateResponse:
+def index_selection(request: HttpRequest) -> HttpResponse:
     """
     This is usually the root `/` page for the portal for Globus Portal Framework. Users
     are first directed to this page to choose a Globus Search index. If the portal is
@@ -112,7 +111,7 @@ def search_about(request: HttpRequest, index: str):
     return render(request, gsearch.get_template(index, tvers), {})
 
 
-def search(request: HttpRequest, index: str) -> django.template.response.TemplateResponse:
+def search(request: HttpRequest, index: str) -> HttpResponse:
     """
     Search the 'index' with the queryparams 'q' for query, 'filter.<filter>'
     for facet-filtering, 'page' for pagination If the user visits this
@@ -167,6 +166,7 @@ def search(request: HttpRequest, index: str) -> django.template.response.Templat
       can be used to modify data contained here.
     * ``search_results`` A list of results (controlled by settings.SEARCH_RESULTS_PER_PAGE) which
       contains two additional items for each search result:
+
             * ``subject``: The Globus Search subject identifying the search result id
             * ``fields``: An object containing DGPF fields (:ref:`configuring_fields`). Raw results are
               always available via `all`.
@@ -391,22 +391,22 @@ def logout(request: HttpRequest, next: str = '/') -> HttpResponseRedirect:
     return redirect(request.GET.get('next', next))
 
 
-def allowed_groups(request: HttpRequest) -> django.template.response.TemplateResponse:
+def allowed_groups(request: HttpRequest) -> HttpResponse:
     """
     Show available Globus Groups configured in settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS.
 
     .. note::
 
-    This view is typically only used when groups are configured. If no groups
-    are configured all users will be allowed access and links to this view will not be
-    listed by default (although it is still accessible in the URLs).
+        This view is typically only used when groups are configured. If no groups
+        are configured, all users will be allowed access and links to this view will not be
+        listed by default (although it is still accessible in the URLs).
 
     .. warning::
 
-    This view **only** controls access to the portal. Results on Globus Search records
-    are controlled via ``visible_to`` per-search-result. Restricting who can login to
-    your portal does not stop users from being able to access publicly listed search
-    results via another Gloubs Application!
+        This view **only** controls access to the portal. Results on Globus Search records
+        are controlled via ``visible_to`` per-search-result. Restricting who can login to
+        your portal does not stop users from being able to access publicly listed search
+        results via another Gloubs Application!
 
     **Parameters**:
 
