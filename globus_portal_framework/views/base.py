@@ -167,6 +167,7 @@ def search(request: HttpRequest, index: str) -> django.template.response.Templat
       can be used to modify data contained here.
     * ``search_results`` A list of results (controlled by settings.SEARCH_RESULTS_PER_PAGE) which
       contains two additional items for each search result:
+
             * ``subject``: The Globus Search subject identifying the search result id
             * ``fields``: An object containing DGPF fields (:ref:`configuring_fields`). Raw results are
               always available via `all`.
@@ -397,16 +398,16 @@ def allowed_groups(request: HttpRequest) -> django.template.response.TemplateRes
 
     .. note::
 
-    This view is typically only used when groups are configured. If no groups
-    are configured all users will be allowed access and links to this view will not be
-    listed by default (although it is still accessible in the URLs).
+        This view is typically only used when groups are configured. If no groups
+        are configured, all users will be allowed access and links to this view will not be
+        listed by default (although it is still accessible in the URLs).
 
     .. warning::
 
-    This view **only** controls access to the portal. Results on Globus Search records
-    are controlled via ``visible_to`` per-search-result. Restricting who can login to
-    your portal does not stop users from being able to access publicly listed search
-    results via another Gloubs Application!
+        This view **only** controls access to the portal. Results on Globus Search records
+        are controlled via ``visible_to`` per-search-result. Restricting who can login to
+        your portal does not stop users from being able to access publicly listed search
+        results via another Gloubs Application!
 
     **Parameters**:
 
