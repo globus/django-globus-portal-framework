@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.template.response import TemplateResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
@@ -25,7 +24,7 @@ from globus_portal_framework import (
 log = logging.getLogger(__name__)
 
 
-def index_selection(request: HttpRequest) -> django.template.response.TemplateResponse:
+def index_selection(request: HttpRequest) -> HttpResponse:
     """
     This is usually the root `/` page for the portal for Globus Portal Framework. Users
     are first directed to this page to choose a Globus Search index. If the portal is
@@ -112,7 +111,7 @@ def search_about(request: HttpRequest, index: str):
     return render(request, gsearch.get_template(index, tvers), {})
 
 
-def search(request: HttpRequest, index: str) -> django.template.response.TemplateResponse:
+def search(request: HttpRequest, index: str) -> HttpResponse:
     """
     Search the 'index' with the queryparams 'q' for query, 'filter.<filter>'
     for facet-filtering, 'page' for pagination If the user visits this
@@ -392,7 +391,7 @@ def logout(request: HttpRequest, next: str = '/') -> HttpResponseRedirect:
     return redirect(request.GET.get('next', next))
 
 
-def allowed_groups(request: HttpRequest) -> django.template.response.TemplateResponse:
+def allowed_groups(request: HttpRequest) -> HttpResponse:
     """
     Show available Globus Groups configured in settings.SOCIAL_AUTH_GLOBUS_ALLOWED_GROUPS.
 
