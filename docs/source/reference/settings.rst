@@ -133,7 +133,8 @@ and templates (see :ref:`templates`) can be overrided and customized as needed.
 Under the Hood
 --------------
 
-Modify default client loading behavior. Typically only used in [DGPF Confidential Client](https://github.com/globus/dgpf-confidential-client)
+Modify default client loading behavior. Typically only used in `DGPF Confidential Client <https://github.com/globus/dgpf-confidential-client>`_.
+
 ```
 GLOBUS_CLIENT_LOADER = 'globus_portal_framework.gclients.load_globus_client'
 ```
