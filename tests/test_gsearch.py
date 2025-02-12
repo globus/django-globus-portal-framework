@@ -223,7 +223,19 @@ def test_process_search_data_string_field_with_alias(mock_data):
         'citation.missing.child',
         {'citation': {'title': 'two'}},
         None,
-    )
+    ),
+    (
+        # Return literal exact match over nested key
+        'citation.literal',
+        {'citation': {'literal': 'loses'}, 'citation.literal': 'wins'},
+        'wins',
+    ),
+    (
+        # If we match a literal key, it must be an exact match, or else we fall back to nested search
+        'citation.literal.most',
+        {'citation': {'literal': {'most': 'wins'} }, 'citation.literal': 'loses'},
+        'wins',
+    ),
 ])
 def test_process_search_data_string_field_with_dotted_path(path, search_content, expected):
     gmeta = { 'subject': 'test', 'entries': [{'content': search_content}] }
