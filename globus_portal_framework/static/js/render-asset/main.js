@@ -1,4 +1,4 @@
-import renderers, {renderLink} from './renderers.js'
+import renderers, {renderLink, renderText} from './renderers.js'
 
 
 function _getURLOptions(url, token) {
@@ -52,22 +52,21 @@ function doRender(target, {url, token, mode = 'auto'}) {
    */
   target.innerText = "";
   _getURLOptions(url, token).then((urlOptions) => {
-    const {status, statusText} = urlOptions
-    if (status !== 200) {
-      // Asset cannot be retrieved, and therefore cannot be rendered
+    const {ContentType, status, statusText} = urlOptions;
+    if (status === 404) {
+      return renderText(target, urlOptions, {message: statusText});
+    } else if (status !== 200) {
+      // Asset cannot be retrieved, but a globus https link may allow auth+access
       // TODO: Add a branch for 401. In the future, we might be able to use required_scopes for incremental reauth.
       throw new Error(statusText);
     }
-    return urlOptions;
-  }).then((urlOptions) => {
-    const {ContentType} = urlOptions;
+
     let method;
     if (mode && mode !== 'auto') {
       method = renderers.get(mode);
     } else {
       method = renderers.get(ContentType);
     }
-
     if (!method) {
       return renderLink(target, urlOptions, {message: `Unable to render files of type '${ContentType}'`});
     }
@@ -79,7 +78,7 @@ function doRender(target, {url, token, mode = 'auto'}) {
 }
 
 
-// This is the main script block and it assumes a specific django template
+// This is the main script block, and it assumes a specific django template
 const render_options = JSON.parse(document.getElementById('render-options').textContent);
 const target = document.getElementById('render-target');
 doRender(target, render_options);
