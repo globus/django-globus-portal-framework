@@ -1,18 +1,20 @@
 import logging
 import copy
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from collections import OrderedDict
 from json import dumps
 import globus_sdk
+
 import django
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
+from django.core.exceptions import BadRequest
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
@@ -298,6 +300,47 @@ def detail(request: HttpRequest, index: str, subject: str) ->  django.http.HttpR
     template = gsearch.get_template(index, tvers)
     return render(request, template, gsearch.get_subject(index, subject,
                                                          request.user))
+
+def render_asset(request: HttpRequest, index: str) -> HttpResponse:
+    """Render an HTML page representing a specific asset, suitable for embedding in an iframe"""
+    # TODO: implement authentication, validate against advertised collections for index
+    # Two ways to call view to specify what we want:
+    #   ?url=  - the url of a public asset somewhere on the web
+    #   ?collection=&path= - the globus collection information needed to show an asset privately - eventual!!!
+    tvers = gsearch.get_template_path('detail-render-asset.html', index=index)
+    template = gsearch.get_template(index, tvers)
+
+    page_options = {
+        # Placeholder until we add authorization handling later. For now, lock the page to public-only behaviors.
+        'is_authenticated': False,  # request.user.is_authenticated
+    }
+
+    render_options = {
+        # JS will auto-detect unless this is provided
+        'url': None, # set below
+        'token': None, # Placeholder for future functionality
+        'mode': request.GET.get('render_mode'),
+    }
+
+    if url:= request.GET.get('url'):
+        render_options['url'] = unquote(url)
+    elif (collection_id:= request.GET.get('collection_id')) and (path := request.GET.get('path')):
+        # TODO: in future, we'll want to check user auth status and whether user has pre-authorized access to these
+        #   collections / cross-check against a list of collection https tokens that are allowed to be leaked to the frontend
+        # to_show.update({'collection_id': collection_id, 'path': path})
+        raise BadRequest('This view only supports public URL requests. [Authenticated] guest collection access may be added in the future.')
+    else:
+        raise BadRequest('Must specify "url" to retrieve')
+        #raise BadRequest('Must specify either url or (collection_id, path)')
+
+    return render(
+        request,
+        template,
+        context={
+            **page_options,
+            "render_options": render_options,
+        }
+    )
 
 
 @csrf_exempt

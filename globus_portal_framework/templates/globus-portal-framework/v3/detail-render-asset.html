@@ -1,0 +1,17 @@
+{% load static %}
+{# May be rendered in an iframe, so we deliberately do not inherit base template #}
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Render asset</title>
+    {%block headextras%}
+      {#  You can add any custom code here, like custom render functions or stylesheets  #}
+    {% endblock %}
+</head>
+<body>
+  <div id="render-target">Waiting...</div>
+
+  {{ render_options|json_script:"render-options" }}
+  <script type="module" src="{% static 'js/render-asset/main.js' %}" ></script>
+</body>
+</html>
