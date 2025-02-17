@@ -201,19 +201,34 @@ function _urlToCode(target, urlOptions, renderOptions) {
     });
 }
 
+function _urlToTable(target, urlOptions, renderOption) {
+  try {
+    // _addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css");
+    _addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap4.min.css");
+    _addScript("https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js");
+  } catch (e) {
+    return _urlToText(target, urlOptions);
+  }
 
-RENDERERS.add('application/pdf', _urlToObject)
+  return _fetchText(urlOptions).then((text) => {
+    const table = new Tabulator(target, {
+      data: text.trim(),
+      // Note: `text/tab-separated-values` may need custom code in tabulator to process
+      importFormat: "csv",
+      autoColumns: true,
+    });
+  });
+}
 
-// FIXME: Write these: advanced table views to show dependency-light builtin renderers
-// RENDERERS.add('text/csv');
-// RENDERERS.add('text/tab-separated-values');
 
+RENDERERS.add('text/csv', _urlToTable);  // tsv ,may
 RENDERERS.add('text/javascript', _urlToCode);
 RENDERERS.add('application/javascript', _urlToCode);
 RENDERERS.add('application/json', _urlToCode);
 // Incredibly leaky catchall; see https://mimetype.io/all-types
 RENDERERS.add('code', _urlToCode, (mt) => mt.startsWith('text/x-'));
 
+RENDERERS.add('application/pdf', _urlToObject)
 // Renderers are checked in order, so these are registered last as fallbacks
 RENDERERS.add('text', _urlToText, (mt) => mt.includes('text'));
 RENDERERS.add('image', _urlToObject, (mt) => mt.includes('image'));
