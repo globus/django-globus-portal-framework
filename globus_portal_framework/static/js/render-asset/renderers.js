@@ -84,6 +84,24 @@ class Registry {
 
 const RENDERERS = new Registry();
 
+function _addCss(url) {
+  const el = document.createElement('link');
+  el.rel = 'stylesheet';
+  el.href = url;
+  el.type = 'text/css';
+  document.head.appendChild(el);
+}
+
+function _addScript(url) {
+  // Synchronously load JS file, only if the renderer needs it
+  const el = document.createElement('script');
+  el.src = url;
+  el.type = 'text/javascript';
+  el.defer = false;
+  document.head.appendChild(el);
+}
+
+
 function _embedBlob(target, blob, {ContentType}) {
   // Most rendering stuff is a thin wrapper for sticking something in an object tag
   const el = document.createElement('object');
@@ -101,14 +119,23 @@ function _preformattedText(target, text) {
 // Renderers for specific data types
 // All renderers have a public call signature of f(targetNode, urlOptions, renderOptions) -> null, and any errors
 //  thrown by render function.will be shown to user as a message.
+
+function renderText(target, urlOptions, {message}) {
+  /**
+   * Provide a direct download link for viewing a file later. Useful if we cannot render all or part of a file.
+   */
+  const p = document.createElement('p');
+  p.innerText = message;
+  target.appendChild(p);
+}
+
+
 function renderLink(target, {url}, {message}) {
   /**
    * Provide a direct download link for viewing a file later. Useful if we cannot render all or part of a file.
    */
   if (message) {
-    const p = document.createElement('p');
-    p.innerText = message;
-    target.appendChild(p);
+    renderText(target, {}, {message})
   }
   const p = document.createElement('p');
   const a = document.createElement('a');
@@ -132,19 +159,9 @@ function _urlToObject(target, urlOptions, renderOptions) {
     .then((blob) => _embedBlob(target, blob, urlOptions));
 }
 
-function _urlToText(target, urlOptions, renderOptions={is_json: false}) {
+function _urlToText(target, urlOptions, renderOptions) {
   // Displays text in a simple pre tag
-  const {is_json} = renderOptions;
   return _fetchText(urlOptions)
-    .then((text) => {
-      if (is_json) {
-        // If "some text mode" fetched only part of the file, the JSON could be incomplete and fail to parse.
-        try {
-          return JSON.stringify(JSON.parse(text), null, 2);
-        } catch (e) {}
-      }
-      return text;
-    })
     .then((text) => {
       const pre = document.createElement('pre');
       pre.innerText = text;
@@ -152,21 +169,58 @@ function _urlToText(target, urlOptions, renderOptions={is_json: false}) {
     });
 }
 
+
+function _urlToCode(target, urlOptions, renderOptions) {
+  /**
+   * Pretty print text snippets as code
+   */
+  try {
+    // TODO investigate smaller bundles (core, common)
+    _addCss("https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/default.min.css");
+    _addScript("https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js");
+  } catch (e) {
+    return _urlToText(target, urlOptions);
+  }
+
+  return _fetchText(urlOptions)
+    .then((text) => {
+      const pre = document.createElement('pre')
+      const c =  document.createElement('code');
+      pre.appendChild(c);
+
+      const res = hljs.highlightAuto(text);
+      if (res.language) {
+        console.debug('HL.JS auto detected language:', res.language);
+        c.innerHTML = res.value;
+      } else {
+        // If hljs did not process the string, treat it as unsafe markup
+        console.debug('HL.JS failed to detect language; rendering as text');
+        c.innerText = res.value;
+      }
+      target.appendChild(pre);
+    });
+}
+
+
 RENDERERS.add('application/pdf', _urlToObject)
-RENDERERS.add('application/json',
-  (t, uo) => _urlToText(t, uo, {is_json: true}),
-  (mimetype) => mimetype.toLowerCase().includes('json')
-);
 
 // FIXME: Write these: advanced table views to show dependency-light builtin renderers
 // RENDERERS.add('text/csv');
 // RENDERERS.add('text/tab-separated-values');
 
+RENDERERS.add('text/javascript', _urlToCode);
+RENDERERS.add('application/javascript', _urlToCode);
+RENDERERS.add('application/json', _urlToCode);
+// Incredibly leaky catchall; see https://mimetype.io/all-types
+RENDERERS.add('code', _urlToCode, (mt) => mt.startsWith('text/x-'));
+
+// Renderers are checked in order, so these are registered last as fallbacks
 RENDERERS.add('text', _urlToText, (mt) => mt.includes('text'));
 RENDERERS.add('image', _urlToObject, (mt) => mt.includes('image'));
 
+
 // Used as part of other renderers, and for standalone error messaging
-export {renderLink, _urlToObject, _urlToText};
+export {renderLink, renderText, _urlToObject, _urlToText};
 export {_fetchBinaryBlob, _fetchText, _fetchAuthenticatedContent};
 
 // Exports a plugin registry which other code may choose to extend with custom functions / types
