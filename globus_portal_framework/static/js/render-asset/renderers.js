@@ -108,12 +108,41 @@ function _embedBlob(target, blob, {ContentType}) {
   el.type = ContentType;
   el.data = URL.createObjectURL(blob);
   target.appendChild(el);
+  return el;
 }
 
-function _preformattedText(target, text) {
 
+function _sizeToFit(target, content) {
+  // Size to fit the parent or the image, whichever is smaller. Good for fixed-resolution things like JPGs.
+  // Check if resizing is needed
+    const {height: mh, width: mw} = window.visualViewport;
+    const {width: rw, height: rh} = content.getBoundingClientRect();
+
+    if (rw <= mw && rh <= mh) {
+        // No need to rescale, image is within the bounding box
+        return;
+    }
+    const ar = rw / rh;
+
+    let nw = rw;
+    let nh = rh;
+    if (rw > mw) {
+        nw = mw;
+        nh = nw / ar;
+    }
+    if (nh > mh) {
+        nh = mh;
+        nw = nh * ar;
+    }
+    content.setAttribute('width', nw);
+    content.setAttribute('height', nh);
 }
 
+function _sizeToPage(target, content) {
+  // Good for "content renderers" that implement their own zoom, like PDF, PDB, or svg image
+  content.style.width = '100%';
+  content.style.height = '100vh';
+}
 
 //////////////////
 // Renderers for specific data types
@@ -153,10 +182,13 @@ function renderLink(target, {url}, {message}) {
 }
 
 
-function _urlToObject(target, urlOptions, renderOptions) {
+function _urlToObject(target, urlOptions, {sizer = _sizeToFit} = {}) {
   // Generic object renderer (image, PDF, short movie clip)
   return _fetchBinaryBlob(urlOptions)
-    .then((blob) => _embedBlob(target, blob, urlOptions));
+    .then((blob) => _embedBlob(target, blob, urlOptions)).then((el) => {
+      // Images and PDFs have different resize behavior requirements; allow rescale function to be configurable
+      el.onload = () => sizer(target, el);
+    });
 }
 
 function _urlToText(target, urlOptions, renderOptions) {
@@ -228,7 +260,7 @@ RENDERERS.add('application/json', _urlToCode);
 // Incredibly leaky catchall; see https://mimetype.io/all-types
 RENDERERS.add('code', _urlToCode, (mt) => mt.startsWith('text/x-'));
 
-RENDERERS.add('application/pdf', _urlToObject)
+RENDERERS.add('application/pdf', (t, u, r) => _urlToObject(t, u, {sizer: _sizeToPage}));
 // Renderers are checked in order, so these are registered last as fallbacks
 RENDERERS.add('text', _urlToText, (mt) => mt.includes('text'));
 RENDERERS.add('image', _urlToObject, (mt) => mt.includes('image'));
