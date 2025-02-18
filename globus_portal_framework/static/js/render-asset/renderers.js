@@ -4,7 +4,7 @@
 
 ////////////////////////
 // Data retrieval
-function _sizeCheck({ContentLength} = fileData, maxSize = (10 * 2 ** 20)) {
+function checkFileSize({ContentLength} = fileData, maxSize = (10 * 2 ** 20)) {
   // Throw an error if the file exceeds a size that can be safely handled
   const size = (ContentLength ?? 0);
   if (size > maxSize) {
@@ -13,7 +13,7 @@ function _sizeCheck({ContentLength} = fileData, maxSize = (10 * 2 ** 20)) {
   return true;
 }
 
-function _fetchAuthenticatedContent({url, token} = urlOptions, nBytes = null, rangeStart = 0) {
+function fetchAuthenticatedContent({url, token} = urlOptions, nBytes = null, rangeStart = 0) {
   const headers = new Headers();
   if (token) {
     headers.set('Authorization', `bearer ${token}`);
@@ -34,16 +34,16 @@ function _fetchAuthenticatedContent({url, token} = urlOptions, nBytes = null, ra
   }).then((resp) => resp.blob());
 }
 
-function _fetchBinaryBlob(urlOptions) {
+function fetchBinaryBlob(urlOptions) {
   // Since binary blobs (like images) must be fetched all at once, there is a hard size limit
-  _sizeCheck(urlOptions);
-  return _fetchAuthenticatedContent(urlOptions);
+  checkFileSize(urlOptions);
+  return fetchAuthenticatedContent(urlOptions);
 }
 
-function _fetchText(urlOptions, maxSize = (10 * 2 ** 20)) {
+function fetchText(urlOptions, maxSize = (10 * 2 ** 20)) {
   // Text files support partial rendering
   const nBytes = (urlOptions.ContentLength > maxSize) ? maxSize : null;
-  return _fetchAuthenticatedContent(urlOptions, nBytes)
+  return fetchAuthenticatedContent(urlOptions, nBytes)
     .then((blob) => blob.text());
 }
 
@@ -84,7 +84,7 @@ class Registry {
 
 const RENDERERS = new Registry();
 
-function _addCss(url) {
+function addCss(url) {
   const el = document.createElement('link');
   el.rel = 'stylesheet';
   el.href = url;
@@ -92,7 +92,7 @@ function _addCss(url) {
   document.head.appendChild(el);
 }
 
-function _addScript(url) {
+function addScript(url) {
   // Synchronously load JS file, only if the renderer needs it
   const el = document.createElement('script');
   el.src = url;
@@ -102,8 +102,8 @@ function _addScript(url) {
 }
 
 
-function _embedBlob(target, blob, {ContentType}) {
-  // Most rendering stuff is a thin wrapper for sticking something in an object tag
+function embedBlob(target, blob, {ContentType}) {
+  // Many media renderers are a thin wrapper for sticking something in an object tag
   const el = document.createElement('object');
   el.type = ContentType;
   el.data = URL.createObjectURL(blob);
@@ -112,34 +112,40 @@ function _embedBlob(target, blob, {ContentType}) {
 }
 
 
-function _sizeToFit(target, content) {
-  // Size to fit the parent or the image, whichever is smaller. Good for fixed-resolution things like JPGs.
-  // Check if resizing is needed
-    const {height: mh, width: mw} = window.visualViewport;
-    const {width: rw, height: rh} = content.getBoundingClientRect();
+function sizeToFit(target, content) {
+  /**
+   * Size to fit the parent or the image, whichever is smaller. Good for fixed-resolution things like JPGs.
+   */
 
-    if (rw <= mw && rh <= mh) {
-        // No need to rescale, image is within the bounding box
-        return;
-    }
+  const {height: mh, width: mw} = window.visualViewport;
+  const {width: rw, height: rh} = content.getBoundingClientRect();
+
+  if (!(rw <= mw && rh <= mh)) {
+    // Only rescale if image doesn't fit within bounding box
     const ar = rw / rh;
 
     let nw = rw;
     let nh = rh;
     if (rw > mw) {
-        nw = mw;
-        nh = nw / ar;
+      nw = mw;
+      nh = nw / ar;
     }
     if (nh > mh) {
-        nh = mh;
-        nw = nh * ar;
+      nh = mh;
+      nw = nh * ar;
     }
     content.setAttribute('width', nw);
     content.setAttribute('height', nh);
+  }
+  // Always center resulting image inside the render area / iframe
+  target.style.setProperty("display", "flex");
+  target.style.setProperty("justify-content", "center");
+  target.style.setProperty("align-items", "center");
+  target.style.setProperty("height", "100vh");
 }
 
-function _sizeToPage(target, content) {
-  // Good for "content renderers" that implement their own zoom, like PDF, PDB, or svg image
+function sizeToPage(target, content) {
+  // Good for "content renderers" that implement their own zoom, like PDF, PDB, or svg image. Fill all available space.
   content.style.width = '100%';
   content.style.height = '100vh';
 }
@@ -151,7 +157,7 @@ function _sizeToPage(target, content) {
 
 function renderText(target, urlOptions, {message}) {
   /**
-   * Provide a direct download link for viewing a file later. Useful if we cannot render all or part of a file.
+   * Display a message
    */
   const p = document.createElement('p');
   p.innerText = message;
@@ -182,18 +188,18 @@ function renderLink(target, {url}, {message}) {
 }
 
 
-function _urlToObject(target, urlOptions, {sizer = _sizeToFit} = {}) {
+function renderUrlToObject(target, urlOptions, {sizer = sizeToFit} = {}) {
   // Generic object renderer (image, PDF, short movie clip)
-  return _fetchBinaryBlob(urlOptions)
-    .then((blob) => _embedBlob(target, blob, urlOptions)).then((el) => {
+  return fetchBinaryBlob(urlOptions)
+    .then((blob) => embedBlob(target, blob, urlOptions)).then((el) => {
       // Images and PDFs have different resize behavior requirements; allow rescale function to be configurable
       el.onload = () => sizer(target, el);
     });
 }
 
-function _urlToText(target, urlOptions, renderOptions) {
+function renderUrlToText(target, urlOptions, renderOptions) {
   // Displays text in a simple pre tag
-  return _fetchText(urlOptions)
+  return fetchText(urlOptions)
     .then((text) => {
       const pre = document.createElement('pre');
       pre.innerText = text;
@@ -202,19 +208,19 @@ function _urlToText(target, urlOptions, renderOptions) {
 }
 
 
-function _urlToCode(target, urlOptions, renderOptions) {
+function renderUrlToCode(target, urlOptions, renderOptions) {
   /**
    * Pretty print text snippets as code
    */
   try {
     // TODO investigate smaller bundles (core, common)
-    _addCss("https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/default.min.css");
-    _addScript("https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js");
+    addCss("https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/default.min.css");
+    addScript("https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js");
   } catch (e) {
-    return _urlToText(target, urlOptions);
+    return renderUrlToText(target, urlOptions);
   }
 
-  return _fetchText(urlOptions)
+  return fetchText(urlOptions)
     .then((text) => {
       const pre = document.createElement('pre')
       const c =  document.createElement('code');
@@ -233,16 +239,16 @@ function _urlToCode(target, urlOptions, renderOptions) {
     });
 }
 
-function _urlToTable(target, urlOptions, renderOption) {
+function renderUrlToTable(target, urlOptions, renderOption) {
   try {
     // _addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css");
-    _addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap4.min.css");
-    _addScript("https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js");
+    addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap4.min.css");
+    addScript("https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js");
   } catch (e) {
-    return _urlToText(target, urlOptions);
+    return renderUrlToText(target, urlOptions);
   }
 
-  return _fetchText(urlOptions).then((text) => {
+  return fetchText(urlOptions).then((text) => {
     const table = new Tabulator(target, {
       data: text.trim(),
       // Note: `text/tab-separated-values` may need custom code in tabulator to process
@@ -253,22 +259,32 @@ function _urlToTable(target, urlOptions, renderOption) {
 }
 
 
-RENDERERS.add('text/csv', _urlToTable);  // tsv ,may
-RENDERERS.add('text/javascript', _urlToCode);
-RENDERERS.add('application/javascript', _urlToCode);
-RENDERERS.add('application/json', _urlToCode);
+RENDERERS.add('text/csv', renderUrlToTable);  // tsv ,may
+RENDERERS.add('text/javascript', renderUrlToCode);
+RENDERERS.add('application/javascript', renderUrlToCode);
+RENDERERS.add('application/json', renderUrlToCode);
 // Incredibly leaky catchall; see https://mimetype.io/all-types
-RENDERERS.add('code', _urlToCode, (mt) => mt.startsWith('text/x-'));
+RENDERERS.add('code', renderUrlToCode, (mt) => mt.startsWith('text/x-'));
 
-RENDERERS.add('application/pdf', (t, u, r) => _urlToObject(t, u, {sizer: _sizeToPage}));
+RENDERERS.add('application/pdf', (t, u, r) => renderUrlToObject(t, u, {sizer: sizeToPage}));
 // Renderers are checked in order, so these are registered last as fallbacks
-RENDERERS.add('text', _urlToText, (mt) => mt.includes('text'));
-RENDERERS.add('image', _urlToObject, (mt) => mt.includes('image'));
+RENDERERS.add('text', renderUrlToText, (mt) => mt.includes('text'));
+RENDERERS.add('image', renderUrlToObject, (mt) => mt.includes('image'));
 
+////////
+// All renderers have the call signature f(t, u, r) -> Promise
+// Useful generic renderers
+export {renderLink, renderText};
+// Specific renderers with limited customization via renderOptions arg
+export {renderUrlToObject, renderUrlToText, renderUrlToCode, renderUrlToTable};
 
-// Used as part of other renderers, and for standalone error messaging
-export {renderLink, renderText, _urlToObject, _urlToText};
-export {_fetchBinaryBlob, _fetchText, _fetchAuthenticatedContent};
+// Helpers used to build your own renderer
+export {
+  fetchBinaryBlob, fetchText, fetchAuthenticatedContent,
+  addCss, addScript,
+  sizeToPage, sizeToFit,
+  embedBlob,
+};
 
 // Exports a plugin registry which other code may choose to extend with custom functions / types
 // And lo, a thousand purists cried out and were suddenly silenced
