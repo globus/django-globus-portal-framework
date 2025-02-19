@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
@@ -300,7 +301,7 @@ def detail(request: HttpRequest, index: str, subject: str) ->  django.http.HttpR
     template = gsearch.get_template(index, tvers)
     return render(request, template, gsearch.get_subject(index, subject,
                                                          request.user))
-
+@xframe_options_sameorigin
 def render_asset(request: HttpRequest, index: str) -> HttpResponse:
     """Render an HTML page representing a specific asset, suitable for embedding in an iframe"""
     # TODO: implement authentication, validate against advertised collections for index

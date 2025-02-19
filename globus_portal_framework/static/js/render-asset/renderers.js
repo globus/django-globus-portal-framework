@@ -4,8 +4,8 @@
 
 ////////////////////////
 // Data retrieval
-function checkFileSize({ContentLength} = fileData, maxSize = (10 * 2 ** 20)) {
-  // Throw an error if the file exceeds a size that can be safely handled
+function checkFileSize({ContentLength} = fileData, maxSize = (2 * 2 ** 20)) {
+  // Throw an error if the file exceeds a size that can be safely handled. Default ~2MiB
   const size = (ContentLength ?? 0);
   if (size > maxSize) {
     throw new Error(`File is too large to preview`);
@@ -40,7 +40,7 @@ function fetchBinaryBlob(urlOptions) {
   return fetchAuthenticatedContent(urlOptions);
 }
 
-function fetchText(urlOptions, maxSize = (10 * 2 ** 20)) {
+function fetchText(urlOptions, maxSize = (2 * 2 ** 20)) {
   // Text files support partial rendering
   const nBytes = (urlOptions.ContentLength > maxSize) ? maxSize : null;
   return fetchAuthenticatedContent(urlOptions, nBytes)
@@ -155,7 +155,7 @@ function sizeToPage(target, content) {
 // All renderers have a public call signature of f(targetNode, urlOptions, renderOptions) -> null, and any errors
 //  thrown by render function.will be shown to user as a message.
 
-function renderText(target, urlOptions, {message}) {
+function renderText(target, urlOptions, {message}={}) {
   /**
    * Display a message
    */
@@ -165,7 +165,7 @@ function renderText(target, urlOptions, {message}) {
 }
 
 
-function renderLink(target, {url}, {message}) {
+function renderLink(target, {url}, {message} = {}) {
   /**
    * Provide a direct download link for viewing a file later. Useful if we cannot render all or part of a file.
    */
@@ -191,13 +191,21 @@ function renderLink(target, {url}, {message}) {
 function renderUrlToObject(target, urlOptions, {sizer = sizeToFit} = {}) {
   // Generic object renderer (image, PDF, short movie clip)
   return fetchBinaryBlob(urlOptions)
-    .then((blob) => embedBlob(target, blob, urlOptions)).then((el) => {
-      // Images and PDFs have different resize behavior requirements; allow rescale function to be configurable
+    .then((blob) => {
+      const el = embedBlob(target, blob, urlOptions);
+      // Render a fallback message if object fails to display due to bad video codecs, PDF inside iframe sandbox, etc
+      const fb = document.createElement('div');
+      renderLink(fb, urlOptions, {message: 'The item failed to render'});
+      el.appendChild(fb);
+      return el;
+    })
+    .then((el) => {
+      // Once binary item loads, resize according to best behavior (customized to needs of eg image vs pdf)
       el.onload = () => sizer(target, el);
     });
 }
 
-function renderUrlToText(target, urlOptions, renderOptions) {
+function renderUrlToText(target, urlOptions, renderOptions={}) {
   // Displays text in a simple pre tag
   return fetchText(urlOptions)
     .then((text) => {
@@ -208,7 +216,7 @@ function renderUrlToText(target, urlOptions, renderOptions) {
 }
 
 
-function renderUrlToCode(target, urlOptions, renderOptions) {
+function renderUrlToCode(target, urlOptions, renderOptions={}) {
   /**
    * Pretty print text snippets as code
    */
@@ -239,7 +247,7 @@ function renderUrlToCode(target, urlOptions, renderOptions) {
     });
 }
 
-function renderUrlToTable(target, urlOptions, renderOption) {
+function renderUrlToTable(target, urlOptions, renderOptions={}) {
   try {
     // _addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css");
     addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap4.min.css");
@@ -259,14 +267,16 @@ function renderUrlToTable(target, urlOptions, renderOption) {
 }
 
 
-RENDERERS.add('text/csv', renderUrlToTable);  // tsv ,may
+RENDERERS.add(null, renderLink);  // Very rare file extensions may return no content-type at all.
+// Known issue: PDFs don't render inside a sandboxed iframe. If your dataset is PDF heavy, customize template to remove the sandbox
+RENDERERS.add('application/pdf', (t, u, r) => renderUrlToObject(t, u, {sizer: sizeToPage}));
+RENDERERS.add('text/csv', renderUrlToTable); // We may need extra code to handle TSVs w/current library
 RENDERERS.add('text/javascript', renderUrlToCode);
 RENDERERS.add('application/javascript', renderUrlToCode);
 RENDERERS.add('application/json', renderUrlToCode);
 // Incredibly leaky catchall; see https://mimetype.io/all-types
 RENDERERS.add('code', renderUrlToCode, (mt) => mt.startsWith('text/x-'));
 
-RENDERERS.add('application/pdf', (t, u, r) => renderUrlToObject(t, u, {sizer: sizeToPage}));
 // Renderers are checked in order, so these are registered last as fallbacks
 RENDERERS.add('text', renderUrlToText, (mt) => mt.includes('text'));
 RENDERERS.add('image', renderUrlToObject, (mt) => mt.includes('image'));
