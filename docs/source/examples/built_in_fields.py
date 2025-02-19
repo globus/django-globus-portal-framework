@@ -2,11 +2,6 @@ import os
 from urllib.parse import urlsplit, urlunsplit, urlencode
 
 
-def title(result):
-    """The title for this Globus Search subject"""
-    return result[0]["title"]
-
-
 def globus_app_link(result):
     """A Globus Webapp link for the transfer/sync button on the detail page"""
     url = result[0]["url"]

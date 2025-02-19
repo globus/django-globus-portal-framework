@@ -247,7 +247,7 @@ def search_debug_detail(request, index, subject):
     return render(request, gsearch.get_template(index, tvers), sub)
 
 
-def detail(request: HttpRequest, index: str, subject: str) ->  django.template.response.TemplateResponse:
+def detail(request: HttpRequest, index: str, subject: str) ->  django.http.HttpResponse:
     """
     Load a page for showing details for a single search result (subject). This view fetches
     the subject in the URL from Globus Search, and runs it through DGPF Fields (:ref:`configuring_fields`).
