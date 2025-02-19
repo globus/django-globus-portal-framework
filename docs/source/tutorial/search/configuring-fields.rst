@@ -45,7 +45,7 @@ search index by adding ``fields`` to your ``SEARCH_INDEXES``:
           "fields": [
               # Several syntaxes are available for retrieving a field
 
-              # Fetch the field by name
+              # Fetch the field by name, where the name in the search index matches the name used in the template
               "title",
 
               # Calls a function with your search record as a parameter
@@ -53,8 +53,9 @@ search index by adding ``fields`` to your ``SEARCH_INDEXES``:
               ("https_url", fields.https_url)
 
               ## Field retrieval/formatters can also be used with custom fields for custom templates
-              # Can fetch a field by alias
-              ("some_name_in_template", "original_collection_name"),
+              # Can fetch a field by alias. Works with flat or nested objects!
+              ("some_template_field", "original_name_in_search_index"),
+              ("another_template_field", "nested.path.to.field"),
           ],
       }
   }
