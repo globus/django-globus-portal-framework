@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.13](https://github.com/globus/django-globus-portal-framework/compare/v0.4.12...v0.4.13-0) (2025-02-24)
+
+### Features
+
+* Allow selecting fields by dotted path ([8d6c375](https://github.com/globus/django-globus-portal-framework/commit/8d6c3753942cfac7df4d98755ea91b33d78011d0))
+
+
+### Bug Fixes
+
+* Include missing copy-to-clipboard js ([aaecde2](https://github.com/globus/django-globus-portal-framework/commit/aaecde24af1c0dc24c574da3d39de81c0dd64653))
+* V3 detail-overview template had incorrect path ([9795ebb2](https://github.com/globus/django-globus-portal-framework/commit/9795ebb2c1d923543c24143a41ae20f5159c2438))
+* Groups hidden by default if not configured ([4bade552](https://github.com/globus/django-globus-portal-framework/commit/4bade552ce26f8164c7e6b9badb5fc398e76e6af))
+
+### Other
+
+* Python 3.7 Dropped from support (Well past EOL)
+* Include Python 3.12, 3.13
+
 ### [0.4.12](https://github.com/globus/django-globus-portal-framework/compare/v0.4.11...v0.4.12) (2024-10-28)
 
 
