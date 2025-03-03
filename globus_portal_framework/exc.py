@@ -120,6 +120,13 @@ class PreviewBinaryData(PreviewException):
         self.message = 'Preview is unable to display binary data.'
 
 
+class PreviewCollectionError(GlobusPortalException):
+    DEFAULT_MESSAGE = 'Could not determine how to access the specified collection for Preview Mode'
+    def __init__(self, message=DEFAULT_MESSAGE, **kwargs):
+        super().__init__(message=message, **kwargs)
+        self.code = 'BadPreviewConfig'
+
+
 class ExpiredGlobusToken(GlobusPortalException):
     def __init__(self, token_name='', **kwargs):
         super().__init__(**kwargs)

@@ -1,11 +1,48 @@
 "use strict";
 ////////////////////////
 // Render data in various ways
+const MAX_SIZE = 2*2**20; // ~2MB
+
+
+
+////////////////
+// Authorization helpers
+function getTokenFromUrl(token_endpoint) {
+  /**
+   * Return a callable that fetches a token from provided URL. If the token was already retrieved (like on a page
+   *  with multiple files), the callable will return the cached Promise.
+   *  @returns {function}
+   */
+  let cache = null;
+  return () => {
+    const nt = Promise.resolve({access_token: null});
+
+    if (!token_endpoint) {
+      // If this is a public asset, return "I have no token to give you" and let render treat it as public
+      return nt;
+    }
+
+    if (!cache) {
+      cache = fetch(token_endpoint)
+        .then((resp) => {
+          if (resp.ok) {
+            return resp.json();
+          }
+          throw new Error('Token request refused for current user. Make sure you are logged in, and that the application has configured access for this collection');
+        }).then(({access_token}) => {
+          return {access_token};
+        }).catch(() => nt);
+    }
+    return cache;
+  };
+}
+
 
 ////////////////////////
-// Data retrieval
-function checkFileSize({ContentLength} = fileData, maxSize = (2 * 2 ** 20)) {
-  // Throw an error if the file exceeds a size that can be safely handled. Default ~2MiB
+// Data retrieval helpers
+function checkFileSize({ContentLength} = fileData, maxSize = MAX_SIZE) {
+  // Throw an error if the file exceeds a size that can be safely handled. This is because authenticated embeds rely
+  //  on loading entire file in memory first, which would be bad for video etc
   const size = (ContentLength ?? 0);
   if (size > maxSize) {
     throw new Error(`File is too large to preview`);
@@ -13,10 +50,14 @@ function checkFileSize({ContentLength} = fileData, maxSize = (2 * 2 ** 20)) {
   return true;
 }
 
-function fetchAuthenticatedContent({url, token} = urlOptions, nBytes = null, rangeStart = 0) {
+
+function fetchAuthenticatedContent(urlOptions, nBytes = null, rangeStart = 0) {
+  // Fixme: refactor to general purpose fetcher since auth is optional as written
+  const {url, access_token} = urlOptions;
+
   const headers = new Headers();
-  if (token) {
-    headers.set('Authorization', `bearer ${token}`);
+  if (access_token) {
+    headers.set('Authorization', `bearer ${access_token}`);
   }
   if (nBytes) {
     headers.set('Range', `bytes=${rangeStart}-${rangeStart + nBytes}`);
@@ -34,11 +75,13 @@ function fetchAuthenticatedContent({url, token} = urlOptions, nBytes = null, ran
   }).then((resp) => resp.blob());
 }
 
+
 function fetchBinaryBlob(urlOptions) {
   // Since binary blobs (like images) must be fetched all at once, there is a hard size limit
   checkFileSize(urlOptions);
   return fetchAuthenticatedContent(urlOptions);
 }
+
 
 function fetchText(urlOptions, maxSize = (2 * 2 ** 20)) {
   // Text files support partial rendering
@@ -84,6 +127,7 @@ class Registry {
 
 const RENDERERS = new Registry();
 
+
 function addCss(url) {
   const el = document.createElement('link');
   el.rel = 'stylesheet';
@@ -91,6 +135,7 @@ function addCss(url) {
   el.type = 'text/css';
   document.head.appendChild(el);
 }
+
 
 function addScript(url) {
   // Synchronously load JS file, only if the renderer needs it
@@ -144,11 +189,13 @@ function sizeToFit(target, content) {
   target.style.setProperty("height", "100vh");
 }
 
+
 function sizeToPage(target, content) {
   // Good for "content renderers" that implement their own zoom, like PDF, PDB, or svg image. Fill all available space.
   content.style.width = '100%';
   content.style.height = '100vh';
 }
+
 
 //////////////////
 // Renderers for specific data types
@@ -189,7 +236,7 @@ function renderLink(target, {url}, {message} = {}) {
 
 
 function renderUrlToObject(target, urlOptions, {sizer = sizeToFit} = {}) {
-  // Generic object renderer (image, PDF, short movie clip)
+  // Generic binary object renderer (image, PDF, short movie clip)
   return fetchBinaryBlob(urlOptions)
     .then((blob) => {
       const el = embedBlob(target, blob, urlOptions);
@@ -204,6 +251,7 @@ function renderUrlToObject(target, urlOptions, {sizer = sizeToFit} = {}) {
       el.onload = () => sizer(target, el);
     });
 }
+
 
 function renderUrlToText(target, urlOptions, renderOptions={}) {
   // Displays text in a simple pre tag
@@ -247,6 +295,7 @@ function renderUrlToCode(target, urlOptions, renderOptions={}) {
     });
 }
 
+
 function renderUrlToTable(target, urlOptions, renderOptions={}) {
   try {
     // _addCss("https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css");
@@ -267,6 +316,93 @@ function renderUrlToTable(target, urlOptions, renderOptions={}) {
 }
 
 
+///////////////////
+// Perform the act of rendering on a page in a re-usable way
+function _getURLOptions(url, access_token) {
+  /**
+   * Check the file to see if it is a valid target for rendering. For Globus https endpoints, this provides some
+   *    valuable information that can make something easier to render
+   *  @returns {{url, access_token, status, statusText, contentType, contentLength, required_scopes}}
+   */
+  const headers = new Headers({'X-Requested-With': 'XMLHttpRequest'});
+  if (access_token) {
+    headers.set('Authorization', `bearer ${access_token}`);
+  }
+  return fetch(url, {
+    method: 'HEAD',
+    headers: headers,
+  }).then((response) => {
+    const res = {
+      // Always provide these fields. Anything more is server-dependent.
+      url,
+      access_token,
+      'status': response.status,
+      'statusText': response.statusText
+    };
+
+    if (response.ok) {
+      res['ContentType'] = response.headers.get('content-type');
+      res['ContentLength'] = response.headers.get('content-length');
+    }
+    // TODO FUTURE: This function does not try to handle 401 cases, such as determining `required_scopes` from globus GET response
+    return res;
+  });
+}
+
+
+function doRender(target, pageOptions, getToken) {
+  /**
+   * Make an (authenticated) request to retrieve the file
+   *
+   * @param {Node | string} target The DOM node to use as rendered content root
+   * @param {object} pageOptions An object containing options used to render this asset. Must answer the questions
+   *  "where is the asset" and "tell me how to access it".
+   * @param pageOptions.url
+   * @param [pageOptions.access_token] Avoid embedding this in the DOM whenever possible
+   * @param [pageOptions.token_endpoint] A django-provided URL for where to get read-only file view credentials
+   * @param {string} url The full URL of the (usually public) asset to render
+   * @param {string} [mode] Optionally specify how to render the file. Usually 'auto' to guess by mimetype, or a
+   *  user-specified renderer (like PDB, plot.ly, or leaflet.js)
+   */
+  const {url, token_endpoint, render_mode = 'auto'} = pageOptions;
+
+  target.innerText = "";
+
+  // On a page with multiple files, this can be passed explicitly to use a shared cache and only fetch the token once
+  getToken = getToken || getTokenFromUrl(token_endpoint);
+
+  // Perform all actions required to render an asset on the page, incl (authorized) data retrieval
+  return getToken().then(({access_token}) => {
+      _getURLOptions(url, access_token).then((urlOptions) => {
+        const {ContentType, status, statusText} = urlOptions;
+        if (status === 404) {
+          return renderText(target, urlOptions, {message: statusText});
+        } else if (status !== 200) {
+          // Asset cannot be retrieved, but a globus https link may allow auth+access
+          // TODO: Add a branch for 401. In the future, we might be able to use required_scopes for incremental reauth.
+          throw new Error(statusText);
+        }
+
+        let method;
+        if (render_mode && render_mode !== 'auto') {
+          method = RENDERERS.get(render_mode);
+        } else {
+          method = RENDERERS.get(ContentType);
+        }
+        if (!method) {
+          return renderLink(target, urlOptions, {message: `Unable to render files of type '${ContentType}'`});
+        }
+        return method(target, urlOptions);
+      }).catch((e) => {
+        console.error(e);
+        renderLink(target, {url}, {message: e.message});
+      });
+  });
+}
+
+
+/////////////
+// Populate the registry with default render helpers
 RENDERERS.add(null, renderLink);  // Very rare file extensions may return no content-type at all.
 // Known issue: PDFs don't render inside a sandboxed iframe. If your dataset is PDF heavy, customize template to remove the sandbox
 RENDERERS.add('application/pdf', (t, u, r) => renderUrlToObject(t, u, {sizer: sizeToPage}));
@@ -282,7 +418,7 @@ RENDERERS.add('text', renderUrlToText, (mt) => mt.includes('text'));
 RENDERERS.add('image', renderUrlToObject, (mt) => mt.includes('image'));
 
 ////////
-// All renderers have the call signature f(t, u, r) -> Promise
+// All renderers have the standard call signature f(t, {u}, {r}) -> Promise
 // Useful generic renderers
 export {renderLink, renderText};
 // Specific renderers with limited customization via renderOptions arg
@@ -296,6 +432,8 @@ export {
   embedBlob,
 };
 
+
+export { doRender };
 // Exports a plugin registry which other code may choose to extend with custom functions / types
 // And lo, a thousand purists cried out and were suddenly silenced
 export default RENDERERS;

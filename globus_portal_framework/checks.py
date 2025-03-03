@@ -82,3 +82,22 @@ def check_allowed_groups(app_configs, **kwargs):
                 errors.append(e)
 
     return errors
+
+
+@register
+def check_gpreview(app_configs, **kwargs):
+    """Simplistic check: GLOBUS_PREVIEW_COLLECTIONS must be a dict of {uuid: https_url}"""
+    s = getattr(settings, 'GLOBUS_PREVIEW_COLLECTIONS', {})
+
+    catchall = [
+        Error('GLOBUS_PREVIEW_COLLECTIONS must be a dict of {uuid: https_url}',
+              obj=s, id='globus_portal_framework.settings.E005')
+    ]
+
+    if not isinstance(s, dict):
+        return catchall
+
+    for k, v in s.items():
+        if len(k.replace('-', '')) != 32 or not v.startswith('https'):
+            return catchall
+    return []

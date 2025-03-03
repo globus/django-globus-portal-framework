@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404, HttpResponseForbidden, JsonResponse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
@@ -19,7 +19,7 @@ from django.core.exceptions import BadRequest
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
-    gsearch, gclients, gtransfer,
+    gsearch, gclients, gpreview, gtransfer,
     PreviewException, PreviewURLNotFound,
     ExpiredGlobusToken, GroupsException,
 )
@@ -301,45 +301,72 @@ def detail(request: HttpRequest, index: str, subject: str) ->  django.http.HttpR
     template = gsearch.get_template(index, tvers)
     return render(request, template, gsearch.get_subject(index, subject,
                                                          request.user))
+
+
+def get_token(request: HttpRequest, collection_id: str) -> HttpResponse:
+    """
+    Send information to the frontend that can be used to read files from a collection.
+
+    CAUTION: The globus https scope allows read AND write access to files from a collection.
+        Globus collections determines write via user permissions on the collection, not via token scope.
+        Take precautions against token leakage, such as exempting this route from authenticated CORS (if applicable).
+    """
+    if not request.user.is_authenticated:
+        return HttpResponse('Tokens are not available for unauthenticated users', status=401)
+
+    # EXPLICIT WHITELIST defends vs requesting arbitrary resource server tokens, like "flows" or "auth.globus.org".
+    allowed = getattr(settings, 'GLOBUS_PREVIEW_COLLECTIONS', {})
+    if collection_id not in allowed:
+        # Log attempt to access arbitrary tokens
+        log.warning(f'Frontend access token request blocked for resource "{collection_id}" by user "{request.user.username}"')
+        return HttpResponseForbidden(f'This server does not support tokens for collection "{collection_id}"')
+
+    try:
+        access_token = gclients.load_globus_access_token(request.user, collection_id)
+    except ValueError:
+        return HttpResponseForbidden('No tokens available for this specified collection. If this is a public collection, you may not need a token.')
+
+    # TODO: Sanity-check token scopes before sending to browser; may require refactor of `load_globus_access_token`
+    return JsonResponse({
+        'access_token': access_token,
+    })
+
+
 @xframe_options_sameorigin
 def render_asset(request: HttpRequest, index: str) -> HttpResponse:
-    """Render an HTML page representing a specific asset, suitable for embedding in an iframe"""
-    # TODO: implement authentication, validate against advertised collections for index
+    """
+    Render an HTML page representing a specific asset, suitable for embedding in an iframe. This makes it easy
+        to incorporate rendering logic into any page, not just detail page, without modifying the route code.
+
+    This route answers two questions that can be easily remixed into any route:
+    - Where is the file? (incl translating collection IDs to URLs + whitelist perm checks)
+    - Do I need a token to access the file?
+
+    The associated template contains some helpful boilerplate to operate the actual rendering.
+        Sensitive data (namely tokens) are sent via a separate route to avoid exposing tokens as part of the DOM
+    """
+
     # Two ways to call view to specify what we want:
     #   ?url=  - the url of a public asset somewhere on the web
     #   ?collection=&path= - the globus collection information needed to show an asset privately - eventual!!!
     tvers = gsearch.get_template_path('detail-render-asset.html', index=index)
     template = gsearch.get_template(index, tvers)
 
-    page_options = {
-        # Placeholder until we add authorization handling later. For now, lock the page to public-only behaviors.
-        'is_authenticated': False,  # request.user.is_authenticated
-    }
+    url = request.GET.get('url')
+    collection_id = request.GET.get('collection_id')
+    path = request.GET.get('path')
+    render_mode = request.GET.get('render_mode')
 
-    render_options = {
-        # JS will auto-detect unless this is provided
-        'url': None, # set below
-        'token': None, # Placeholder for future functionality
-        'mode': request.GET.get('render_mode'),
-    }
-
-    if url:= request.GET.get('url'):
-        render_options['url'] = unquote(url)
-    elif (collection_id:= request.GET.get('collection_id')) and (path := request.GET.get('path')):
-        # TODO: in future, we'll want to check user auth status and whether user has pre-authorized access to these
-        #   collections / cross-check against a list of collection https tokens that are allowed to be leaked to the frontend
-        # to_show.update({'collection_id': collection_id, 'path': path})
-        raise BadRequest('This view only supports public URL requests. [Authenticated] guest collection access may be added in the future.')
-    else:
-        raise BadRequest('Must specify "url" to retrieve')
-        #raise BadRequest('Must specify either url or (collection_id, path)')
+    try:
+        ro = gpreview.get_render_options(url, collection_id, path, render_mode=render_mode)
+    except PreviewURLNotFound:
+        raise Http404('Preview file not found')
 
     return render(
         request,
         template,
         context={
-            **page_options,
-            "render_options": render_options,
+            "render_options": ro,
         }
     )
 
