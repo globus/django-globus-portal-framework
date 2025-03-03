@@ -1,5 +1,5 @@
 {% load static %}
-{# Can be used as a standalone page or an embeddable iframe viewer #}
+{# Can be used as a standalone page or an embeddable iframe viewer. For security reasons the latter is preferred. #}
 <!doctype html>
 <html lang="en">
 <head>
@@ -12,7 +12,9 @@
 <body>
   <div id="render-target">Waiting...</div>
 
+  {# This must be passed to the template. A template tag helper is available to generate this dict. #}
   {{ render_options|json_script:"render-options" }}
+
   <script type="module">
     import {doRender} from "{% static 'js/render-asset/renderers.js' %}";
     // This is the main script block, and it assumes a specific django template
@@ -20,7 +22,6 @@
     const target = document.getElementById('render-target');
 
     doRender(target, render_options);
-
   </script>
 </body>
 </html>

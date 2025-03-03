@@ -27,8 +27,8 @@ def get_https_url(collection_uuid: str) -> t.Union[str, None]:
         raise PreviewCollectionError(message=f'No HTTPS URL available for collection UUID {collection_uuid}')
 
 
-def get_render_options(url: str,
-                       collection_id: str, path: str,
+def get_render_options(url: str=None,
+                       collection_id: str=None, path: str=None,
                        is_authenticated: bool=False,
                        render_mode: str='auto'):
     """

@@ -1,4 +1,5 @@
 {% extends 'globus-portal-framework/v3/detail-base.html' %}
+{% load render_options index_template srcdoc %}
 
 
 {% block breadcrumb_items %}
@@ -44,34 +45,17 @@
         {% endif %}
         {% endblock %}
 
-{#  {% block detail_preview %}#}
-{#    <iframe#}
-{#      sandbox="allow-same-origin allow-scripts allow-downloads"#}
-{#      src="{% url 'render-asset' %}?collection_id={{ preview_url }}"#}
-{#      width="{{ width | default_if_none: "100%" }}"#}
-{#      height="{{ height | default_if_none: "100%" }}"></iframe>#}
-{#  {% endblock %}#}
-
-
-  {% load render_options %}
-  {{ all.0 }}
-  {{ all.0.sample_file_url }}
-  {%  render_options url=all.0.sample_file_url as ro %}
-  render options!!
-  {{ ro }}
-
-
-
-  {%  if preview_url %}
-    {#  Initial detail page only supports embedding public URLs, though backend API allows collection_id/path syntax #}
-    {# Adjust sandboxing options if embedding, eg, PDFs #}
-    {% url 'render_asset' as render_url %}
-    <iframe
-      sandbox="allow-same-origin allow-scripts allow-downloads"
-      src="{{ render_url }}?url={{ preview_url | urlencode }}"
-      width="100%"
-      height="500px"></iframe>
-  {% endif %}
+      {% render_options is_authenticated=request.user.is_authenticated url=preview_url collection_id=preview_collection path=preview_path as ro %}
+      {% index_template 'globus-portal-framework/v3/detail-render-asset.html' as it_render %}
+      {% block detail_preview %}
+        {% if collection_id and path or url %}
+          <iframe
+            sandbox="allow-same-origin allow-scripts allow-downloads"
+            srcdoc="{% srcdoc %}{% include it_render with render_options=ro only %}{% endsrcdoc %}"
+            width="100%"
+            height="100%"></iframe>
+        {% endif %}
+      {% endblock %}
   </div>
 </div>
 
