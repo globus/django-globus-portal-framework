@@ -356,9 +356,10 @@ def render_asset(request: HttpRequest, index: str) -> HttpResponse:
     collection_id = request.GET.get('collection_id')
     path = request.GET.get('path')
     render_mode = request.GET.get('render_mode')
+    ia = request.user.is_authenticated
 
     try:
-        ro = gpreview.get_render_options(url, collection_id, path, render_mode=render_mode)
+        ro = gpreview.get_render_options(url, collection_id, path, render_mode=render_mode, is_authenticated=ia)
     except PreviewURLNotFound:
         raise Http404('Preview file not found')
 

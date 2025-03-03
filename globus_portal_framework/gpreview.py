@@ -22,7 +22,7 @@ def get_https_url(collection_uuid: str) -> t.Union[str, None]:
     """
     whitelist = getattr(settings, 'GLOBUS_PREVIEW_COLLECTIONS', {})
     try:
-        return whitelist['collection_uuid']
+        return whitelist[collection_uuid]
     except KeyError:
         raise PreviewCollectionError(message=f'No HTTPS URL available for collection UUID {collection_uuid}')
 
