@@ -48,7 +48,7 @@
       {% render_options is_authenticated=request.user.is_authenticated url=preview_url collection_id=preview_collection path=preview_path as ro %}
       {% index_template 'globus-portal-framework/v3/detail-render-asset.html' as it_render %}
       {% block detail_preview %}
-        {% if collection_id and path or url %}
+        {% if preview_collection and preview_path or preview_url %}
           {#  If you know that your page will only be used with public assets, remove `allow-same-origin` from the sandbox for added security #}
           <iframe
             sandbox="allow-same-origin allow-scripts allow-downloads"
