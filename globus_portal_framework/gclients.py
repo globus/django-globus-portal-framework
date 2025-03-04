@@ -64,7 +64,7 @@ def is_globus_user(user):
         return False
 
 
-def load_globus_access_token(user: "django.contrib.auth.models.User", token_name: str):
+def load_globus_access_token(user: "django.contrib.auth.models.User", token_name: str) -> t.Union[str, None]:
     """
     Load a globus user access token using a provided lookup by resource server.
     Scopes MUST have already been configured in settings.py, and additionally
