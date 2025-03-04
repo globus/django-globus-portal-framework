@@ -83,7 +83,7 @@ function fetchBinaryBlob(urlOptions) {
 }
 
 
-function fetchText(urlOptions, maxSize = (2 * 2 ** 20)) {
+function fetchText(urlOptions, maxSize = MAX_SIZE) {
   // Text files support partial rendering
   const nBytes = (urlOptions.ContentLength > maxSize) ? maxSize : null;
   return fetchAuthenticatedContent(urlOptions, nBytes)
@@ -357,12 +357,13 @@ function doRender(target, pageOptions, getToken) {
    * @param {Node | string} target The DOM node to use as rendered content root
    * @param {object} pageOptions An object containing options used to render this asset. Must answer the questions
    *  "where is the asset" and "tell me how to access it".
-   * @param pageOptions.url
-   * @param [pageOptions.access_token] Avoid embedding this in the DOM whenever possible
-   * @param [pageOptions.token_endpoint] A django-provided URL for where to get read-only file view credentials
-   * @param {string} url The full URL of the (usually public) asset to render
-   * @param {string} [mode] Optionally specify how to render the file. Usually 'auto' to guess by mimetype, or a
+   * @param pageOptions.url URL of the asset to render. The backend will translate collection
+   *  ID + path -> https URL before it reaches the rendering code.
+   * @param [pageOptions.token_endpoint] A django-provided URL for where to get read-only file view credentials.
+   *  Generally prefer application-locked read-only credentials, as some user tokens might have write access.
+   * @param {string} [pogeOptions.render_mode] Optionally specify how to render the file. Usually 'auto' to guess by mimetype, or a
    *  user-specified renderer (like PDB, plot.ly, or leaflet.js)
+   * @param {function} [getToken] A callable that returns `Promise.resolve({access_token}). Defaults to making an API call to the token endpoint.
    */
   const {url, token_endpoint, render_mode = 'auto'} = pageOptions;
 
@@ -373,30 +374,31 @@ function doRender(target, pageOptions, getToken) {
 
   // Perform all actions required to render an asset on the page, incl (authorized) data retrieval
   return getToken().then(({access_token}) => {
-      _getURLOptions(url, access_token).then((urlOptions) => {
-        const {ContentType, status, statusText} = urlOptions;
-        if (status === 404) {
-          return renderText(target, urlOptions, {message: statusText});
-        } else if (status !== 200) {
-          // Asset cannot be retrieved, but a globus https link may allow auth+access
-          // TODO: Add a branch for 401. In the future, we might be able to use required_scopes for incremental reauth.
-          throw new Error(statusText);
-        }
+      return _getURLOptions(url, access_token)
+        .then((urlOptions) => {
+          const {ContentType, status, statusText} = urlOptions;
+          if (status === 404) {
+            return renderText(target, urlOptions, {message: statusText});
+          } else if (status !== 200) {
+            // Asset cannot be retrieved, but a globus https link may allow auth+access
+            // TODO: Add a branch for 401. In the future, we might be able to use required_scopes for incremental reauth.
+            throw new Error(statusText);
+          }
 
-        let method;
-        if (render_mode && render_mode !== 'auto') {
-          method = RENDERERS.get(render_mode);
-        } else {
-          method = RENDERERS.get(ContentType);
-        }
-        if (!method) {
-          return renderLink(target, urlOptions, {message: `Unable to render files of type '${ContentType}'`});
-        }
-        return method(target, urlOptions);
-      }).catch((e) => {
-        console.error(e);
-        renderLink(target, {url}, {message: e.message});
-      });
+          let method;
+          if (render_mode && render_mode !== 'auto') {
+            method = RENDERERS.get(render_mode);
+          } else {
+            method = RENDERERS.get(ContentType);
+          }
+          if (!method) {
+            return renderLink(target, urlOptions, {message: `Unable to render files of type '${ContentType}'`});
+          }
+          return method(target, urlOptions);
+        }).catch((e) => {
+          console.error(e);
+          renderLink(target, {url}, {message: e.message});
+        });
   });
 }
 
