@@ -11,11 +11,9 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404, HttpResponseForbidden, JsonResponse
-from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
-from django.core.exceptions import BadRequest
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
@@ -330,46 +328,6 @@ def get_token(request: HttpRequest, collection_id: str) -> HttpResponse:
     return JsonResponse({
         'access_token': access_token,
     })
-
-
-@xframe_options_sameorigin
-def render_asset(request: HttpRequest, index: str) -> HttpResponse:
-    """
-    Render an HTML page representing a specific asset, suitable for embedding in an iframe. This makes it easy
-        to incorporate rendering logic into any page, not just detail page, without modifying the route code.
-
-    This route answers two questions that can be easily remixed into any route:
-    - Where is the file? (incl translating collection IDs to URLs + whitelist perm checks)
-    - Do I need a token to access the file?
-
-    The associated template contains some helpful boilerplate to operate the actual rendering.
-        Sensitive data (namely tokens) are sent via a separate route to avoid exposing tokens as part of the DOM
-    """
-
-    # Two ways to call view to specify what we want:
-    #   ?url=  - the url of a public asset somewhere on the web
-    #   ?collection=&path= - the globus collection information needed to show an asset privately - eventual!!!
-    tvers = gsearch.get_template_path('detail-render-asset.html', index=index)
-    template = gsearch.get_template(index, tvers)
-
-    url = request.GET.get('url')
-    collection_id = request.GET.get('collection_id')
-    path = request.GET.get('path')
-    render_mode = request.GET.get('render_mode')
-    ia = request.user.is_authenticated
-
-    try:
-        ro = gpreview.get_render_options(url, collection_id, path, render_mode=render_mode, is_authenticated=ia)
-    except PreviewURLNotFound:
-        raise Http404('Preview file not found')
-
-    return render(
-        request,
-        template,
-        context={
-            "render_options": ro,
-        }
-    )
 
 
 @csrf_exempt
