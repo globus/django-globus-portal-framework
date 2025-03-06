@@ -1,27 +1,39 @@
 """
-Selectively loads template overrides for a particular index.
+Selectively loads template overrides for a particular index. This is useful
+if you want to re-use base templates across multiple indices. You must override
+``template_override_dir`` in your index, then you can use ``{% index_template %}`` in
+your html templates.
 
 For example, an indexes defined as:
-SEARCH_INDEXES = {
-    'my_cool_index': {
-            'template_override_dir': 'my_index'
+
+.. code-block::
+
+    SEARCH_INDEXES = {
+        'my_cool_index': {
+                'template_override_dir': 'my_index'
+        }
+        'my_other_index': {
+                'template_override_dir': 'my_other_index'
+        }
     }
-    'my_other_index': {
-            'template_override_dir': 'my_other_index'
-    }
-}
 
 The app template dir can look like
 
-templates/
-    my_cool_index/
-        components/
-            detail-nav.html
-            search-results.html
-    my_other_index/
-        components/
-            search-results.html
-        search.html
+.. code-block::
+
+    templates/
+        my_cool_index/
+            globus-portal-framework/
+                v3/
+                    components/
+                        detail-nav.html
+                        search-results.html
+        my_other_index/
+            globus-portal-framework/
+                v3/
+                    components/
+                        search-results.html
+                    search.html
 
 In the example above, my_cool_index overrides search-results, so that template
 will be included in search.html instead of the default.
@@ -29,7 +41,25 @@ will be included in search.html instead of the default.
 In my_other_index, 'detail-nav.html' is not included, so the default will
 be used instead.
 
-Both examples here override 'search-results.html' to display custom results
+Both examples here override 'search-results.html' to display custom results.
+
+You specify index templates in the base template using the following:
+
+.. code-block::
+
+    # This specific file goes into your portal and overrides the existing DGPF template:
+    # "templates/globus-portal-framework/v3/search-base.html"
+    {% extends 'globus-portal-framework/v3/search-base.html' %}
+    {% load index_template %}
+
+    ... Lots of HTML code here ...
+
+    {% index_template 'globus-portal-framework/v3/components/search-results.html' as it_search_results %}
+    {% include it_search_results %}
+
+In the example above, ``search-base.html`` will attempt to load ``<index_name>/globus-portal-framework/v3/components/search-results.html``
+and will fall back on ``globus-portal-framework/v3/components/search-results.html`` if an index-specific template does
+not exist.
 """
 import re
 import logging

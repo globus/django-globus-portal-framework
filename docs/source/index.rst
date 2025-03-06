@@ -31,6 +31,7 @@ workflow.
    reference/urls
    reference/views
    reference/generic-views
+   reference/templatetags
    reference/local-settings
    reference/deployment
    reference/migration
