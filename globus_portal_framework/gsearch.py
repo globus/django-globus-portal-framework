@@ -407,13 +407,11 @@ def get_template(index, base_template):
         idata = get_index(index)
         base_dir = idata.get('template_override_dir', '')
         to = os.path.join(base_dir, base_template)
-        # Raises exception
+        # Raises TemplateDoesNotExist if it cannot find the template
         template.loader.get_template(to)
         template_override = to
     except template.TemplateDoesNotExist:
         pass
-    except Exception as e:
-        log.exception(e)
     return template_override
 
 
