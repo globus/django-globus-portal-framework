@@ -397,11 +397,24 @@ def get_template_path(template, index=None):
     return str(pathlib.Path(prefix) / template)
 
 
-def get_template(index, base_template):
-    """If a user has defined a custom template for visualizing search data for
-    their index, load that template. Otherwise, load the default template.
+def get_template(index: str, base_template: str):
+    """
+    Get an index-overridden template, if ``template_override_dir`` is
+    set and a custom template for ``index`` exists.
 
-    NOTE: Template paths are relative to django TEMPLATES in settings.py, """
+    If an index-overriden template does not exist, ``base_template`` is
+    returned unchanged. If an index-overriden template does exist, the
+    index-specific override is returned instead of the base template.
+
+    This mirrors behavior in the ``index_template`` :ref:`templatetags_reference`,
+    but is instead used by views that want to return custom views for
+    different indices.
+
+    :param index: The string representing this search index
+    :param base_template: The string for the template
+    :return: The overridden template if it exists, or the base_template if an
+        override does not exist.
+    """
     template_override = base_template
     try:
         idata = get_index(index)
