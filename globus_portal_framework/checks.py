@@ -6,7 +6,7 @@ from django.conf import settings
 import globus_sdk
 
 from globus_portal_framework.constants import (
-    FILTER_TYPES
+    FILTER_TYPES, VALID_SEARCH_VERSIONS
 )
 
 log = logging.getLogger(__name__)
@@ -43,6 +43,23 @@ def check_search_indexes(app_configs, **kwargs):
                         obj=settings,
                         hint=f'Must be one of {tuple(FILTER_TYPES.keys())}'
                         ))
+    return errors
+
+
+@register()
+def check_search_index_version(app_configs, **kwargs):
+    errors = []
+    search_indexes = getattr(settings, 'SEARCH_INDEXES', {})
+    for index_name, idata in search_indexes.items():
+        if idata.get('@version') and idata['@version'] not in VALID_SEARCH_VERSIONS:
+            errors.append(Error(
+                'Bad Query version',
+                obj=settings,
+                hint=f'Index "{index_name}" has invalid @version "{idata["@version"]}". '
+                     f'Must be one of {VALID_SEARCH_VERSIONS}',
+                id='globus_portal_framework.settings.E006'
+                )
+            )
     return errors
 
 
