@@ -28,6 +28,7 @@ workflow.
 
    reference/settings
    reference/settings-example
+   reference/index-configuration
    reference/urls
    reference/views
    reference/generic-views
