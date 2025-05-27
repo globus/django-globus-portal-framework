@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.14](https://github.com/globus/django-globus-portal-framework/compare/v0.4.13...v0.4.14) (2025-05-28)
+
+
+### Features
+
+* Support new Globus Search query formats (query#1.0.0) ([208c2ed](https://github.com/globus/django-globus-portal-framework/commit/208c2ed2a1c5dc85dfd17b80cad911d8be80ddcb))
+    * DGPF v0.4.14 will always use the old version (`2017-09-01`) by default unless `@version` is explicitly set for an index
+    * A future version of DGPF will switch to using the new version (`query#1.0.0`) by default per-index, if not explicitly set. This will happen roughly the same time the Globus Search service switches its default search behavior to use `query#1.0.0`.
+    * Refer to [DGPF settings](https://django-globus-portal-framework.readthedocs.io/en/latest/reference/index-configuration.html#index-search-settings) to configure this yourself.
+
+
 ### [0.4.13](https://github.com/globus/django-globus-portal-framework/compare/v0.4.12...v0.4.13-0) (2025-02-24)
 
 ### Features
