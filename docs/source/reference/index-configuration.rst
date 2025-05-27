@@ -5,7 +5,7 @@ Index Configuration
 
 Configure your Globus Search index in your settings.py file with the keyword ``SEARCH_INDEXES``:
 
-.. code-block::python
+.. code-block:: python
 
   SEARCH_INDEXES = {
       'my-index-slug': {
