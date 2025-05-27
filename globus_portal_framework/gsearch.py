@@ -27,7 +27,7 @@ from globus_portal_framework.constants import (
 
     VALID_SEARCH_FACET_KEYS, VALID_SEARCH_KEYS,
 
-    DEFAULT_FACET_MODIFIERS,
+    DEFAULT_FACET_MODIFIERS, DEFAULT_SEARCH_VERSION
 )
 FILTER_RANGE_SEPARATOR = getattr(settings, 'FILTER_RANGE_SEPARATOR',
                                  FILTER_DEFAULT_RANGE_SEPARATOR)
@@ -86,7 +86,9 @@ def post_search(index, query, filters, user=None, page=1, search_kwargs=None):
     index_data = get_index(index)
     search_data = {k: index_data[k] for k in VALID_SEARCH_KEYS
                    if k in index_data}
+    version = search_data.get('@version', DEFAULT_SEARCH_VERSION)
     search_data.update({
+        '@version': version,
         'q': query,
         'facets': prepare_search_facets(index_data.get('facets', [])),
         'filters': filters,

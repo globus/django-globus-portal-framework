@@ -67,6 +67,8 @@ VALID_SEARCH_VERSIONS = [
     'query#1.0.0', '2017-09-01',
 ]
 
+DEFAULT_SEARCH_VERSION = '2017-09-01'
+
 BASE_TEMPLATES = 'globus-portal-framework/v2/'
 
 # drop_empty enforces backwards compatible facet handling for 0.3.x
