@@ -1,6 +1,11 @@
 from uuid import uuid4
-from globus_portal_framework.constants import FILTER_TYPES
-from globus_portal_framework.checks import (check_search_indexes, check_allowed_groups)
+import pytest
+from globus_portal_framework.constants import FILTER_TYPES, VALID_SEARCH_VERSIONS
+from globus_portal_framework.checks import (
+    check_search_indexes,
+    check_search_index_version,
+    check_allowed_groups,
+)
 
 
 def test_valid_search_index(search_client):
@@ -14,6 +19,21 @@ def test_index_missing_uuid(settings, search_client, globus_response):
     r = check_search_indexes(None)
     assert len(r) == 1
     assert r[0].id == 'globus_portal_framework.settings.E001'
+
+
+
+@pytest.mark.parametrize("version", VALID_SEARCH_VERSIONS)
+def test_check_search_index_valid_versions(settings, version):
+    settings.SEARCH_INDEXES = {'myindex': {'uuid': 'foo', '@version': version}}
+    r = check_search_index_version(None)
+    assert len(r) == 0
+
+
+def test_check_search_index_version(settings):
+    settings.SEARCH_INDEXES = {'myindex': {'uuid': 'foo', '@version': 'bar'}}
+    r = check_search_index_version(None)
+    assert len(r) == 1
+    assert r[0].id == 'globus_portal_framework.settings.E006'
 
 
 def test_valid_filter_types_raise_no_errors(settings):
