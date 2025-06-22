@@ -32,6 +32,7 @@ workflow.
    reference/urls
    reference/views
    reference/generic-views
+   reference/gclients
    reference/local-settings
    reference/deployment
    reference/migration
