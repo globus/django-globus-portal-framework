@@ -1,6 +1,7 @@
 from datetime import datetime
 import pytz
 import pathlib
+import uuid
 from django.contrib.auth.models import User
 from social_django.models import UserSocialAuth
 import globus_sdk
@@ -83,6 +84,7 @@ def mock_user(username, resource_servers):
     extra_data = {
         'user': user,
         'provider': 'globus',
+        'uid': str(uuid.uuid4()),
         'extra_data': {
             'other_tokens': mock_tokens(resource_servers),
             'access_token': 'auth_access_token',
