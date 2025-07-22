@@ -78,8 +78,11 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         groups a user belongs. The API is PUBLIC, and no special allowlists
         are needed to use it.
         """
-        groups_scopes = (GroupsScopes.all,
-                         GroupsScopes.view_my_groups_and_memberships)
+        # Groups changed slightly in v4, and we *should* be able to compare scope_string
+        # for the scopes below. But SDK v3 doesn't support that, so call str() on both
+        # scopes so the scope strings themselves can be compared below.
+        groups_scopes = (str(GroupsScopes.all),
+                         str(GroupsScopes.view_my_groups_and_memberships))
         groups_token = None
         for item in other_tokens:
             if item.get('scope') in groups_scopes:
