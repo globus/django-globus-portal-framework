@@ -30,7 +30,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         pip install -r requirements.txt -r test-requirements.txt
-        pip install "globus-sdk>=4" --pre
+        pip install --pre "globus-sdk>3"
     - name: Lint with flake8
       run: |
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
