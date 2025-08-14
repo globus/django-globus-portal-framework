@@ -90,6 +90,7 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
    'urn:globus:auth:scope:groups.api.globus.org:'
    'view_my_groups_and_memberships',
 ]
+SOCIAL_AUTH_GLOBUS_INCREMENTAL_AUTH_ENABLED = True
 
 # Set if using POSTGRES
 # https://python-social-auth.readthedocs.io/en/latest/configuration/django.html#database  # noqa
