@@ -1,4 +1,6 @@
 import logging
+import globus_sdk
+from globus_sdk.gare import GARE, GlobusAuthorizationParameters
 from urllib.parse import urlencode
 from django.http.response import HttpResponseRedirect
 from django.utils.deprecation import MiddlewareMixin
@@ -6,7 +8,7 @@ from django.urls import reverse
 from django.contrib import auth
 from social_core.exceptions import AuthForbidden
 
-from globus_portal_framework.exc import ExpiredGlobusToken
+from globus_portal_framework.exc import ExpiredGlobusToken, ScopesRequired
 
 log = logging.getLogger(__name__)
 
@@ -31,6 +33,17 @@ class ExpiredTokenMiddleware(MiddlewareMixin):
             url = '{}?{}'.format(base_url, params)
             return HttpResponseRedirect(url)
 
+def globus_auth_login(gare=None, next=None):
+    base_url = reverse('social:begin', kwargs={'backend': 'globus'})
+    params = dict()
+    if gare:
+        scopes = gare.to_dict()["authorization_parameters"]["required_scopes"]
+        log.debug(f"Logging in with scope: {scopes}")
+        params["scopes"] = " ".join(scopes)
+    if next:
+        params["next"] = next
+    url = '{}?{}'.format(base_url, urlencode(params))
+    return HttpResponseRedirect(url)
 
 class GlobusAuthExceptionMiddleware(MiddlewareMixin):
     """
@@ -46,7 +59,23 @@ class GlobusAuthExceptionMiddleware(MiddlewareMixin):
      of groups to request access (groups-whitelist url)
     """
 
+    def process_globus_api_error(self, request, exception):
+        if exception.info.authorization_parameters:
+            return globus_auth_login(globus_sdk.gare.to_gare(exception), next=request.get_full_path())
+
     def process_exception(self, request, exception):
+        if isinstance(exception, globus_sdk.GlobusAPIError):
+            return self.process_globus_api_error(request, exception)
+
+        if isinstance(exception, ScopesRequired):
+            gare = GARE(
+                code="MissingScopes",
+                authorization_parameters=GlobusAuthorizationParameters(
+                    required_scopes=[str(s) for s in exception.scopes],
+                ),
+            )
+            return globus_auth_login(gare, next=request.get_full_path())
+
         if not isinstance(exception, AuthForbidden):
             return
         # ensure the exception arg is a dict.

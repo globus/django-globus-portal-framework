@@ -29,6 +29,17 @@ class PortalAuthException(GlobusPortalException):
         self.index = ''
 
 
+class ScopesRequired(PortalAuthException):
+    def __init__(self, scopes=None, **kwargs):
+        super().__init__(**kwargs)
+        """
+        :param scopes: Name of Globus Scope
+        """
+        self.code = 'ScopesRequired'
+        self.scopes = scopes
+        self.message = kwargs.get('message') or f"A Globus Scope is required: {scopes}"
+
+
 class NonGlobusUserException(Exception):
     """A Django user does not a have an association with Globus in the
     social_django.models.UserSocialAuth Python Social Auth models.
