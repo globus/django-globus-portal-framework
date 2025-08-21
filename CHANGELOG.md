@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+
+### [0.4.15](https://github.com/globus/django-globus-portal-framework/compare/v0.4.14...v0.4.15) (2025-08-21)
+
+
+### Features
+
+* Upgrade default search version to [query#1.0.0](https://github.com/globus/django-globus-portal-framework/issues/259) ([ef83619](https://github.com/globus/django-globus-portal-framework/commit/ef83619535a35fa0324c78449820131413aa6185))
+
+
+### Bug Fixes
+
+* Compatibility for Globus SDK v4 ([1b82aab](https://github.com/globus/django-globus-portal-framework/commit/1b82aabb73fa0f1436e61df4de3d2c04dcc7ad1b))
+* get_template will no longer catch broad exceptions ([4e14bb4](https://github.com/globus/django-globus-portal-framework/commit/4e14bb474939985bf52ba900e520b783ad88ee64))
+
 ### [0.4.14](https://github.com/globus/django-globus-portal-framework/compare/v0.4.13...v0.4.14) (2025-05-28)
 
 
