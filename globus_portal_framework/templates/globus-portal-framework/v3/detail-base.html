@@ -46,7 +46,7 @@
       {% endblock %}
       <div class="card-body">
         {% block copy_to_clipboard %}
-        {% include 'globus-portal-framework/v3/components/copy-to-clipboard.html' %}
+        {% include 'globus-portal-framework/v3/components/copy-to-clipboard.html' with copy_to_clipboard_link=https_url %}
         {% endblock %}
         <div class="container">
           {%block detail_body %}
