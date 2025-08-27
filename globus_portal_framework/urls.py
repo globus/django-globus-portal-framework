@@ -19,7 +19,7 @@ from django.urls import path, include, register_converter
 from django.conf import settings
 from globus_portal_framework.views import (
     search, index_selection, detail, detail_transfer, detail_preview, logout,
-    allowed_groups, search_about,
+    allowed_groups, search_about, get_token
 )
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework.api import restricted_endpoint_proxy_stream
@@ -101,6 +101,7 @@ search_urlpatterns = [
     path('<index:index>/detail-transfer/<subject>', detail_transfer,
          name='detail-transfer'),
     path('<index:index>/detail/<subject>/', detail, name='detail'),
+    path('get-token/<collection_id>/', get_token, name='get-token'),
     path('allowed-groups/', allowed_groups, name='allowed-groups'),
     # Globus search portal. Provides default url '/'.
     path('', index_selection, name='index-selection'),

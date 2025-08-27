@@ -1,22 +1,23 @@
 import logging
 import copy
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from collections import OrderedDict
 from json import dumps
 import globus_sdk
+
 import django
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, Http404, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.defaults import server_error, page_not_found
 from django.contrib.auth import logout as django_logout
 
 from globus_portal_framework.apps import get_setting
 from globus_portal_framework import (
-    gsearch, gclients, gtransfer,
+    gsearch, gclients, gpreview, gtransfer,
     PreviewException, PreviewURLNotFound,
     ExpiredGlobusToken, GroupsException,
 )
@@ -298,6 +299,35 @@ def detail(request: HttpRequest, index: str, subject: str) ->  django.http.HttpR
     template = gsearch.get_template(index, tvers)
     return render(request, template, gsearch.get_subject(index, subject,
                                                          request.user))
+
+
+def get_token(request: HttpRequest, collection_id: str) -> HttpResponse:
+    """
+    Send information to the frontend that can be used to read files from a collection.
+
+    CAUTION: The globus https scope allows read AND write access to files from a collection.
+        Globus collections determines write via user permissions on the collection, not via token scope.
+        Take precautions against token leakage, such as exempting this route from authenticated CORS (if applicable).
+    """
+    if not request.user.is_authenticated:
+        return HttpResponse('Tokens are not available for unauthenticated users', status=401)
+
+    # EXPLICIT WHITELIST defends vs requesting arbitrary resource server tokens, like "flows" or "auth.globus.org".
+    allowed = getattr(settings, 'GLOBUS_PREVIEW_COLLECTIONS', {})
+    if collection_id not in allowed:
+        # Log attempt to access arbitrary tokens
+        log.warning(f'Frontend access token request blocked for resource "{collection_id}" by user "{request.user.username}"')
+        return HttpResponseForbidden(f'This server does not support tokens for collection "{collection_id}"')
+
+    try:
+        access_token = gclients.load_globus_access_token(request.user, collection_id)
+    except ValueError:
+        return HttpResponseForbidden('No tokens available for this specified collection. If this is a public collection, you may not need a token.')
+
+    # TODO: Sanity-check token scopes before sending to browser; may require refactor of `load_globus_access_token`
+    return JsonResponse({
+        'access_token': access_token,
+    })
 
 
 @csrf_exempt
