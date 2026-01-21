@@ -11,6 +11,7 @@ from social_core.exceptions import AuthForbidden
 import globus_sdk
 from globus_sdk.scopes import GroupsScopes
 from globus_sdk import config as globus_sdk_config
+from globus_portal_framework.exc import PortalAuthException
 
 log = logging.getLogger(__name__)
 
@@ -98,6 +99,41 @@ class GlobusOpenIdConnect(GlobusOpenIdConnectBase):
         groups_client = globus_sdk.GroupsClient(authorizer=authorizer)
         return groups_client.get_my_groups().data
 
-    def auth_params(self, state=None):
-        params = super(GlobusOpenIdConnect, self).auth_params(state)
-        return params
+
+    def do_auth(self, access_token, *args, **kwargs):
+        user = kwargs.get("user")
+        # If no user, return early.
+        if not user:
+            return super().do_auth(access_token, *args, **kwargs)
+
+        # Save original token data
+        extra_data = user.social_auth.get(provider="globus").extra_data
+        previous_tokens = extra_data["other_tokens"]
+
+        # Continue with auth
+        user = super().do_auth(access_token, *args, **kwargs)
+
+        # Find previous tokens present in previous user but weren't part of current login
+        usa = user.social_auth.get(provider="globus")
+        new_resource_servers = [t["resource_server"] for t in usa.extra_data["other_tokens"]]
+        missing_tokens = [t for t in previous_tokens if t["resource_server"] not in new_resource_servers]
+
+        # Re-add the missing tokens to the newest auth and save
+        new_extra_data = usa.extra_data
+        new_extra_data["other_tokens"] += missing_tokens
+        usa.extra_data = new_extra_data
+        usa.save()
+        return user
+
+
+    def get_scope(self):
+        scopes = super().get_scope()
+        incremental_auth_scopes = self.data.get("scopes", "").split()
+        log.debug(f"Incremental Auth enabled? {self.setting('INCREMENTAL_AUTH_ENABLED')}")
+        if incremental_auth_scopes and not self.setting('INCREMENTAL_AUTH_ENABLED'):
+            raise PortalAuthException(
+                f"Attempted login with extra scopes {incremental_auth_scopes}, but "
+                f"SOCIAL_AUTH_GLOBUS_INCREMENTAL_AUTH_ENABLED=False. Either add this scope to "
+                "SOCIAL_AUTH_GLOBUS_SCOPE, enable incremental auth, or punish your users!"
+        )
+        return scopes + incremental_auth_scopes
