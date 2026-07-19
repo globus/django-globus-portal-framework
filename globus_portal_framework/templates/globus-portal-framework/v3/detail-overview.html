@@ -1,4 +1,5 @@
 {% extends 'globus-portal-framework/v3/detail-base.html' %}
+{% load render_options index_template srcdoc %}
 
 
 {% block breadcrumb_items %}
@@ -44,7 +45,18 @@
         {% endif %}
         {% endblock %}
 
-
+      {% render_options is_authenticated=request.user.is_authenticated url=preview_url collection_id=preview_collection path=preview_path as ro %}
+      {% index_template 'globus-portal-framework/v3/detail-render-asset.html' as it_render %}
+      {% block detail_preview %}
+        {% if preview_collection and preview_path or preview_url %}
+          {#  If you know that your page will only be used with public assets, remove `allow-same-origin` from the sandbox for added security #}
+          <iframe
+            sandbox="allow-same-origin allow-scripts allow-downloads"
+            srcdoc="{% srcdoc %}{% include it_render with render_options=ro only %}{% endsrcdoc %}"
+            width="100%"
+            height="100%"></iframe>
+        {% endif %}
+      {% endblock %}
   </div>
 </div>
 
