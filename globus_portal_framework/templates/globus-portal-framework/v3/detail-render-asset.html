@@ -1,0 +1,27 @@
+{% load static %}
+{# Can be used as a standalone page or an embeddable iframe viewer. For security reasons the latter is preferred. #}
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Render asset</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}" />
+  {%block headextras%}
+    {#  You can add any custom code here, like custom render functions or stylesheets. #}
+  {% endblock %}
+</head>
+<body>
+  <div id="render-target">Waiting...</div>
+
+  {# This must be passed to the template. A template tag helper is available to generate this dict. #}
+  {{ render_options|json_script:"render-options" }}
+
+  <script type="module">
+    import {doRender} from "{% static 'js/render-asset/renderers.js' %}";
+    // This is the main script block, and it assumes a specific django template
+    const render_options = JSON.parse(document.getElementById('render-options').textContent);
+    const target = document.getElementById('render-target');
+
+    doRender(target, render_options);
+  </script>
+</body>
+</html>
