@@ -77,6 +77,8 @@ SEARCH_INDEXES = {
 
 GLOBUS_CLIENT_LOADER = 'globus_portal_framework.gclients.load_globus_client'
 
+SOCIAL_AUTH_GLOBUS_INCREMENTAL_AUTH_ENABLED = True
+
 SEARCH_RESULTS_PER_PAGE = 10
 SEARCH_MAX_PAGES = 10
 # This will be the automatic search query when the user loads the page, if
@@ -159,6 +161,8 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     'urn:globus:auth:scope:groups.api.globus.org:'
     'view_my_groups_and_memberships'
 ]
+SOCIAL_AUTH_GLOBUS_INCREMENTAL_AUTH_ENABLED = True
+
 
 # Set to True to retrieve information about a user identity from the Globus
 # sessions instead of relying on a Globus OIDC userinfo endpoint.
